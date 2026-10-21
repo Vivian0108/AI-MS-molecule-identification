@@ -29,19 +29,18 @@ Work is on `hackathon-ready`. Historical `main` remains at
 | Environment / check | Exact result |
 |---|---|
 | Unmodified baseline, Python 3.12.12 | 44 passed in 1.58s (`PYTEST_DISABLE_PLUGIN_AUTOLOAD=1`) |
-| Final local suite before clean clone | 61 passed, 1 warning in 4.47s |
+| Final local suite before clean clone | 61 passed, 1 warning in 7.42s |
 | Clean clone, locked Python 3.12.12, `make verify` | 61 passed, 1 warning in 47.40s; Ruff check/format, imports, configs and publication scan passed |
 | Clean clone, locked Python 3.11.14, `make verify PY=…` | 61 passed, 1 warning in 42.23s; same checks passed |
 | Real HTTP clean-clone rehearsal | PASS: make demo, Streamlit health, API /health, plan, archived measurement, stop, JSON/Markdown exports |
-| Five real Streamlit screens | AppTest passed; actual Safari screenshots captured and reviewed |
+| Five real Streamlit screens | AppTest passed across all screens and an active start/measure/stop/report interaction; actual Safari screenshots captured and reviewed |
 | Demo isolation | 4 train/dev cases, 9 reference molecules, 18 endpoint spectra; all 30 raw source hashes/licenses checked; no frozen-test identity/reference/observation in bundle |
 | Frozen inputs | Selection, acquisition, split, error model and calibration hashes unchanged |
 | Historical oracle restoration | Byte-exact SHA256 `70e29d39c875a01bc856a4d9572ec85e333eca26e3986301b341c8379416f2b0` |
 | Frozen-report regeneration in clean clone | PASS: all scientific summaries, comparisons, diagnostics, failures, open-world rows and per-case metrics matched exactly (runtime excluded) |
 
 The one warning is the installed Starlette/FastAPI TestClient deprecation of its
-httpx compatibility transport. It does not fail any test. CI is configured; the
-results above are local matrix results, not a claim that hosted Actions has run.
+httpx compatibility transport. It does not fail any test. Hosted Actions also passed both Python versions at revision `e66585b` ([run](https://github.com/Vivian0108/AI_MS_molecule_identification_draft/actions/runs/39651516880)). The table records the separate local matrix results.
 No untracked file was needed for demo startup. Tests create gitignored local logs.
 
 ## Demo command
