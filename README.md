@@ -14,6 +14,11 @@ measurement revealed only on request.
 > are generated for identification. The 30/40 eV peaks do not exist in any
 > agent-facing payload until `measure` is called.
 
+**Build transcript:** the full OpenCode session that produced this repository is
+in [`chat_history/`](chat_history/). See the readable
+[`transcript.md`](chat_history/transcript.md), or import the raw
+[`session.json`](chat_history/session.json) into OpenCode.
+
 ---
 
 ## Headline result (read this before the tables)
@@ -236,6 +241,7 @@ oracle property raises, and that the public-case contract has no truth fields.
 
 ```
 app/streamlit_app.py              five-screen UI
+chat_history/                     readable transcript + full OpenCode session export
 config/selection.yaml             fixed data stratum
 config/acquisition.yaml           planner, likelihood, confidence rule
 data/curated/                     manifests, library, cases, splits, audit
