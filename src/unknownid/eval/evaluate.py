@@ -52,45 +52,47 @@ def _case_metrics(
     budget: int,
     confidence: dict,
 ) -> dict:
-    stage0 = state.stage(0)
-    stage1 = state.stage(1)
-    stage2 = state.stage(min(budget, 2))
+    metrics = {}
+    for k in range(3):
+        snapshot = state.stage(min(k, budget))
+        decision = decide(snapshot.weights, snapshot.evidence, **confidence)
+        accepted = int(decision.decision == "identified")
+        correct = int(accepted and decision.top_candidate == truth)
+        metrics.update({
+            f"top1_{k}": top1(snapshot.order(), truth),
+            f"mrr_{k}": reciprocal_rank(snapshot.order(), truth),
+            f"top3_{k}": topk(snapshot.order(), truth, 3),
+            f"coverage_{k}": accepted,
+            f"accepted_correct_{k}": correct,
+            f"accepted_error_{k}": accepted - correct,
+            # Per-case error indicator; aggregate risk is a ratio of sums.
+            f"risk_{k}": (accepted - correct) / accepted if accepted else None,
+            f"ambiguous_rate_{k}": int(decision.decision == "ambiguous"),
+            f"out_of_library_rate_{k}": int(decision.decision == "out_of_library"),
+            f"scans_{k}": len(snapshot.actions),
+            f"total_acquisitions_{k}": 1 + len(snapshot.actions),
+            f"decision_{k}": decision.decision,
+            f"predicted_{k}": decision.top_candidate,
+        })
     final = state.stage(budget)
-    order_final = final.order()
-    decision = decide(
-        final.weights,
-        final.evidence,
-        min_support=confidence["min_support"],
-        min_margin=confidence["min_margin"],
-        min_similarity=confidence["min_similarity"],
-        min_matched=confidence["min_matched"],
-    )
-    return {
-        "top1_0": top1(stage0.order(), truth),
-        "top1_1": top1(stage1.order(), truth),
-        "top1_2": top1(stage2.order(), truth),
-        "mrr_2": reciprocal_rank(order_final, truth),
-        "top3_2": topk(order_final, truth, 3),
+    decision = decide(final.weights, final.evidence, **confidence)
+    metrics.update({
         "scans": len(final.actions),
-        "scans_1": min(1, len(final.actions)),
-        "scans_2": min(2, len(final.actions)),
-        "identified": float(decision.decision == "identified"),
-        "accepted_correct": float(decision.decision == "identified" and decision.top_candidate == truth),
-        "accepted_error": float(decision.decision == "identified" and decision.top_candidate != truth),
-        "coverage": float(decision.decision == "identified"),
-        "out_of_library": float(decision.decision == "out_of_library"),
-        "ambiguous": float(decision.decision == "ambiguous"),
-        "support": float(decision.support),
-        "margin": float(decision.margin),
+        "identified": metrics["coverage_2"],
+        "accepted_correct": metrics["accepted_correct_2"],
+        "accepted_error": metrics["accepted_error_2"],
+        "coverage": metrics["coverage_2"],
+        "out_of_library": metrics["out_of_library_rate_2"],
+        "ambiguous": metrics["ambiguous_rate_2"],
+        "support": float(decision.support), "margin": float(decision.margin),
         "best_similarity": float(decision.best_similarity),
-        "entropy_0": float(stage0.entropy),
+        "entropy_0": float(state.stage(0).entropy),
         "entropy_final": float(final.entropy),
-        "entropy_reduction": float(max(stage0.entropy - final.entropy, 0.0)),
-        "decision": decision.decision,
-        "predicted": decision.top_candidate,
-        "reasons": decision.reasons,
-        "order": order_final,
-    }
+        "entropy_reduction": float(state.stage(0).entropy - final.entropy),
+        "decision": decision.decision, "predicted": decision.top_candidate,
+        "reasons": decision.reasons, "order": final.order(),
+    })
+    return metrics
 
 
 def run_policy_once(
@@ -118,28 +120,12 @@ def run_policy_once(
     return _case_metrics(state, case.molecule_id, budget=budget, confidence=confidence), runtime
 
 
-NUMERIC_KEYS = [
-    "top1_0",
-    "top1_1",
-    "top1_2",
-    "mrr_2",
-    "top3_2",
-    "scans",
-    "scans_1",
-    "scans_2",
-    "identified",
-    "accepted_correct",
-    "accepted_error",
-    "coverage",
-    "out_of_library",
-    "ambiguous",
-    "support",
-    "margin",
-    "best_similarity",
-    "entropy_0",
-    "entropy_final",
-    "entropy_reduction",
-    "runtime_s",
+STAGE_MEANS = ("top1", "mrr", "top3", "coverage", "accepted_correct", "accepted_error",
+               "ambiguous_rate", "out_of_library_rate", "scans", "total_acquisitions")
+NUMERIC_KEYS = [f"{metric}_{k}" for k in range(3) for metric in STAGE_MEANS] + [
+    "scans", "identified", "accepted_correct", "accepted_error", "coverage", "out_of_library",
+    "ambiguous", "support", "margin", "best_similarity", "entropy_0", "entropy_final",
+    "entropy_reduction", "runtime_s",
 ]
 
 
@@ -187,6 +173,9 @@ def run_policy_suite(
                     for key in NUMERIC_KEYS
                     if key in trials[0]
                 }
+                for k in range(3):
+                    accepted = averaged[f"coverage_{k}"]
+                    averaged[f"risk_{k}"] = averaged[f"accepted_error_{k}"] / accepted if accepted else None
                 averaged["runtime_s"] = float(np.mean(runtimes))
                 averaged["decision"] = "mixed"
                 averaged["reasons"] = []
@@ -252,10 +241,20 @@ def summarize_policy(
     def values(key):
         return [per_case[case_id][key] for case_id in ids]
     summary: dict = {"n": len(ids)}
-    for key in ("top1_0", "top1_1", "top1_2", "mrr_2", "top3_2", "scans", "scans_1", "scans_2"):
+    for key in [f"{metric}_{k}" for k in range(3) for metric in STAGE_MEANS] + ["scans"]:
         mean, low, high = bootstrap_mean_ci(values(key), seed=seed)
         summary[key] = round(mean, 4)
         summary[f"{key}_ci"] = [round(low, 4), round(high, 4)]
+    for k in range(3):
+        accepted = float(np.sum(values(f"coverage_{k}")))
+        errors = float(np.sum(values(f"accepted_error_{k}")))
+        correct = float(np.sum(values(f"accepted_correct_{k}")))
+        summary[f"risk_{k}"] = errors / accepted if accepted else None
+        summary[f"accepted_correct_count_{k}"] = correct
+        summary[f"accepted_error_count_{k}"] = errors
+        summary[f"scans_per_accepted_correct_{k}"] = (
+            float(np.sum(values(f"scans_{k}"))) / correct if correct else None
+        )
     summary["coverage"] = round(float(np.mean(values("coverage"))), 4)
     summary["out_of_library_rate"] = round(float(np.mean(values("out_of_library"))), 4)
     summary["ambiguous_rate"] = round(float(np.mean(values("ambiguous"))), 4)
@@ -278,7 +277,7 @@ def pairwise_comparisons(
     case_ids: Sequence[str],
     *,
     baseline: str = "unknownid",
-    metrics: Sequence[str] = ("top1_1", "top1_2", "mrr_2"),
+    metrics: Sequence[str] = ("top1_1", "mrr_1", "coverage_1", "accepted_correct_1", "scans_1"),
     seed: int = 20261020,
 ) -> dict:
     comparisons = {}
@@ -447,7 +446,7 @@ def _headline(
     conclusive = []
     for baseline in names:
         entry = comparisons.get("ambiguous", {}).get(baseline, {})
-        for metric in ("top1_1", "top1_2"):
+        for metric in ("top1_1",):
             diff = entry.get(metric, {})
             low, high = diff.get("ci_low"), diff.get("ci_high")
             if low is None or high is None:
