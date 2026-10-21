@@ -93,4 +93,6 @@ def write_pareto(payload, output):
     plt.close(fig)
     output = Path(output)
     if output.suffix == ".svg":
-        output.write_text("\n".join(line.rstrip() for line in output.read_text().splitlines()) + "\n")
+        output.write_text(
+            "\n".join(line.rstrip() for line in output.read_text().splitlines()) + "\n"
+        )
