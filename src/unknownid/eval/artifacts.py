@@ -91,3 +91,6 @@ def write_pareto(payload, output):
     fig.tight_layout()
     fig.savefig(output)
     plt.close(fig)
+    output = Path(output)
+    if output.suffix == ".svg":
+        output.write_text("\n".join(line.rstrip() for line in output.read_text().splitlines()) + "\n")

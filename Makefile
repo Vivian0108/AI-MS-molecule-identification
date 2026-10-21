@@ -71,4 +71,3 @@ lint:
 format:
 	$(PY) -m ruff check --fix src scripts tests app
 	$(PY) -m ruff format src scripts tests app
-	
