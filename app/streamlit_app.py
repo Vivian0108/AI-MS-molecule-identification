@@ -480,7 +480,7 @@ def screen_investigation(service: UnknownIDService) -> None:
         f"&nbsp;·&nbsp; **Observed:** {', '.join(str(e) + ' eV' for e in payload['observed_energies'])}"
     )
     st.caption(
-        "The compound name and the source accession are withheld until the investigation is stopped."
+        "Source accessions are withheld until stop. Candidate names are library hypotheses, not revealed truth."
     )
 
     st.subheader("Initial 20 eV stick spectrum")
@@ -765,11 +765,14 @@ def screen_report(service: UnknownIDService) -> None:
     columns[0].metric(
         "Observed energies", ", ".join(f"{e} eV" for e in investigation["observations"])
     )
-    columns[1].metric("Scans used", max(len(investigation["observations"]) - 1, 0))
+    columns[1].metric("Optional scans used", max(len(investigation["observations"]) - 1, 0))
     columns[2].metric("Predicted identity", predicted_name or "abstained")
     columns[3].metric(
         "Support",
         "—" if investigation.get("confidence") is None else f"{investigation['confidence']:.3f}",
+    )
+    st.caption(
+        f"Total acquisitions: {len(investigation['observations'])}, including the initial 20 eV measurement."
     )
     if predicted_id:
         st.caption(f"Full InChIKey: `{predicted_id}`")

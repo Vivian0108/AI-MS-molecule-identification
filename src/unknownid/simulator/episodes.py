@@ -404,7 +404,19 @@ class InvestigationSession:
         manifest = {}
         if MANIFEST_JSON.exists():
             manifest = json.loads(MANIFEST_JSON.read_text(encoding="utf-8"))
+        used = {m.accession for m in self._observations.values()}
+        used.update(a for c in self.candidates for a in c.reference_accessions.values())
+        licenses = {
+            r["accession"]: r["license"]
+            for r in manifest.get("records", [])
+            if r["accession"] in used
+        }
         return {
+            "optional_scans": max(len(self._observations) - 1, 0),
+            "total_acquisitions": len(self._observations),
+            "scans_definition": "Optional acquisitions at 30/40 eV; total includes initial 20 eV",
+            "licenses_by_accession": licenses,
+            "data_license_notice": "MassBank / University of Athens; per-record CC BY / CC BY-SA, see DATA_LICENSE.md",
             "case_id": self.case_id,
             "observed_accessions": {
                 str(energy): measurement.accession
@@ -440,6 +452,9 @@ class InvestigationSession:
             f"**Observed energies:** {', '.join(str(e) + ' eV' for e in investigation.observations)}",
             f"**Predicted identity:** {'`' + investigation.predicted_identity + '`' if investigation.predicted_identity else '—'}",
             "",
+            f"**Optional scans:** {investigation.provenance['optional_scans']}",
+            f"**Total acquisitions (including initial 20 eV):** {investigation.provenance['total_acquisitions']}",
+            "",
             "## Candidate ranking",
             "",
             "| # | candidate | support | cosine by energy | matched peaks | reference accessions |",
@@ -467,7 +482,16 @@ class InvestigationSession:
             lines.append(f"- **{energy} eV measured observation:** {accession}")
         for cid, accessions in investigation.provenance.get("reference_accessions", {}).items():
             for energy, accession in accessions.items():
-                lines.append(f"- **{energy} eV interpolated template for {cid}:** {accession}")
+                lines.append(
+                    f"- **{energy} eV experimental endpoint reference for {cid}:** {accession}"
+                )
+        lines += ["", "### Data attribution", "", investigation.provenance["data_license_notice"]]
+        lines += [
+            f"- {accession}: {license}"
+            for accession, license in sorted(
+                investigation.provenance["licenses_by_accession"].items()
+            )
+        ]
         lines += ["", "## Limitations", ""]
         lines += [f"- {item}" for item in investigation.limitations]
         lines += [

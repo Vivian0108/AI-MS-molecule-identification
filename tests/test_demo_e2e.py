@@ -72,6 +72,9 @@ def test_demo_investigation_and_exports(demo_client, tmp_path):
     (tmp_path / "report.json").write_text(json.dumps(report.json()))
     (tmp_path / "report.md").write_text(markdown.text)
     assert "Decision" in markdown.text
+    assert report.json()["provenance"]["optional_scans"] == 1
+    assert report.json()["provenance"]["total_acquisitions"] == 2
+    assert "Total acquisitions" in markdown.text
 
 
 def test_demo_stops_and_abstains(demo_client):
