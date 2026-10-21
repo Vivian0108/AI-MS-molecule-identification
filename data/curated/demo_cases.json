@@ -1,0 +1,78 @@
+{
+  "generated_at_utc": "2026-10-21T06:16:38+00:00",
+  "note": "Anonymised demo case identifiers only. No compound names, source accessions, hidden spectra or true identities are included. The UI resolves each case at runtime.",
+  "cases": [
+    {
+      "case_id": "case-9d0ce7563ea4",
+      "split": "test",
+      "cohort": "ambiguous",
+      "n_candidates": 3,
+      "precursor_mz": 134.0713,
+      "why": "multiple precursor-consistent candidates; tests evidence accumulation"
+    },
+    {
+      "case_id": "case-6debb13e35d8",
+      "split": "test",
+      "cohort": "close_call",
+      "n_candidates": 3,
+      "precursor_mz": 291.2319,
+      "why": "top-2 margin <= 0.15; tests abstention versus forced choice"
+    },
+    {
+      "case_id": "case-004d27da253e",
+      "split": "test",
+      "cohort": "easy",
+      "n_candidates": 1,
+      "precursor_mz": 346.122,
+      "why": "precursor-unique; tests the low-cost stop path"
+    },
+    {
+      "case_id": "case-cc6da99cd112",
+      "split": "dev",
+      "cohort": "ambiguous",
+      "n_candidates": 3,
+      "precursor_mz": 146.06,
+      "why": "multiple precursor-consistent candidates; tests evidence accumulation"
+    },
+    {
+      "case_id": "case-176f73f28989",
+      "split": "dev",
+      "cohort": "close_call",
+      "n_candidates": 3,
+      "precursor_mz": 291.2319,
+      "why": "top-2 margin <= 0.15; tests abstention versus forced choice"
+    },
+    {
+      "case_id": "case-0ca2c00299ef",
+      "split": "dev",
+      "cohort": "easy",
+      "n_candidates": 1,
+      "precursor_mz": 404.0895,
+      "why": "precursor-unique; tests the low-cost stop path"
+    },
+    {
+      "case_id": "case-95f3823213be",
+      "split": "train",
+      "cohort": "ambiguous",
+      "n_candidates": 4,
+      "precursor_mz": 435.2177,
+      "why": "multiple precursor-consistent candidates; tests evidence accumulation"
+    },
+    {
+      "case_id": "case-0ce7c16a9c7c",
+      "split": "train",
+      "cohort": "close_call",
+      "n_candidates": 3,
+      "precursor_mz": 169.076,
+      "why": "top-2 margin <= 0.15; tests abstention versus forced choice"
+    },
+    {
+      "case_id": "case-001b90fbedbd",
+      "split": "train",
+      "cohort": "easy",
+      "n_candidates": 1,
+      "precursor_mz": 303.2319,
+      "why": "precursor-unique; tests the low-cost stop path"
+    }
+  ]
+}

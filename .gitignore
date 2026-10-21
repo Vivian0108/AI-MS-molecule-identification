@@ -1,0 +1,23 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# Raw data checkout (re-created by `make fetch-data`)
+data/raw/
+
+# Evaluator-only artefacts (must never be shipped to an agent-facing service)
+data/oracle/
+
+# Local logs
+data/oracle/actions.jsonl
+*.log
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/

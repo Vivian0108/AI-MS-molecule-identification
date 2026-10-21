@@ -1,0 +1,40 @@
+{
+  "created_at_utc": "2026-10-21T06:15:54+00:00",
+  "selection_config_sha256": "43bed3a9213258588baa850f2c96aa8e10abb2a142579cb30757d5b47d003418",
+  "acquisition_config_sha256": "12a2d25e1f29772687a6c5a272180a3ae8ada1d5e704f1a1f214e25d0357e78c",
+  "source_commit": "befc8a1e2f2aef899747797c081a5d80fab12fe7",
+  "counts": {
+    "raw_records": 5633,
+    "selected_spectra": 3245,
+    "complete_cases": 503,
+    "partial_cases": 221,
+    "library_molecules": 561
+  },
+  "split_counts": {
+    "train": 302,
+    "dev": 101,
+    "test": 100
+  },
+  "artefact_sha256": {
+    "spectra": "a860751e44b4cb45f1fc8a1ce5543e2cd27961c8dc0c5fcfe29bc503e00bc377",
+    "library": "e55f62bc00abe26cec7cedca6947f5673dc4b0fd8ebd40396d6b2c30014934b7",
+    "public_cases": "4288842c455a11418f81ec693874e201e065a984553c1a9aba0aa81d23710738",
+    "private_oracle": "70e29d39c875a01bc856a4d9572ec85e333eca26e3986301b341c8379416f2b0"
+  },
+  "replicates": "max_retained_peaks_then_accession",
+  "seed": 20261020,
+  "environment": {
+    "python": "3.12.9",
+    "numpy": "2.5.4",
+    "pandas": "3.0.6",
+    "pyarrow": "26.0.0",
+    "scipy": "1.16.3",
+    "scikit-learn": "1.9.1",
+    "rdkit": "2026.9.1",
+    "matchms": "0.33.1",
+    "pydantic": "2.14.1",
+    "fastapi": "0.156.4",
+    "streamlit": "1.66.0"
+  },
+  "inference_model": "deterministic cosine/template evidence with a precommitted abstention rule; no LLM participates in the numerical identification loop"
+}

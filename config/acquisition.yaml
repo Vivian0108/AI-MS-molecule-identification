@@ -1,0 +1,36 @@
+version: 1
+measurement_budget: 1
+allowed_energies: [30, 40]
+cost_per_measurement: 1.0
+monte_carlo:
+  samples: 500
+  seed: 20261020
+  max_candidates: 12
+likelihood:
+  # kappa_e multiplies cosine similarity in log-space.  Values are fitted on
+  # train identities only and frozen in data/curated/calibration.json.
+  kappa_default: 8.0
+  kappa_by_energy: {}
+  likelihood_tempering: 0.85
+error_model:
+  # Empirical residual model fitted on train identities only.
+  mz_jitter_sigma_da: 0.003
+  intensity_log_sigma: 0.45
+  dropout_prob: 0.25
+  spurious_peak_fraction: 0.15
+  min_reliability: 0.05
+confidence:
+  calibrated_probabilities: false
+  identified_min_support: 0.72
+  identified_min_margin: 0.22
+  stop_min_support: 0.90
+  stop_min_margin: 0.70
+  ambiguous_top2_margin: 0.15
+  ambiguous_max_top1_support: 0.80
+  identified_min_similarity: 0.30
+  stop_ig_threshold: 0.02
+  min_matched_peaks: 2
+scoring:
+  neutral_loss_weight: 0.05
+  unmatched_penalty: 0.35
+  prior_floor: 0.001

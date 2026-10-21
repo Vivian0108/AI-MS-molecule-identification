@@ -1,0 +1,54 @@
+version: 1
+dataset:
+  contributor: Athens_Univ
+  source_repo: https://github.com/MassBank/MassBank-data
+  source_commit: befc8a1e2f2aef899747797c081a5d80fab12fe7
+  persistent_archive: https://doi.org/10.5281/zenodo.3378723
+  citation: "Augmentation of MS/MS Libraries with Spectral Interpolation for Improved Identification, J. Chem. Inf. Model. 2022, doi:10.1021/acs.jcim.2c00620"
+
+instrument:
+  model: Bruker maXis Impact
+  type: LC-ESI-QTOF
+  ms_type: MS2
+  ionization: ESI
+  ion_mode: POSITIVE
+  fragmentation: CID
+  adduct: "[M+H]+"
+
+energies:
+  all: [10, 20, 30, 40, 50]
+  endpoints: [10, 50]
+  mid: [20, 30, 40]
+  reference: [10, 50]
+  initial: 20
+  hidden: [30, 40]
+  tolerance_ev: 0.5
+
+filters:
+  ppm_precursor: 10.0
+  require_standard: true
+  require_single_component: true
+  require_inchikey_match: true
+  relative_intensity_floor: 0.01
+  min_retained_peaks_mid: 3
+  min_retained_peaks_endpoint: 1
+  min_matched_peaks: 2
+
+preprocessing:
+  match_tolerance_da: 0.02
+  sensitivity_tolerances_da: [0.01, 0.02, 0.05]
+  normalize: base_peak
+
+replicates:
+  rule: max_retained_peaks_then_accession
+
+splits:
+  seed: 20261020
+  train: 0.60
+  dev: 0.20
+  test: 0.20
+  scheme: bemis_murcko_scaffold_then_identity
+
+templates:
+  method: linear
+  candidate_methods: [linear, nearest]
