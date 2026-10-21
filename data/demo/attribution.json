@@ -1,0 +1,422 @@
+[
+  {
+    "accession": "MSBNK-Athens_Univ-AU205301",
+    "license": "CC BY-SA",
+    "source_sha256": "2f0aa708cd023f7c331618cfded6e33a57edacc4172af0a21406be376b4478ae",
+    "url": "https://massbank.eu/MassBank/RecordDisplay?id=MSBNK-Athens_Univ-AU205301",
+    "attribution": "MassBank / University of Athens contributor",
+    "source_commit": "befc8a1e2f2aef899747797c081a5d80fab12fe7",
+    "modifications": "Invalid/low peaks removed; intensities base-peak normalized; see frozen selection config.",
+    "original_attribution": [
+      "AUTHORS: Nikiforos Alygizakis, Nikolaos Thomaidis, University of Athens",
+      "LICENSE: CC BY-SA",
+      "COPYRIGHT: Copyright (C) 2015 Department of Chemistry, University of Athens"
+    ]
+  },
+  {
+    "accession": "MSBNK-Athens_Univ-AU205305",
+    "license": "CC BY-SA",
+    "source_sha256": "869ac92dba84ddaab4f6bdce1712648f4de1574ce80678d9d4d021f6cd2a4604",
+    "url": "https://massbank.eu/MassBank/RecordDisplay?id=MSBNK-Athens_Univ-AU205305",
+    "attribution": "MassBank / University of Athens contributor",
+    "source_commit": "befc8a1e2f2aef899747797c081a5d80fab12fe7",
+    "modifications": "Invalid/low peaks removed; intensities base-peak normalized; see frozen selection config.",
+    "original_attribution": [
+      "AUTHORS: Nikiforos Alygizakis, Nikolaos Thomaidis, University of Athens",
+      "LICENSE: CC BY-SA",
+      "COPYRIGHT: Copyright (C) 2015 Department of Chemistry, University of Athens"
+    ]
+  },
+  {
+    "accession": "MSBNK-Athens_Univ-AU244001",
+    "license": "CC BY",
+    "source_sha256": "c4b1b1b87ae2250a2d21f2e6ca8a265b8a30ef8dfd1650ac6bf6295d21713fa6",
+    "url": "https://massbank.eu/MassBank/RecordDisplay?id=MSBNK-Athens_Univ-AU244001",
+    "attribution": "MassBank / University of Athens contributor",
+    "source_commit": "befc8a1e2f2aef899747797c081a5d80fab12fe7",
+    "modifications": "Invalid/low peaks removed; intensities base-peak normalized; see frozen selection config.",
+    "original_attribution": [
+      "AUTHORS: Nikiforos Alygizakis, Katerina Galani, Nikolaos Thomaidis, University of Athens",
+      "LICENSE: CC BY",
+      "COPYRIGHT: Copyright (C) 2019 Department of Chemistry, University of Athens"
+    ]
+  },
+  {
+    "accession": "MSBNK-Athens_Univ-AU244005",
+    "license": "CC BY",
+    "source_sha256": "b000cf8b294caf242b60253ddde9dfd5dc2cf6f72714c4439f708287e3b8bbed",
+    "url": "https://massbank.eu/MassBank/RecordDisplay?id=MSBNK-Athens_Univ-AU244005",
+    "attribution": "MassBank / University of Athens contributor",
+    "source_commit": "befc8a1e2f2aef899747797c081a5d80fab12fe7",
+    "modifications": "Invalid/low peaks removed; intensities base-peak normalized; see frozen selection config.",
+    "original_attribution": [
+      "AUTHORS: Nikiforos Alygizakis, Katerina Galani, Nikolaos Thomaidis, University of Athens",
+      "LICENSE: CC BY",
+      "COPYRIGHT: Copyright (C) 2019 Department of Chemistry, University of Athens"
+    ]
+  },
+  {
+    "accession": "MSBNK-Athens_Univ-AU279701",
+    "license": "CC BY",
+    "source_sha256": "991af8e1aba59c72e5957c77a2912f6f857b6b938d9ec76e390428a8df363fd3",
+    "url": "https://massbank.eu/MassBank/RecordDisplay?id=MSBNK-Athens_Univ-AU279701",
+    "attribution": "MassBank / University of Athens contributor",
+    "source_commit": "befc8a1e2f2aef899747797c081a5d80fab12fe7",
+    "modifications": "Invalid/low peaks removed; intensities base-peak normalized; see frozen selection config.",
+    "original_attribution": [
+      "AUTHORS: Nikiforos Alygizakis, Katerina Galani, Nikolaos Thomaidis, University of Athens",
+      "LICENSE: CC BY",
+      "COPYRIGHT: Copyright (C) 2019 Department of Chemistry, University of Athens"
+    ]
+  },
+  {
+    "accession": "MSBNK-Athens_Univ-AU279705",
+    "license": "CC BY",
+    "source_sha256": "9789077e6cac91b1a82caa7a5e69a8f7ef6ce53ae06cca608e4d3466c69f99ef",
+    "url": "https://massbank.eu/MassBank/RecordDisplay?id=MSBNK-Athens_Univ-AU279705",
+    "attribution": "MassBank / University of Athens contributor",
+    "source_commit": "befc8a1e2f2aef899747797c081a5d80fab12fe7",
+    "modifications": "Invalid/low peaks removed; intensities base-peak normalized; see frozen selection config.",
+    "original_attribution": [
+      "AUTHORS: Nikiforos Alygizakis, Katerina Galani, Nikolaos Thomaidis, University of Athens",
+      "LICENSE: CC BY",
+      "COPYRIGHT: Copyright (C) 2019 Department of Chemistry, University of Athens"
+    ]
+  },
+  {
+    "accession": "MSBNK-Athens_Univ-AU280601",
+    "license": "CC BY",
+    "source_sha256": "f4ff342858966f40d97669d02662c30c5a945e7e44208d383081ee5aa4e3d867",
+    "url": "https://massbank.eu/MassBank/RecordDisplay?id=MSBNK-Athens_Univ-AU280601",
+    "attribution": "MassBank / University of Athens contributor",
+    "source_commit": "befc8a1e2f2aef899747797c081a5d80fab12fe7",
+    "modifications": "Invalid/low peaks removed; intensities base-peak normalized; see frozen selection config.",
+    "original_attribution": [
+      "AUTHORS: Nikiforos Alygizakis, Katerina Galani, Nikolaos Thomaidis, University of Athens",
+      "LICENSE: CC BY",
+      "COPYRIGHT: Copyright (C) 2019 Department of Chemistry, University of Athens"
+    ]
+  },
+  {
+    "accession": "MSBNK-Athens_Univ-AU280605",
+    "license": "CC BY",
+    "source_sha256": "39edbed4f6a0993664651f8ccfa473471796f555a5c70e1b0edff1c69df441c9",
+    "url": "https://massbank.eu/MassBank/RecordDisplay?id=MSBNK-Athens_Univ-AU280605",
+    "attribution": "MassBank / University of Athens contributor",
+    "source_commit": "befc8a1e2f2aef899747797c081a5d80fab12fe7",
+    "modifications": "Invalid/low peaks removed; intensities base-peak normalized; see frozen selection config.",
+    "original_attribution": [
+      "AUTHORS: Nikiforos Alygizakis, Katerina Galani, Nikolaos Thomaidis, University of Athens",
+      "LICENSE: CC BY",
+      "COPYRIGHT: Copyright (C) 2019 Department of Chemistry, University of Athens"
+    ]
+  },
+  {
+    "accession": "MSBNK-Athens_Univ-AU281701",
+    "license": "CC BY",
+    "source_sha256": "fa13637df55eb3891f3ab3aa5b4285f336a807bfc62014bbc0a167f655a20e5a",
+    "url": "https://massbank.eu/MassBank/RecordDisplay?id=MSBNK-Athens_Univ-AU281701",
+    "attribution": "MassBank / University of Athens contributor",
+    "source_commit": "befc8a1e2f2aef899747797c081a5d80fab12fe7",
+    "modifications": "Invalid/low peaks removed; intensities base-peak normalized; see frozen selection config.",
+    "original_attribution": [
+      "AUTHORS: Nikiforos Alygizakis, Katerina Galani, Nikolaos Thomaidis, University of Athens",
+      "LICENSE: CC BY",
+      "COPYRIGHT: Copyright (C) 2019 Department of Chemistry, University of Athens"
+    ]
+  },
+  {
+    "accession": "MSBNK-Athens_Univ-AU281702",
+    "license": "CC BY",
+    "source_sha256": "b85a733ed1d1e0290260d8ae3b524c8783abd4163569de259c84dd60de73e049",
+    "url": "https://massbank.eu/MassBank/RecordDisplay?id=MSBNK-Athens_Univ-AU281702",
+    "attribution": "MassBank / University of Athens contributor",
+    "source_commit": "befc8a1e2f2aef899747797c081a5d80fab12fe7",
+    "modifications": "Invalid/low peaks removed; intensities base-peak normalized; see frozen selection config.",
+    "original_attribution": [
+      "AUTHORS: Nikiforos Alygizakis, Katerina Galani, Nikolaos Thomaidis, University of Athens",
+      "LICENSE: CC BY",
+      "COPYRIGHT: Copyright (C) 2019 Department of Chemistry, University of Athens"
+    ]
+  },
+  {
+    "accession": "MSBNK-Athens_Univ-AU281703",
+    "license": "CC BY",
+    "source_sha256": "91c95362de51b796f1f2186551e550ce0a00c5fb1ebab88e62ae6523bdfde3b4",
+    "url": "https://massbank.eu/MassBank/RecordDisplay?id=MSBNK-Athens_Univ-AU281703",
+    "attribution": "MassBank / University of Athens contributor",
+    "source_commit": "befc8a1e2f2aef899747797c081a5d80fab12fe7",
+    "modifications": "Invalid/low peaks removed; intensities base-peak normalized; see frozen selection config.",
+    "original_attribution": [
+      "AUTHORS: Nikiforos Alygizakis, Katerina Galani, Nikolaos Thomaidis, University of Athens",
+      "LICENSE: CC BY",
+      "COPYRIGHT: Copyright (C) 2019 Department of Chemistry, University of Athens"
+    ]
+  },
+  {
+    "accession": "MSBNK-Athens_Univ-AU281704",
+    "license": "CC BY",
+    "source_sha256": "4b14c9d419891bd886ec523df8430d592087ecdc17182bae37561cf7c262e11a",
+    "url": "https://massbank.eu/MassBank/RecordDisplay?id=MSBNK-Athens_Univ-AU281704",
+    "attribution": "MassBank / University of Athens contributor",
+    "source_commit": "befc8a1e2f2aef899747797c081a5d80fab12fe7",
+    "modifications": "Invalid/low peaks removed; intensities base-peak normalized; see frozen selection config.",
+    "original_attribution": [
+      "AUTHORS: Nikiforos Alygizakis, Katerina Galani, Nikolaos Thomaidis, University of Athens",
+      "LICENSE: CC BY",
+      "COPYRIGHT: Copyright (C) 2019 Department of Chemistry, University of Athens"
+    ]
+  },
+  {
+    "accession": "MSBNK-Athens_Univ-AU281705",
+    "license": "CC BY",
+    "source_sha256": "4e8e10f7509502256fa63a932cd0b25fdb7ace59235b5121e2fbadf287575432",
+    "url": "https://massbank.eu/MassBank/RecordDisplay?id=MSBNK-Athens_Univ-AU281705",
+    "attribution": "MassBank / University of Athens contributor",
+    "source_commit": "befc8a1e2f2aef899747797c081a5d80fab12fe7",
+    "modifications": "Invalid/low peaks removed; intensities base-peak normalized; see frozen selection config.",
+    "original_attribution": [
+      "AUTHORS: Nikiforos Alygizakis, Katerina Galani, Nikolaos Thomaidis, University of Athens",
+      "LICENSE: CC BY",
+      "COPYRIGHT: Copyright (C) 2019 Department of Chemistry, University of Athens"
+    ]
+  },
+  {
+    "accession": "MSBNK-Athens_Univ-AU282701",
+    "license": "CC BY",
+    "source_sha256": "e25cf566b7d6e783b713a8554c94db48aa88b175a6f438269502d5f61a2593f3",
+    "url": "https://massbank.eu/MassBank/RecordDisplay?id=MSBNK-Athens_Univ-AU282701",
+    "attribution": "MassBank / University of Athens contributor",
+    "source_commit": "befc8a1e2f2aef899747797c081a5d80fab12fe7",
+    "modifications": "Invalid/low peaks removed; intensities base-peak normalized; see frozen selection config.",
+    "original_attribution": [
+      "AUTHORS: Nikiforos Alygizakis, Katerina Galani, Nikolaos Thomaidis, University of Athens",
+      "LICENSE: CC BY",
+      "COPYRIGHT: Copyright (C) 2019 Department of Chemistry, University of Athens"
+    ]
+  },
+  {
+    "accession": "MSBNK-Athens_Univ-AU282702",
+    "license": "CC BY",
+    "source_sha256": "576694c27a2a9fc81fb238b2927081e9bb71533a3b486ae8e2ed6a761ec70271",
+    "url": "https://massbank.eu/MassBank/RecordDisplay?id=MSBNK-Athens_Univ-AU282702",
+    "attribution": "MassBank / University of Athens contributor",
+    "source_commit": "befc8a1e2f2aef899747797c081a5d80fab12fe7",
+    "modifications": "Invalid/low peaks removed; intensities base-peak normalized; see frozen selection config.",
+    "original_attribution": [
+      "AUTHORS: Nikiforos Alygizakis, Katerina Galani, Nikolaos Thomaidis, University of Athens",
+      "LICENSE: CC BY",
+      "COPYRIGHT: Copyright (C) 2019 Department of Chemistry, University of Athens"
+    ]
+  },
+  {
+    "accession": "MSBNK-Athens_Univ-AU282703",
+    "license": "CC BY",
+    "source_sha256": "bd8e7cfd82e64837af6c98c8262d48a99402c66a0474944f68b06d11e3504203",
+    "url": "https://massbank.eu/MassBank/RecordDisplay?id=MSBNK-Athens_Univ-AU282703",
+    "attribution": "MassBank / University of Athens contributor",
+    "source_commit": "befc8a1e2f2aef899747797c081a5d80fab12fe7",
+    "modifications": "Invalid/low peaks removed; intensities base-peak normalized; see frozen selection config.",
+    "original_attribution": [
+      "AUTHORS: Nikiforos Alygizakis, Katerina Galani, Nikolaos Thomaidis, University of Athens",
+      "LICENSE: CC BY",
+      "COPYRIGHT: Copyright (C) 2019 Department of Chemistry, University of Athens"
+    ]
+  },
+  {
+    "accession": "MSBNK-Athens_Univ-AU282704",
+    "license": "CC BY",
+    "source_sha256": "adcaad51e31cf7c9d15230ce92a6ecb304998f687698edfc9f26cd73444fa5e0",
+    "url": "https://massbank.eu/MassBank/RecordDisplay?id=MSBNK-Athens_Univ-AU282704",
+    "attribution": "MassBank / University of Athens contributor",
+    "source_commit": "befc8a1e2f2aef899747797c081a5d80fab12fe7",
+    "modifications": "Invalid/low peaks removed; intensities base-peak normalized; see frozen selection config.",
+    "original_attribution": [
+      "AUTHORS: Nikiforos Alygizakis, Katerina Galani, Nikolaos Thomaidis, University of Athens",
+      "LICENSE: CC BY",
+      "COPYRIGHT: Copyright (C) 2019 Department of Chemistry, University of Athens"
+    ]
+  },
+  {
+    "accession": "MSBNK-Athens_Univ-AU282705",
+    "license": "CC BY",
+    "source_sha256": "e7849dee6922c3aa191d2c2971c8813d109d48421a21b9e1b874c7bfd0ccf147",
+    "url": "https://massbank.eu/MassBank/RecordDisplay?id=MSBNK-Athens_Univ-AU282705",
+    "attribution": "MassBank / University of Athens contributor",
+    "source_commit": "befc8a1e2f2aef899747797c081a5d80fab12fe7",
+    "modifications": "Invalid/low peaks removed; intensities base-peak normalized; see frozen selection config.",
+    "original_attribution": [
+      "AUTHORS: Nikiforos Alygizakis, Katerina Galani, Nikolaos Thomaidis, University of Athens",
+      "LICENSE: CC BY",
+      "COPYRIGHT: Copyright (C) 2019 Department of Chemistry, University of Athens"
+    ]
+  },
+  {
+    "accession": "MSBNK-Athens_Univ-AU288001",
+    "license": "CC BY",
+    "source_sha256": "763637cd09864880a1af4cdda1f980b76bb973f4cbe3644053ffa9a797870eb3",
+    "url": "https://massbank.eu/MassBank/RecordDisplay?id=MSBNK-Athens_Univ-AU288001",
+    "attribution": "MassBank / University of Athens contributor",
+    "source_commit": "befc8a1e2f2aef899747797c081a5d80fab12fe7",
+    "modifications": "Invalid/low peaks removed; intensities base-peak normalized; see frozen selection config.",
+    "original_attribution": [
+      "AUTHORS: Nikiforos Alygizakis, Katerina Galani, Nikolaos Thomaidis, University of Athens",
+      "LICENSE: CC BY",
+      "COPYRIGHT: Copyright (C) 2019 Department of Chemistry, University of Athens"
+    ]
+  },
+  {
+    "accession": "MSBNK-Athens_Univ-AU288002",
+    "license": "CC BY",
+    "source_sha256": "1060dde004dc338515839e747abc062fa1c3f2b7f96a29282e428ca3de3a971d",
+    "url": "https://massbank.eu/MassBank/RecordDisplay?id=MSBNK-Athens_Univ-AU288002",
+    "attribution": "MassBank / University of Athens contributor",
+    "source_commit": "befc8a1e2f2aef899747797c081a5d80fab12fe7",
+    "modifications": "Invalid/low peaks removed; intensities base-peak normalized; see frozen selection config.",
+    "original_attribution": [
+      "AUTHORS: Nikiforos Alygizakis, Katerina Galani, Nikolaos Thomaidis, University of Athens",
+      "LICENSE: CC BY",
+      "COPYRIGHT: Copyright (C) 2019 Department of Chemistry, University of Athens"
+    ]
+  },
+  {
+    "accession": "MSBNK-Athens_Univ-AU288003",
+    "license": "CC BY",
+    "source_sha256": "7cdaba8727fa63b0b1aba1e9d4955225c4fb8847a019987e356d3a831051db14",
+    "url": "https://massbank.eu/MassBank/RecordDisplay?id=MSBNK-Athens_Univ-AU288003",
+    "attribution": "MassBank / University of Athens contributor",
+    "source_commit": "befc8a1e2f2aef899747797c081a5d80fab12fe7",
+    "modifications": "Invalid/low peaks removed; intensities base-peak normalized; see frozen selection config.",
+    "original_attribution": [
+      "AUTHORS: Nikiforos Alygizakis, Katerina Galani, Nikolaos Thomaidis, University of Athens",
+      "LICENSE: CC BY",
+      "COPYRIGHT: Copyright (C) 2019 Department of Chemistry, University of Athens"
+    ]
+  },
+  {
+    "accession": "MSBNK-Athens_Univ-AU288004",
+    "license": "CC BY",
+    "source_sha256": "04ee1afab69ba268ca50526448bb97391a5afeb8feba7cb772cd7bafac420e75",
+    "url": "https://massbank.eu/MassBank/RecordDisplay?id=MSBNK-Athens_Univ-AU288004",
+    "attribution": "MassBank / University of Athens contributor",
+    "source_commit": "befc8a1e2f2aef899747797c081a5d80fab12fe7",
+    "modifications": "Invalid/low peaks removed; intensities base-peak normalized; see frozen selection config.",
+    "original_attribution": [
+      "AUTHORS: Nikiforos Alygizakis, Katerina Galani, Nikolaos Thomaidis, University of Athens",
+      "LICENSE: CC BY",
+      "COPYRIGHT: Copyright (C) 2019 Department of Chemistry, University of Athens"
+    ]
+  },
+  {
+    "accession": "MSBNK-Athens_Univ-AU288005",
+    "license": "CC BY",
+    "source_sha256": "90a9c630abe3d4d4f68019ae5bc81c100f7bfa1f35fbf1f4f859e1a1123ff672",
+    "url": "https://massbank.eu/MassBank/RecordDisplay?id=MSBNK-Athens_Univ-AU288005",
+    "attribution": "MassBank / University of Athens contributor",
+    "source_commit": "befc8a1e2f2aef899747797c081a5d80fab12fe7",
+    "modifications": "Invalid/low peaks removed; intensities base-peak normalized; see frozen selection config.",
+    "original_attribution": [
+      "AUTHORS: Nikiforos Alygizakis, Katerina Galani, Nikolaos Thomaidis, University of Athens",
+      "LICENSE: CC BY",
+      "COPYRIGHT: Copyright (C) 2019 Department of Chemistry, University of Athens"
+    ]
+  },
+  {
+    "accession": "MSBNK-Athens_Univ-AU373801",
+    "license": "CC BY-SA",
+    "source_sha256": "8ba5c1e52a8f907278095cad76bd356719052b92bb4819476b4bda2db316969b",
+    "url": "https://massbank.eu/MassBank/RecordDisplay?id=MSBNK-Athens_Univ-AU373801",
+    "attribution": "MassBank / University of Athens contributor",
+    "source_commit": "befc8a1e2f2aef899747797c081a5d80fab12fe7",
+    "modifications": "Invalid/low peaks removed; intensities base-peak normalized; see frozen selection config.",
+    "original_attribution": [
+      "AUTHORS: Nikiforos Alygizakis, Nikolaos Thomaidis, University of Athens",
+      "LICENSE: CC BY-SA",
+      "COPYRIGHT: Copyright (C) 2015 Department of Chemistry, University of Athens"
+    ]
+  },
+  {
+    "accession": "MSBNK-Athens_Univ-AU373805",
+    "license": "CC BY-SA",
+    "source_sha256": "9b0abfd2d197bb1411c09d9aa5003c6dda98a1d2aa08db9fc760012f8352cec0",
+    "url": "https://massbank.eu/MassBank/RecordDisplay?id=MSBNK-Athens_Univ-AU373805",
+    "attribution": "MassBank / University of Athens contributor",
+    "source_commit": "befc8a1e2f2aef899747797c081a5d80fab12fe7",
+    "modifications": "Invalid/low peaks removed; intensities base-peak normalized; see frozen selection config.",
+    "original_attribution": [
+      "AUTHORS: Nikiforos Alygizakis, Nikolaos Thomaidis, University of Athens",
+      "LICENSE: CC BY-SA",
+      "COPYRIGHT: Copyright (C) 2015 Department of Chemistry, University of Athens"
+    ]
+  },
+  {
+    "accession": "MSBNK-Athens_Univ-AU377901",
+    "license": "CC BY-SA",
+    "source_sha256": "2cc92e96b2ad82a431773d91b388d4ef51287684ae4b6adb593af1ff797905e9",
+    "url": "https://massbank.eu/MassBank/RecordDisplay?id=MSBNK-Athens_Univ-AU377901",
+    "attribution": "MassBank / University of Athens contributor",
+    "source_commit": "befc8a1e2f2aef899747797c081a5d80fab12fe7",
+    "modifications": "Invalid/low peaks removed; intensities base-peak normalized; see frozen selection config.",
+    "original_attribution": [
+      "AUTHORS: Nikiforos Alygizakis, Nikolaos Thomaidis, University of Athens",
+      "LICENSE: CC BY-SA",
+      "COPYRIGHT: Copyright (C) 2015 Department of Chemistry, University of Athens"
+    ]
+  },
+  {
+    "accession": "MSBNK-Athens_Univ-AU377902",
+    "license": "CC BY-SA",
+    "source_sha256": "f68d68be29e6411c6f82308b81a96ca1d83029ce596f5f2d3fb25921fff5d295",
+    "url": "https://massbank.eu/MassBank/RecordDisplay?id=MSBNK-Athens_Univ-AU377902",
+    "attribution": "MassBank / University of Athens contributor",
+    "source_commit": "befc8a1e2f2aef899747797c081a5d80fab12fe7",
+    "modifications": "Invalid/low peaks removed; intensities base-peak normalized; see frozen selection config.",
+    "original_attribution": [
+      "AUTHORS: Nikiforos Alygizakis, Nikolaos Thomaidis, University of Athens",
+      "LICENSE: CC BY-SA",
+      "COPYRIGHT: Copyright (C) 2015 Department of Chemistry, University of Athens"
+    ]
+  },
+  {
+    "accession": "MSBNK-Athens_Univ-AU377903",
+    "license": "CC BY-SA",
+    "source_sha256": "ac653122631425687ec49f796a1a41952a67c512f3ec2c9f7ff5900c834f65c1",
+    "url": "https://massbank.eu/MassBank/RecordDisplay?id=MSBNK-Athens_Univ-AU377903",
+    "attribution": "MassBank / University of Athens contributor",
+    "source_commit": "befc8a1e2f2aef899747797c081a5d80fab12fe7",
+    "modifications": "Invalid/low peaks removed; intensities base-peak normalized; see frozen selection config.",
+    "original_attribution": [
+      "AUTHORS: Nikiforos Alygizakis, Nikolaos Thomaidis, University of Athens",
+      "LICENSE: CC BY-SA",
+      "COPYRIGHT: Copyright (C) 2015 Department of Chemistry, University of Athens"
+    ]
+  },
+  {
+    "accession": "MSBNK-Athens_Univ-AU377904",
+    "license": "CC BY-SA",
+    "source_sha256": "5deabdcbe2d19ae5d343e8a90252a728753de675a37b7467f3e6ecac869bb231",
+    "url": "https://massbank.eu/MassBank/RecordDisplay?id=MSBNK-Athens_Univ-AU377904",
+    "attribution": "MassBank / University of Athens contributor",
+    "source_commit": "befc8a1e2f2aef899747797c081a5d80fab12fe7",
+    "modifications": "Invalid/low peaks removed; intensities base-peak normalized; see frozen selection config.",
+    "original_attribution": [
+      "AUTHORS: Nikiforos Alygizakis, Nikolaos Thomaidis, University of Athens",
+      "LICENSE: CC BY-SA",
+      "COPYRIGHT: Copyright (C) 2015 Department of Chemistry, University of Athens"
+    ]
+  },
+  {
+    "accession": "MSBNK-Athens_Univ-AU377905",
+    "license": "CC BY-SA",
+    "source_sha256": "091e6415f45de9731b7a252e931330a7f84403d868a300063db09008928a3318",
+    "url": "https://massbank.eu/MassBank/RecordDisplay?id=MSBNK-Athens_Univ-AU377905",
+    "attribution": "MassBank / University of Athens contributor",
+    "source_commit": "befc8a1e2f2aef899747797c081a5d80fab12fe7",
+    "modifications": "Invalid/low peaks removed; intensities base-peak normalized; see frozen selection config.",
+    "original_attribution": [
+      "AUTHORS: Nikiforos Alygizakis, Nikolaos Thomaidis, University of Athens",
+      "LICENSE: CC BY-SA",
+      "COPYRIGHT: Copyright (C) 2015 Department of Chemistry, University of Athens"
+    ]
+  }
+]

@@ -1,0 +1,9 @@
+[theme]
+base = "light"
+primaryColor = "#2f6f62"
+
+[browser]
+gatherUsageStats = false
+
+[server]
+address = "127.0.0.1"

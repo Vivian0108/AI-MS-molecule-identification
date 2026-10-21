@@ -1,0 +1,481 @@
+{
+  "created_at_utc": "2026-10-21T06:16:28+00:00",
+  "method": "monte_carlo_ig",
+  "use_monte_carlo_ig": true,
+  "reason": "Error model calibrated, dev IG rank correlation positive, and no accuracy loss versus the heuristic.",
+  "error_model_calibrated": true,
+  "n_dev_cases": 101,
+  "n_dev_ambiguous": 12,
+  "dev_summaries": {
+    "monte_carlo_ig": {
+      "single_scan": {
+        "n": 12,
+        "top1_0": 0.6667,
+        "top1_0_ci": [
+          0.4167,
+          0.9167
+        ],
+        "top1_1": 0.6667,
+        "top1_1_ci": [
+          0.4167,
+          0.9167
+        ],
+        "top1_2": 0.6667,
+        "top1_2_ci": [
+          0.4167,
+          0.9167
+        ],
+        "mrr_2": 0.8194,
+        "mrr_2_ci": [
+          0.6667,
+          0.9583
+        ],
+        "top3_2": 1.0,
+        "top3_2_ci": [
+          1.0,
+          1.0
+        ],
+        "scans": 0.0,
+        "scans_ci": [
+          0.0,
+          0.0
+        ],
+        "scans_1": 0.0,
+        "scans_1_ci": [
+          0.0,
+          0.0
+        ],
+        "scans_2": 0.0,
+        "scans_2_ci": [
+          0.0,
+          0.0
+        ],
+        "coverage": 0.4167,
+        "out_of_library_rate": 0.0,
+        "ambiguous_rate": 0.5833,
+        "identified_count": 5,
+        "accepted_errors": 0,
+        "risk": 0.0,
+        "precision_among_accepted": 1.0,
+        "mean_entropy_reduction": 0.0,
+        "mean_runtime_s": 0.0,
+        "mean_support": 0.6606
+      },
+      "always_30": {
+        "n": 12,
+        "top1_0": 0.6667,
+        "top1_0_ci": [
+          0.4167,
+          0.9167
+        ],
+        "top1_1": 0.6667,
+        "top1_1_ci": [
+          0.4167,
+          0.9167
+        ],
+        "top1_2": 0.6667,
+        "top1_2_ci": [
+          0.4167,
+          0.9167
+        ],
+        "mrr_2": 0.8194,
+        "mrr_2_ci": [
+          0.6528,
+          0.9583
+        ],
+        "top3_2": 1.0,
+        "top3_2_ci": [
+          1.0,
+          1.0
+        ],
+        "scans": 1.0,
+        "scans_ci": [
+          1.0,
+          1.0
+        ],
+        "scans_1": 1.0,
+        "scans_1_ci": [
+          1.0,
+          1.0
+        ],
+        "scans_2": 1.0,
+        "scans_2_ci": [
+          1.0,
+          1.0
+        ],
+        "coverage": 0.5,
+        "out_of_library_rate": 0.0,
+        "ambiguous_rate": 0.5,
+        "identified_count": 6,
+        "accepted_errors": 0,
+        "risk": 0.0,
+        "precision_among_accepted": 1.0,
+        "mean_entropy_reduction": 0.1381,
+        "mean_runtime_s": 0.0011,
+        "mean_support": 0.7176
+      },
+      "always_40": {
+        "n": 12,
+        "top1_0": 0.6667,
+        "top1_0_ci": [
+          0.4167,
+          0.9167
+        ],
+        "top1_1": 0.8333,
+        "top1_1_ci": [
+          0.5833,
+          1.0
+        ],
+        "top1_2": 0.8333,
+        "top1_2_ci": [
+          0.5833,
+          1.0
+        ],
+        "mrr_2": 0.9028,
+        "mrr_2_ci": [
+          0.7639,
+          1.0
+        ],
+        "top3_2": 1.0,
+        "top3_2_ci": [
+          1.0,
+          1.0
+        ],
+        "scans": 1.0,
+        "scans_ci": [
+          1.0,
+          1.0
+        ],
+        "scans_1": 1.0,
+        "scans_1_ci": [
+          1.0,
+          1.0
+        ],
+        "scans_2": 1.0,
+        "scans_2_ci": [
+          1.0,
+          1.0
+        ],
+        "coverage": 0.5833,
+        "out_of_library_rate": 0.0,
+        "ambiguous_rate": 0.4167,
+        "identified_count": 7,
+        "accepted_errors": 0,
+        "risk": 0.0,
+        "precision_among_accepted": 1.0,
+        "mean_entropy_reduction": 0.2065,
+        "mean_runtime_s": 0.0013,
+        "mean_support": 0.7646
+      },
+      "unknownid": {
+        "n": 12,
+        "top1_0": 0.6667,
+        "top1_0_ci": [
+          0.4167,
+          0.9167
+        ],
+        "top1_1": 0.8333,
+        "top1_1_ci": [
+          0.5833,
+          1.0
+        ],
+        "top1_2": 0.8333,
+        "top1_2_ci": [
+          0.5833,
+          1.0
+        ],
+        "mrr_2": 0.9028,
+        "mrr_2_ci": [
+          0.7639,
+          1.0
+        ],
+        "top3_2": 1.0,
+        "top3_2_ci": [
+          1.0,
+          1.0
+        ],
+        "scans": 0.6667,
+        "scans_ci": [
+          0.4167,
+          0.9167
+        ],
+        "scans_1": 0.6667,
+        "scans_1_ci": [
+          0.4167,
+          0.9167
+        ],
+        "scans_2": 0.6667,
+        "scans_2_ci": [
+          0.4167,
+          0.9167
+        ],
+        "coverage": 0.5833,
+        "out_of_library_rate": 0.0,
+        "ambiguous_rate": 0.4167,
+        "identified_count": 7,
+        "accepted_errors": 0,
+        "risk": 0.0,
+        "precision_among_accepted": 1.0,
+        "mean_entropy_reduction": 0.1998,
+        "mean_runtime_s": 0.3152,
+        "mean_support": 0.7634
+      }
+    },
+    "disagreement_heuristic": {
+      "single_scan": {
+        "n": 12,
+        "top1_0": 0.6667,
+        "top1_0_ci": [
+          0.4167,
+          0.9167
+        ],
+        "top1_1": 0.6667,
+        "top1_1_ci": [
+          0.4167,
+          0.9167
+        ],
+        "top1_2": 0.6667,
+        "top1_2_ci": [
+          0.4167,
+          0.9167
+        ],
+        "mrr_2": 0.8194,
+        "mrr_2_ci": [
+          0.6667,
+          0.9583
+        ],
+        "top3_2": 1.0,
+        "top3_2_ci": [
+          1.0,
+          1.0
+        ],
+        "scans": 0.0,
+        "scans_ci": [
+          0.0,
+          0.0
+        ],
+        "scans_1": 0.0,
+        "scans_1_ci": [
+          0.0,
+          0.0
+        ],
+        "scans_2": 0.0,
+        "scans_2_ci": [
+          0.0,
+          0.0
+        ],
+        "coverage": 0.4167,
+        "out_of_library_rate": 0.0,
+        "ambiguous_rate": 0.5833,
+        "identified_count": 5,
+        "accepted_errors": 0,
+        "risk": 0.0,
+        "precision_among_accepted": 1.0,
+        "mean_entropy_reduction": 0.0,
+        "mean_runtime_s": 0.0,
+        "mean_support": 0.6606
+      },
+      "always_30": {
+        "n": 12,
+        "top1_0": 0.6667,
+        "top1_0_ci": [
+          0.4167,
+          0.9167
+        ],
+        "top1_1": 0.6667,
+        "top1_1_ci": [
+          0.4167,
+          0.9167
+        ],
+        "top1_2": 0.6667,
+        "top1_2_ci": [
+          0.4167,
+          0.9167
+        ],
+        "mrr_2": 0.8194,
+        "mrr_2_ci": [
+          0.6528,
+          0.9583
+        ],
+        "top3_2": 1.0,
+        "top3_2_ci": [
+          1.0,
+          1.0
+        ],
+        "scans": 1.0,
+        "scans_ci": [
+          1.0,
+          1.0
+        ],
+        "scans_1": 1.0,
+        "scans_1_ci": [
+          1.0,
+          1.0
+        ],
+        "scans_2": 1.0,
+        "scans_2_ci": [
+          1.0,
+          1.0
+        ],
+        "coverage": 0.5,
+        "out_of_library_rate": 0.0,
+        "ambiguous_rate": 0.5,
+        "identified_count": 6,
+        "accepted_errors": 0,
+        "risk": 0.0,
+        "precision_among_accepted": 1.0,
+        "mean_entropy_reduction": 0.1381,
+        "mean_runtime_s": 0.0012,
+        "mean_support": 0.7176
+      },
+      "always_40": {
+        "n": 12,
+        "top1_0": 0.6667,
+        "top1_0_ci": [
+          0.4167,
+          0.9167
+        ],
+        "top1_1": 0.8333,
+        "top1_1_ci": [
+          0.5833,
+          1.0
+        ],
+        "top1_2": 0.8333,
+        "top1_2_ci": [
+          0.5833,
+          1.0
+        ],
+        "mrr_2": 0.9028,
+        "mrr_2_ci": [
+          0.7639,
+          1.0
+        ],
+        "top3_2": 1.0,
+        "top3_2_ci": [
+          1.0,
+          1.0
+        ],
+        "scans": 1.0,
+        "scans_ci": [
+          1.0,
+          1.0
+        ],
+        "scans_1": 1.0,
+        "scans_1_ci": [
+          1.0,
+          1.0
+        ],
+        "scans_2": 1.0,
+        "scans_2_ci": [
+          1.0,
+          1.0
+        ],
+        "coverage": 0.5833,
+        "out_of_library_rate": 0.0,
+        "ambiguous_rate": 0.4167,
+        "identified_count": 7,
+        "accepted_errors": 0,
+        "risk": 0.0,
+        "precision_among_accepted": 1.0,
+        "mean_entropy_reduction": 0.2065,
+        "mean_runtime_s": 0.0013,
+        "mean_support": 0.7646
+      },
+      "unknownid": {
+        "n": 12,
+        "top1_0": 0.6667,
+        "top1_0_ci": [
+          0.4167,
+          0.9167
+        ],
+        "top1_1": 0.8333,
+        "top1_1_ci": [
+          0.5833,
+          1.0
+        ],
+        "top1_2": 0.8333,
+        "top1_2_ci": [
+          0.5833,
+          1.0
+        ],
+        "mrr_2": 0.9028,
+        "mrr_2_ci": [
+          0.7639,
+          1.0
+        ],
+        "top3_2": 1.0,
+        "top3_2_ci": [
+          1.0,
+          1.0
+        ],
+        "scans": 0.6667,
+        "scans_ci": [
+          0.4167,
+          0.9167
+        ],
+        "scans_1": 0.6667,
+        "scans_1_ci": [
+          0.4167,
+          0.9167
+        ],
+        "scans_2": 0.6667,
+        "scans_2_ci": [
+          0.4167,
+          0.9167
+        ],
+        "coverage": 0.5833,
+        "out_of_library_rate": 0.0,
+        "ambiguous_rate": 0.4167,
+        "identified_count": 7,
+        "accepted_errors": 0,
+        "risk": 0.0,
+        "precision_among_accepted": 1.0,
+        "mean_entropy_reduction": 0.1998,
+        "mean_runtime_s": 0.0011,
+        "mean_support": 0.7634
+      }
+    }
+  },
+  "dev_ig_validation": {
+    "monte_carlo_ig": {
+      "n_pairs": 24,
+      "spearman": 0.8278565420546219,
+      "pvalue": 5.97070800681838e-07,
+      "mean_regret": 0.0007400047128755527,
+      "n_cases": 12,
+      "method": "monte_carlo_ig",
+      "note": "Predicted values are acquisition scores; actual values are entropy reductions from revealing both real 30 and 40 eV spectra for evaluation only."
+    },
+    "disagreement_heuristic": {
+      "n_pairs": 24,
+      "spearman": 0.8356911465535615,
+      "pvalue": 3.717902605684664e-07,
+      "mean_regret": 0.0007400047128755527,
+      "n_cases": 12,
+      "method": "disagreement_heuristic",
+      "note": "Predicted values are acquisition scores; actual values are entropy reductions from revealing both real 30 and 40 eV spectra for evaluation only."
+    }
+  },
+  "policy_config": {
+    "budget": 1,
+    "allowed_energies": [
+      30,
+      40
+    ],
+    "cost": 1.0,
+    "monte_carlo_samples": 500,
+    "tempering": 0.85,
+    "stop_ig_threshold": 0.02,
+    "seed": 20261020
+  },
+  "error_model_kappa": {
+    "20": 11.924665988209131,
+    "30": 11.523347631351948,
+    "40": 24.506254844189463
+  },
+  "error_model_reliability": {
+    "20": 0.6942697426386952,
+    "30": 0.5971587647263469,
+    "40": 0.8281287713645356
+  }
+}

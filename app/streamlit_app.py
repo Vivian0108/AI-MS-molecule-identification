@@ -15,9 +15,9 @@ from __future__ import annotations
 import html
 import json
 import sys
-from datetime import datetime, timezone
+from collections.abc import Iterable, Sequence
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Iterable, Sequence
 
 import pandas as pd
 import plotly.graph_objects as go
@@ -28,15 +28,13 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from unknownid.paths import (  # noqa: E402
-    CALIBRATION_MD,
+from unknownid.paths import (
     CURATED,
-    EVALUATION_MD,
     EVALUATION_JSON,
-    MANIFEST_JSON,
+    EVALUATION_MD,
     REPORTS,
 )
-from unknownid.service import ServiceError, UnknownIDService  # noqa: E402
+from unknownid.service import ServiceError, UnknownIDService
 
 st.set_page_config(
     page_title="UnknownID",
@@ -59,12 +57,13 @@ st.markdown(
           background: #f7f9f8; border: 1px solid #e3e8e6;
           border-radius: 10px; padding: 0.7rem 0.9rem;
       }}
+      div[data-testid="stMetric"] * {{ color: #183c35; }}
       .uid-banner {{
-          background: #eef6f3; border-left: 5px solid {ACCENT};
+          color: #183c35; background: #eef6f3; border-left: 5px solid {ACCENT};
           padding: 0.8rem 1rem; border-radius: 6px; margin-bottom: 1rem;
       }}
       .uid-warn {{
-          background: #fff7e6; border-left: 5px solid #d97706;
+          color: #614018; background: #fff7e6; border-left: 5px solid #d97706;
           padding: 0.7rem 1rem; border-radius: 6px; margin: 0.6rem 0;
       }}
       .uid-muted {{ color: {MUTED}; font-size: 0.9rem; }}
@@ -217,10 +216,14 @@ def ranking_table(ranking: dict) -> pd.DataFrame:
                 "support": round(float(evidence.get("weight", 0.0)), 4),
                 "cosine 20 eV": round(energy_value(cosine, 20), 4),
                 "cosine 30 eV": (
-                    round(energy_value(cosine, 30), 4) if energy_value(cosine, 30, -1) >= 0 else None
+                    round(energy_value(cosine, 30), 4)
+                    if energy_value(cosine, 30, -1) >= 0
+                    else None
                 ),
                 "cosine 40 eV": (
-                    round(energy_value(cosine, 40), 4) if energy_value(cosine, 40, -1) >= 0 else None
+                    round(energy_value(cosine, 40), 4)
+                    if energy_value(cosine, 40, -1) >= 0
+                    else None
                 ),
                 "matched peaks": sum(int(v) for v in matched.values()),
                 "precursor ppm": round(float(evidence.get("precursor_ppm", 0.0)), 3),
@@ -236,7 +239,7 @@ def reference_links(evidence: dict) -> str:
     links = []
     for energy, accession in sorted(accessions.items(), key=lambda item: int(item[0])):
         url = REFERENCE_URL.format(accession=accession)
-        links.append(f'[{int(energy)} eV · {esc(accession)}]({url})')
+        links.append(f"[{int(energy)} eV · {esc(accession)}]({url})")
     return " · ".join(links)
 
 
@@ -306,6 +309,34 @@ def screen_provenance(service: UnknownIDService) -> None:
     st.markdown(BANNER, unsafe_allow_html=True)
 
     provenance = service.provenance()
+    if service.demo_mode:
+        cols = st.columns(3)
+        cols[0].metric("Demo cases", len(service.case_ids()))
+        cols[1].metric("Reference molecules", len(service.references))
+        cols[2].metric("Endpoint spectra", 2 * len(service.references))
+        st.subheader("Curated examples, separate from evaluation")
+        st.write(
+            "Four train/dev illustrations preserve the complete original precursor-consistent candidate lists. No frozen test identity or observation is bundled."
+        )
+        st.markdown(
+            "**Source:** MassBank, University of Athens. **Snapshot:** `befc8a1e2f2aef899747797c081a5d80fab12fe7`."
+        )
+        st.write("Bruker maXis Impact · positive ESI · CID · [M+H]+ · 10 ppm precursor gate")
+        st.markdown(
+            "**Licenses:** per-record CC BY / CC BY-SA. Original authors, copyright and accession hashes accompany the bundle in `data/demo/attribution.json` and `source_records/`."
+        )
+        st.caption(
+            "The virtual instrument reveals archived experimental spectra. The planner sees only interpolated references and current evidence. Truth never enters public payloads."
+        )
+        st.dataframe(
+            pd.DataFrame([service.case_summary(cid) for cid in service.case_ids()]),
+            hide_index=True,
+            width="stretch",
+        )
+        st.markdown(
+            "Full scientific evaluation uses 100 frozen test molecules, including 11 precursor-ambiguous cases. Open screen 5 for that evidence. Demo outcomes are not evaluation evidence."
+        )
+        return
     columns = st.columns(4)
     columns[0].metric("Library molecules", f"{provenance['library_molecules']:,}")
     columns[1].metric("Curated spectra", f"{len(load_frame(str(CURATED / 'library.parquet'))):,}")
@@ -317,10 +348,10 @@ def screen_provenance(service: UnknownIDService) -> None:
     with left:
         st.markdown(
             f"""
-- **Repository:** [{esc(provenance.get('source_repository'))}]({esc(provenance.get('source_repository'))})
-- **Pinned commit:** `{esc(provenance.get('source_commit'))}`
+- **Repository:** [{esc(provenance.get("source_repository"))}]({esc(provenance.get("source_repository"))})
+- **Pinned commit:** `{esc(provenance.get("source_commit"))}`
 - **Contributor:** `Athens_Univ`
-- **Retrieved (UTC):** {esc(provenance.get('retrieved_at_utc'))}
+- **Retrieved (UTC):** {esc(provenance.get("retrieved_at_utc"))}
 - **Persistent archive:** [Zenodo 3378723](https://doi.org/10.5281/zenodo.3378723)
 - **Citation:** Augmentation of MS/MS Libraries with Spectral Interpolation for Improved Identification,
   *J. Chem. Inf. Model.* 2022, [doi:10.1021/acs.jcim.2c00620](https://doi.org/10.1021/acs.jcim.2c00620)
@@ -376,7 +407,9 @@ def screen_provenance(service: UnknownIDService) -> None:
         cascade = cascade.rename(columns={"metric": "filter", "value": "records remaining"})
         st.dataframe(cascade[["filter", "records remaining"]], hide_index=True, width="stretch")
     with st.expander("Exclusion reasons and full audit table"):
-        reasons = audit[audit["category"].isin(["exclusion_reason", "identity_qc", "difficulty", "spectra"])]
+        reasons = audit[
+            audit["category"].isin(["exclusion_reason", "identity_qc", "difficulty", "spectra"])
+        ]
         st.dataframe(reasons, hide_index=True, width="stretch")
         audit_md = load_text(str(REPORTS / "data_audit.md"))
         if audit_md:
@@ -405,7 +438,12 @@ def screen_investigation(service: UnknownIDService) -> None:
 
     with st.sidebar:
         st.markdown("### Case browser")
-        split = st.selectbox("Split", ["test", "dev", "train"], index=0, key="case_split")
+        split = st.selectbox(
+            "Split",
+            ["demo"] if service.demo_mode else ["dev", "train", "test"],
+            index=0,
+            key="case_split",
+        )
         ids = service.case_ids(split)
         case_id = st.selectbox(
             f"{len(ids)} anonymised cases",
@@ -441,14 +479,23 @@ def screen_investigation(service: UnknownIDService) -> None:
         f"&nbsp;·&nbsp; **Instrument:** {esc(case['instrument_model'])} "
         f"&nbsp;·&nbsp; **Observed:** {', '.join(str(e) + ' eV' for e in payload['observed_energies'])}"
     )
-    st.caption("The compound name and the source accession are withheld until the investigation is stopped.")
+    st.caption(
+        "The compound name and the source accession are withheld until the investigation is stopped."
+    )
 
     st.subheader("Initial 20 eV stick spectrum")
     left, right = st.columns([1.6, 1])
     with left:
         st.plotly_chart(
             stick_plot(
-                [("measured 20 eV", observation["spectrum"]["mz"], observation["spectrum"]["intensity"], MEASURED)],
+                [
+                    (
+                        "measured 20 eV",
+                        observation["spectrum"]["mz"],
+                        observation["spectrum"]["intensity"],
+                        MEASURED,
+                    )
+                ],
                 title="Measured query spectrum",
             ),
             width="stretch",
@@ -509,7 +556,12 @@ def screen_investigation(service: UnknownIDService) -> None:
             st.plotly_chart(
                 stick_plot(
                     [
-                        ("measured 20 eV", observation["spectrum"]["mz"], observation["spectrum"]["intensity"], MEASURED),
+                        (
+                            "measured 20 eV",
+                            observation["spectrum"]["mz"],
+                            observation["spectrum"]["intensity"],
+                            MEASURED,
+                        ),
                         (
                             f"interpolated 20 eV · {top_evidence.get('name')}",
                             template["spectrum"]["mz"],
@@ -542,11 +594,14 @@ def screen_next_experiment(service: UnknownIDService) -> None:
 
     payload = service.start_case(active)
     plan = service.plan(active)
-    case = payload["case"]
 
     method = plan.get("method")
     validated = payload.get("calibration_validated")
-    label = "Monte-Carlo expected information gain" if method == "monte_carlo_ig" else "Disagreement heuristic (not IG)"
+    label = (
+        "Monte-Carlo expected information gain"
+        if method == "monte_carlo_ig"
+        else "Disagreement heuristic (not IG)"
+    )
     st.markdown(
         f"**Policy:** {label} &nbsp;·&nbsp; **Dev-validated:** "
         f"{'yes' if validated else 'no'} &nbsp;·&nbsp; **Budget left:** {payload['remaining_budget']}"
@@ -601,9 +656,14 @@ def screen_next_experiment(service: UnknownIDService) -> None:
             reason = (
                 "already measured"
                 if energy in observed
-                else ("budget exhausted" if budget <= 0 else "reveals one real archived measurement")
+                else (
+                    "budget exhausted" if budget <= 0 else "reveals one real archived measurement"
+                )
             )
-            st.markdown(f"**{energy} eV**  \n<span class='uid-muted'>{reason}</span>", unsafe_allow_html=True)
+            st.markdown(
+                f"**{energy} eV**  \n<span class='uid-muted'>{reason}</span>",
+                unsafe_allow_html=True,
+            )
             if st.button(
                 f"Measure {energy} eV",
                 key=f"measure_{energy}",
@@ -620,7 +680,7 @@ def screen_next_experiment(service: UnknownIDService) -> None:
                         "energy": energy,
                         "measurement": result["measurement"],
                         "remaining_budget": result["remaining_budget"],
-                        "at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                        "at": datetime.now(UTC).isoformat(timespec="seconds"),
                     }
                     st.rerun()
 
@@ -702,7 +762,9 @@ def screen_report(service: UnknownIDService) -> None:
         ),
         predicted_id,
     )
-    columns[0].metric("Observed energies", ", ".join(f"{e} eV" for e in investigation["observations"]))
+    columns[0].metric(
+        "Observed energies", ", ".join(f"{e} eV" for e in investigation["observations"])
+    )
     columns[1].metric("Scans used", max(len(investigation["observations"]) - 1, 0))
     columns[2].metric("Predicted identity", predicted_name or "abstained")
     columns[3].metric(
@@ -744,7 +806,9 @@ def screen_report(service: UnknownIDService) -> None:
     with right:
         st.markdown("**Final**")
         st.dataframe(
-            ranking_table(final)[["#", "candidate", "support", "cosine 20 eV", "cosine 30 eV", "cosine 40 eV"]].head(6),
+            ranking_table(final)[
+                ["#", "candidate", "support", "cosine 20 eV", "cosine 30 eV", "cosine 40 eV"]
+            ].head(6),
             hide_index=True,
             width="stretch",
         )
@@ -752,7 +816,9 @@ def screen_report(service: UnknownIDService) -> None:
     st.subheader("Spectral evidence")
     for energy in investigation["observations"]:
         observation = session.observation(int(energy))
-        top = investigation["candidate_evidence"][0] if investigation["candidate_evidence"] else None
+        top = (
+            investigation["candidate_evidence"][0] if investigation["candidate_evidence"] else None
+        )
         traces = [
             (
                 f"measured {energy} eV",
@@ -771,7 +837,9 @@ def screen_report(service: UnknownIDService) -> None:
                     TEMPLATE,
                 )
             )
-        with st.expander(f"{energy} eV — measured vs interpolated reference", expanded=energy == 20):
+        with st.expander(
+            f"{energy} eV — measured vs interpolated reference", expanded=energy == 20
+        ):
             st.plotly_chart(
                 stick_plot(traces, title=f"{energy} eV", mirror=len(traces) > 1, height=320),
                 width="stretch",
@@ -801,7 +869,15 @@ def screen_report(service: UnknownIDService) -> None:
     st.subheader("Quality control")
     qc = investigation.get("qc") or {}
     st.dataframe(
-        pd.DataFrame([{"check": key, "value": json.dumps(value) if isinstance(value, (dict, list)) else value} for key, value in qc.items()]),
+        pd.DataFrame(
+            [
+                {
+                    "check": key,
+                    "value": json.dumps(value) if isinstance(value, (dict, list)) else value,
+                }
+                for key, value in qc.items()
+            ]
+        ),
         hide_index=True,
         width="stretch",
     )
@@ -831,7 +907,7 @@ def screen_report(service: UnknownIDService) -> None:
         st.markdown(f"- {limitation}")
 
     st.subheader("Export")
-    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     download_a, download_b = st.columns(2)
     download_a.download_button(
         "Download Markdown report",
@@ -861,221 +937,100 @@ def screen_report(service: UnknownIDService) -> None:
 # ---------------------------------------------------------------------------
 def screen_evaluation(service: UnknownIDService) -> None:
     st.title("5 · Evaluation dashboard")
-    st.caption(
-        "Frozen test-split results. Thresholds and the acquisition method were selected on dev; "
-        "no test-set tuning. Small cohorts mean wide confidence intervals."
-    )
+    st.caption("Frozen test evidence. Demo cases are separate curated train/dev illustrations.")
     report = load_json(str(EVALUATION_JSON))
     if not report:
-        st.error("`reports/evaluation.json` is missing. Run `make eval`.")
+        st.error("Missing generated evaluation report.")
         return
-
     markdown = load_text(str(EVALUATION_MD))
-    headline = ""
-    if "## Headline result" in markdown:
-        block = markdown.split("## Headline result", 1)[1].split("\n## ", 1)[0]
-        headline = " ".join(line.strip() for line in block.strip().splitlines() if line.strip())
-    if headline:
-        st.markdown(f'<div class="uid-banner">{esc(headline)}</div>', unsafe_allow_html=True)
-
-    n_cases = report.get("n_cases", {})
-    columns = st.columns(4)
-    columns[0].metric("Test cases", n_cases.get("all test", 0))
-    columns[1].metric("Ambiguous", n_cases.get("ambiguous (>=2 precursor-consistent candidates)", 0))
-    columns[2].metric("Close calls", n_cases.get("close-call (top-2 margin <= 0.15)", 0))
-    easy_fraction = (
-        n_cases.get("easy (precursor-unique)", 0) / max(n_cases.get("all test", 1), 1)
+    headline = markdown.split("## Headline result", 1)[1].split("\n## ", 1)[0].strip()
+    st.info(headline)
+    cohort = st.selectbox("Cohort", ["ambiguous", "all", "close_call", "easy"])
+    stage = st.selectbox(
+        "Optional acquisition stage",
+        [1, 0, 2],
+        format_func=lambda k: (
+            f"Stage {k}" + (" (primary product budget)" if k == 1 else " (secondary)")
+        ),
     )
-    columns[3].metric("Precursor-unique", f"{easy_fraction:.1%}")
-
-    st.markdown(
-        f"**Acquisition method:** `{report.get('method')}` &nbsp;·&nbsp; "
-        f"**Generated:** {report.get('generated_at_utc')} &nbsp;·&nbsp; "
-        f"**Random trials per molecule:** 20"
-    )
-
-    cohorts = list(report.get("summaries", {}))
-    cohort_labels = {
-        "all": "All test cases",
-        "ambiguous": "Ambiguous (≥2 candidates)",
-        "close_call": "Close calls (margin ≤ 0.15)",
-        "easy": "Precursor-unique",
-    }
-    selected = st.selectbox(
-        "Cohort",
-        cohorts,
-        index=cohorts.index("ambiguous") if "ambiguous" in cohorts else 0,
-        format_func=lambda key: cohort_labels.get(key, key),
-    )
-    summary = report["summaries"][selected]
-    policies = list(summary)
-
     rows = []
-    for policy in policies:
-        entry = summary[policy]
+    for policy, entry in report["summaries"][cohort].items():
+        if not entry.get("n"):
+            continue
         rows.append(
             {
                 "policy": policy,
-                "n": entry.get("n"),
-                "top-1 @0": entry.get("top1_0"),
-                "top-1 @1": entry.get("top1_1"),
-                "top-1 @2": entry.get("top1_2"),
-                "MRR @2": entry.get("mrr_2"),
-                "top-3 @2": entry.get("top3_2"),
-                "scans @1": entry.get("scans_1"),
-                "scans @2": entry.get("scans_2"),
-                "coverage": entry.get("coverage"),
-                "risk": entry.get("risk"),
+                "n": entry["n"],
+                "top-1": entry[f"top1_{stage}"],
+                "MRR": entry[f"mrr_{stage}"],
+                "accepted correct": entry[f"accepted_correct_count_{stage}"],
+                "coverage": entry[f"coverage_{stage}"],
+                "selective risk": entry[f"risk_{stage}"],
+                "optional scans": entry[f"scans_{stage}"],
+                "total acquisitions": entry[f"total_acquisitions_{stage}"],
+                "scans / accepted correct": entry[f"scans_per_accepted_correct_{stage}"],
             }
         )
-    frame = pd.DataFrame(rows)
-    st.subheader(f"Policy metrics — {cohort_labels.get(selected, selected)}")
+    st.dataframe(pd.DataFrame(rows), hide_index=True, width="stretch")
+    st.caption(
+        "Scans are optional. Total acquisitions include the initial 20 eV observation. Random averages 20 seeded trials per molecule, so its counts can be fractional."
+    )
+    figure = go.Figure()
+    for policy, entry in report["summaries"][cohort].items():
+        if not entry.get("n"):
+            continue
+        x, y = entry[f"scans_{stage}"], entry[f"accepted_correct_{stage}"]
+        xc, yc = entry[f"scans_{stage}_ci"], entry[f"accepted_correct_{stage}_ci"]
+        figure.add_trace(
+            go.Scatter(
+                x=[x],
+                y=[y],
+                name=policy,
+                mode="markers",
+                error_x=dict(
+                    type="data",
+                    symmetric=False,
+                    array=[max(0, xc[1] - x)],
+                    arrayminus=[max(0, x - xc[0])],
+                ),
+                error_y=dict(
+                    type="data",
+                    symmetric=False,
+                    array=[max(0, yc[1] - y)],
+                    arrayminus=[max(0, y - yc[0])],
+                ),
+                marker=dict(size=12),
+            )
+        )
+    figure.update_layout(
+        title="Identification coverage and acquisition cost",
+        xaxis_title="Mean optional measurements",
+        yaxis_title="Accepted-correct identification rate",
+        height=480,
+    )
+    st.plotly_chart(figure, width="stretch")
+    differences = report["paired_comparisons"].get(cohort, {})
+    st.subheader("Paired differences")
+    st.caption(
+        "Benefits: UnknownID minus baseline. Scan savings: baseline minus UnknownID. Positive favours UnknownID. CIs resample molecules."
+    )
     st.dataframe(
-        frame.style.format(
-            {
-                "top-1 @0": "{:.3f}",
-                "top-1 @1": "{:.3f}",
-                "top-1 @2": "{:.3f}",
-                "MRR @2": "{:.3f}",
-                "top-3 @2": "{:.3f}",
-                "scans @1": "{:.2f}",
-                "scans @2": "{:.2f}",
-                "coverage": "{:.3f}",
-                "risk": "{:.3f}",
-            },
-            na_rep="—",
+        pd.DataFrame(
+            [
+                dict(baseline=p, metric=m, **d)
+                for p, entry in differences.items()
+                for m, d in entry.items()
+            ]
         ),
         hide_index=True,
         width="stretch",
     )
-
-    chart_left, chart_right = st.columns(2)
-    with chart_left:
-        figure = go.Figure()
-        for metric, color in (("top-1 @1", "#2f6f62"), ("top-1 @2", "#7aa89f")):
-            figure.add_trace(go.Bar(x=frame["policy"], y=frame[metric], name=metric, marker_color=color))
-        figure.update_layout(
-            title="Top-1 accuracy after 1 and 2 optional scans",
-            barmode="group",
-            height=360,
-            yaxis_range=[0, 1.05],
-            margin=dict(l=10, r=10, t=48, b=10),
-            legend=dict(orientation="h", y=1.12),
-        )
-        st.plotly_chart(figure, width="stretch")
-    with chart_right:
-        figure = go.Figure()
-        figure.add_trace(
-            go.Bar(
-                x=frame["policy"],
-                y=frame["scans @2"],
-                name="mean scans",
-                marker_color="#d97706",
-                text=frame["scans @2"],
-                textposition="outside",
-            )
-        )
-        figure.update_layout(
-            title="Mean optional acquisitions by the second decision",
-            height=360,
-            margin=dict(l=10, r=10, t=48, b=10),
-            yaxis_title="scans",
-        )
-        st.plotly_chart(figure, width="stretch")
-    st.caption(
-        "Scans @1 counts acquisitions before the first stop/identification check; Scans @2 is "
-        "the total under the two-scan evaluation budget. Coverage is the fraction of cases "
-        "the policy was willing to call; risk is the error rate among those calls."
+    with st.expander("Energy choice and stopping diagnostics"):
+        st.json(report.get("energy_stop_diagnostics", {}))
+    st.markdown(
+        "**Limits:** 11 ambiguous test molecules. No supported accuracy improvement. Open-world rejection remains unsolved. Oracle is diagnostic only."
     )
-
-    st.subheader("Paired differences versus UnknownID (molecule-level bootstrap)")
-    comparisons = report.get("paired_comparisons", {})
-    comparison_rows = []
-    for cohort, entries in comparisons.items():
-        for baseline, metrics in entries.items():
-            for metric, diff in metrics.items():
-                comparison_rows.append(
-                    {
-                        "cohort": cohort,
-                        "baseline": baseline,
-                        "metric": metric,
-                        "difference": diff.get("mean_difference"),
-                        "CI low": diff.get("ci_low"),
-                        "CI high": diff.get("ci_high"),
-                        "wins": diff.get("wins"),
-                        "losses": diff.get("losses"),
-                        "verdict": (
-                            "inconclusive"
-                            if (diff.get("ci_low") or 0) <= 0 <= (diff.get("ci_high") or 0)
-                            else ("UnknownID better" if (diff.get("mean_difference") or 0) > 0 else "baseline better")
-                        ),
-                    }
-                )
-    if comparison_rows:
-        comparison_frame = pd.DataFrame(comparison_rows)
-        cohort_filter = st.multiselect(
-            "Filter cohort", sorted(comparison_frame["cohort"].unique()), default=["ambiguous", "all"]
-        )
-        metric_filter = st.multiselect(
-            "Filter metric", sorted(comparison_frame["metric"].unique()), default=["top1_1", "top1_2"]
-        )
-        shown = comparison_frame[
-            comparison_frame["cohort"].isin(cohort_filter) & comparison_frame["metric"].isin(metric_filter)
-        ]
-        st.dataframe(
-            shown.style.format({"difference": "{:+.4f}", "CI low": "{:+.4f}", "CI high": "{:+.4f}"}),
-            hide_index=True,
-            width="stretch",
-        )
-        st.caption(
-            "An interval spanning zero is reported as inconclusive, not as a win. "
-            "Positive differences favour UnknownID."
-        )
-
-    st.subheader("Planner validation")
-    ig = report.get("ig_validation", {})
-    ig_columns = st.columns(4)
-    ig_columns[0].metric("Prediction pairs", ig.get("n_pairs", 0))
-    ig_columns[1].metric("Spearman ρ", f"{ig.get('spearman', 0):.3f}")
-    ig_columns[2].metric("p-value", f"{ig.get('pvalue', 0):.3g}")
-    ig_columns[3].metric("Mean regret", f"{ig.get('mean_regret', 0):.3f}")
-    st.caption(
-        "Both 30 and 40 eV spectra are revealed **after** the plan only to score its prediction. "
-        "The planner never reads them before choosing."
-    )
-
-    st.subheader("Failure breakdown")
-    failures = report.get("failures", [])
-    if failures:
-        st.dataframe(pd.DataFrame(failures), hide_index=True, width="stretch")
-    else:
-        st.success("No top-1 failures in this cohort.")
-
-    open_world = report.get("open_world", {})
-    if open_world:
-        st.subheader("Open-world stress test (true molecule removed)")
-        attempted = [row for row in open_world.get("cases", []) if row.get("n_remaining", 0) > 0]
-        wrong_attempted = sum(1 for row in attempted if row.get("decision_after_action") == "identified")
-        columns = st.columns(4)
-        columns[0].metric("Out-of-library @20 eV", f"{open_world.get('out_of_library_at_20_rate', 0):.1%}")
-        columns[1].metric(
-            "Out-of-library after action", f"{open_world.get('out_of_library_after_action_rate', 0):.1%}"
-        )
-        columns[2].metric(
-            "Confident wrong match", f"{open_world.get('identified_wrong_library_match_rate', 0):.1%}"
-        )
-        columns[3].metric(
-            "Wrong among alternatives", f"{wrong_attempted}/{len(attempted)}" if attempted else "—"
-        )
-        st.caption(open_world.get("note", ""))
-
-    with st.expander("Full evaluation report and calibration record"):
-        if markdown:
-            st.markdown(markdown)
-        calibration = load_text(str(CALIBRATION_MD))
-        if calibration:
-            st.markdown("---")
-            st.markdown(calibration)
+    st.download_button("Download scientific report", markdown, "evaluation.md", "text/markdown")
 
 
 # ---------------------------------------------------------------------------
@@ -1119,6 +1074,8 @@ def main() -> None:
             "Closed-world only; no de novo structure elucidation."
         )
 
+    if service.demo_mode:
+        st.info("Demo mode — curated development examples")
     if screen.startswith("1"):
         screen_provenance(service)
     elif screen.startswith("2"):

@@ -41,7 +41,7 @@ def get_service() -> UnknownIDService:
 
 class StartRequest(BaseModel):
     case_id: str | None = None
-    split: Literal["train", "dev", "test"] | None = None
+    split: Literal["demo", "train", "dev", "test"] | None = None
 
 
 class MeasureRequest(BaseModel):
@@ -84,6 +84,7 @@ def health() -> dict:
     service = _service()
     return {
         "status": "ok",
+        "demo_mode": service.demo_mode,
         "library_molecules": len(service.references),
         "sealed_cases": len(service.oracle),
         "acquisition_method": service.planner.method,
@@ -96,7 +97,7 @@ def provenance() -> dict:
 
 
 @app.get("/cases")
-def list_cases(split: Literal["train", "dev", "test"] | None = Query(default=None)) -> dict:
+def list_cases(split: Literal["demo", "train", "dev", "test"] | None = Query(default=None)) -> dict:
     service = _service()
     ids = service.case_ids(split)
     return {
@@ -113,7 +114,7 @@ def start_case(request: StartRequest | None = None) -> dict:
     request = request or StartRequest()
     try:
         return service.start_case(request.case_id, request.split)
-    except Exception as exc:  # noqa: BLE001 - translated to HTTP
+    except Exception as exc:
         raise _translate(exc) from exc
 
 
@@ -121,7 +122,7 @@ def start_case(request: StartRequest | None = None) -> dict:
 def get_ranking(case_id: str) -> dict:
     try:
         return _service().ranking(case_id)
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         raise _translate(exc) from exc
 
 
@@ -129,7 +130,7 @@ def get_ranking(case_id: str) -> dict:
 def plan(case_id: str) -> dict:
     try:
         return _service().plan(case_id)
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         raise _translate(exc) from exc
 
 
@@ -137,7 +138,7 @@ def plan(case_id: str) -> dict:
 def measure(case_id: str, request: MeasureRequest) -> dict:
     try:
         return _service().measure(case_id, request.energy_ev)
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         raise _translate(exc) from exc
 
 
@@ -145,7 +146,7 @@ def measure(case_id: str, request: MeasureRequest) -> dict:
 def stop(case_id: str) -> dict:
     try:
         return _service().stop(case_id)
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         raise _translate(exc) from exc
 
 
@@ -162,7 +163,7 @@ def report(case_id: str) -> dict:
         return service.report(case_id)
     except HTTPException:
         raise
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         raise _translate(exc) from exc
 
 
@@ -176,5 +177,5 @@ def report_markdown(case_id: str) -> PlainTextResponse:
         return PlainTextResponse(session.export_markdown(), media_type="text/markdown")
     except HTTPException:
         raise
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         raise _translate(exc) from exc

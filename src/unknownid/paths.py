@@ -24,7 +24,16 @@ AUDIT_PARQUET = CURATED / "audit.parquet"
 AUDIT_CASES_PARQUET = CURATED / "audit_cases.parquet"
 CALIBRATION_JSON = CURATED / "calibration.json"
 MANIFEST_JSON = DATA / "manifest.json"
-PRIVATE_ORACLE_JSON = ORACLE_DIR / "private_oracle_cases.parquet"
+PRIVATE_ORACLE_JSON = ORACLE_DIR / "private_oracle_cases.json"
+LEGACY_PRIVATE_ORACLE_JSON = ORACLE_DIR / "private_oracle_cases.parquet"
+DEMO = DATA / "demo"
+
+
+def existing_oracle_path() -> Path:
+    """Accept historical JSON bytes with the old .parquet suffix."""
+    return PRIVATE_ORACLE_JSON if PRIVATE_ORACLE_JSON.exists() else LEGACY_PRIVATE_ORACLE_JSON
+
+
 ORACLE_LOG = ORACLE_DIR / "access_log.jsonl"
 AUDIT_MD = REPORTS / "data_audit.md"
 EVALUATION_MD = REPORTS / "evaluation.md"
