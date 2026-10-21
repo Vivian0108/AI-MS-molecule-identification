@@ -29,7 +29,7 @@ Work is on `hackathon-ready`. Historical `main` remains at
 | Environment / check | Exact result |
 |---|---|
 | Unmodified baseline, Python 3.12.12 | 44 passed in 1.58s (`PYTEST_DISABLE_PLUGIN_AUTOLOAD=1`) |
-| Final local suite before clean clone | 61 passed, 1 warning in 5.12s |
+| Final local suite before clean clone | 61 passed, 1 warning in 4.47s |
 | Clean clone, locked Python 3.12.12, `make verify` | 61 passed, 1 warning in 47.40s; Ruff check/format, imports, configs and publication scan passed |
 | Clean clone, locked Python 3.11.14, `make verify PY=…` | 61 passed, 1 warning in 42.23s; same checks passed |
 | Real HTTP clean-clone rehearsal | PASS: make demo, Streamlit health, API /health, plan, archived measurement, stop, JSON/Markdown exports |
@@ -109,3 +109,5 @@ correctly describe each generation and are not treated as scientific outcomes.
 The review branch contains separate commits for comparison direction, oracle branches,
 stage metrics, report generation, demo mode, CI/lock/licensing, README/screenshots,
 export provenance and final verification. Main was never checked out for edits.
+
+Final source-tree publication scan and `git diff --check` pass. The review branch is published as `origin/hackathon-ready`; main remains unchanged.
