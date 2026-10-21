@@ -876,7 +876,7 @@ def screen_report(service: UnknownIDService) -> None:
             [
                 {
                     "check": key,
-                    "value": json.dumps(value) if isinstance(value, (dict, list)) else value,
+                    "value": json.dumps(value) if isinstance(value, (dict, list)) else str(value),
                 }
                 for key, value in qc.items()
             ]
