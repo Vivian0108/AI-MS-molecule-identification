@@ -109,3 +109,13 @@ def test_demo_contains_no_frozen_test_identity_or_observation():
         raw = DEMO / "source_records" / f"{record['accession']}.txt"
         assert hashlib.sha256(raw.read_bytes()).hexdigest() == record["source_sha256"]
         assert record["original_attribution"]
+
+
+def test_default_service_falls_back_to_demo(monkeypatch, tmp_path):
+    import unknownid.service as module
+
+    monkeypatch.delenv("UNKNOWNID_MODE", raising=False)
+    monkeypatch.setattr(module, "existing_oracle_path", lambda: tmp_path / "absent.json")
+    service = UnknownIDService()
+    assert service.demo_mode
+    assert len(service.case_ids()) == 4
