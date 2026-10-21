@@ -37,7 +37,7 @@ Work is on `hackathon-ready`. Historical `main` remains at
 | Demo isolation | 4 train/dev cases, 9 reference molecules, 18 endpoint spectra; all 30 raw source hashes/licenses checked; no frozen-test identity/reference/observation in bundle |
 | Frozen inputs | Selection, acquisition, split, error model and calibration hashes unchanged |
 | Historical oracle restoration | Byte-exact SHA256 `70e29d39c875a01bc856a4d9572ec85e333eca26e3986301b341c8379416f2b0` |
-| Frozen-report regeneration in clean clone | Pending final comparison; see final verification update below |
+| Frozen-report regeneration in clean clone | PASS: all scientific summaries, comparisons, diagnostics, failures, open-world rows and per-case metrics matched exactly (runtime excluded) |
 
 The one warning is the installed Starlette/FastAPI TestClient deprecation of its
 httpx compatibility transport. It does not fail any test. CI is configured; the
@@ -96,3 +96,16 @@ at stage one, compared with 8/11 in the historical sequential diagnostic.
 - [Judge questions and answers](docs/JUDGE_QA.md)
 - [Demo bundle and case origins](data/demo/README.md)
 - [Data attribution](DATA_LICENSE.md) and [MIT code license](LICENSE)
+
+## Final verification update
+
+The clean clone reconstructed the full gitignored research oracle with its historical
+hash and regenerated both reports and the Pareto plot. Every scientific payload field
+matched the committed corrected report exactly after excluding runtime fields.
+The regenerated Markdown passed exact JSON-render consistency, and frozen-input /
+filename-migration checks passed. Timestamp, source-commit and environment metadata
+correctly describe each generation and are not treated as scientific outcomes.
+
+The review branch contains separate commits for comparison direction, oracle branches,
+stage metrics, report generation, demo mode, CI/lock/licensing, README/screenshots,
+export provenance and final verification. Main was never checked out for edits.
