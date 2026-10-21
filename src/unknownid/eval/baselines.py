@@ -319,24 +319,25 @@ class OracleBestAction(Policy):
         self.truth = truth
 
     def run(self, state, *, budget, rng=None):
+        if budget <= 0:
+            return
+        branches = []
         for energy in (30, 40):
-            state.measure(energy)
-        # Choose the revealed branch with the best truth-aware outcome.
-        branches = [
-            snapshot for snapshot in state.snapshots if snapshot.actions and len(snapshot.actions) == 1
-        ]
-        if branches:
-            chosen = max(
-                branches,
-                key=lambda snapshot: (
-                    int(snapshot.order()[0] == self.truth),
-                    snapshot.weights.get(self.truth, 0.0),
-                ),
+            branch = PolicyState(
+                state.case, references=state.references, evaluator=state.evaluator,
+                error_model=state.error_model, tempering=state.tempering,
             )
-            state.weights = dict(chosen.weights)
-            state.evidence = dict(chosen.evidence)
-            state.actions = list(chosen.actions)
-            state.snapshots = [state.snapshots[0], chosen]
+            branch.measure(energy)
+            branches.append(branch)
+        # Lexicographic: top-1 correctness, then truth support; exact ties choose 30.
+        chosen = max(branches, key=lambda branch: (
+            int(branch.stage(1).order()[0] == self.truth),
+            branch.weights.get(self.truth, 0.0),
+        ))
+        state.weights = dict(chosen.weights)
+        state.evidence = dict(chosen.evidence)
+        state.actions = list(chosen.actions)
+        state.snapshots = list(chosen.snapshots)
 
 
 def default_policies(
