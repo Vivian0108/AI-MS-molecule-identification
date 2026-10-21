@@ -1,5 +1,6 @@
 SHELL := /bin/bash
 PY ?= .venv/bin/python
+UI_PORT ?= 8501
 PIP ?= .venv/bin/pip
 export PYTHONPATH := src
 export PYTHONHASHSEED := 0
@@ -21,9 +22,7 @@ help:
 	@echo "  make verify      run tests + import/config smoke checks"
 
 setup:
-	python3 -m venv .venv
-	$(PIP) install --upgrade pip
-	$(PIP) install -e ".[dev]"
+	uv sync --frozen --extra dev --python 3.12
 
 fetch-data:
 	bash scripts/fetch_data.sh
@@ -53,6 +52,23 @@ app:
 api:
 	$(PY) -m uvicorn unknownid.api.app:app --host 127.0.0.1 --port 8000
 
-verify: test
+verify: test lint
 	$(PY) -c "import unknownid, unknownid.api.app, unknownid.service; print('imports ok')"
 	$(PY) -c "from unknownid.config import load_config; load_config('selection'); load_config('acquisition'); print('configs ok')"
+	$(PY) scripts/check_publication.py
+
+# Zero-setup curated examples; never rebuild the research dataset.
+demo:
+	UNKNOWNID_MODE=demo $(PY) -m streamlit run app/streamlit_app.py --server.headless true --server.port $(UI_PORT) --browser.gatherUsageStats false
+
+restore-oracle:
+	$(PY) scripts/restore_oracle.py
+
+lint:
+	$(PY) -m ruff check src scripts tests app
+	$(PY) -m ruff format --check src scripts tests app
+
+format:
+	$(PY) -m ruff check --fix src scripts tests app
+	$(PY) -m ruff format src scripts tests app
+	

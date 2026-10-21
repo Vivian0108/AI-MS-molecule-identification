@@ -7,7 +7,7 @@ remaining library can contain close isomers.
 
 from __future__ import annotations
 
-from typing import Sequence
+from collections.abc import Sequence
 
 import numpy as np
 
@@ -15,7 +15,6 @@ from unknownid.core.evidence import EvidenceEvaluator
 from unknownid.core.retrieve import ReferenceStore
 from unknownid.eval.baselines import EvalCase, PolicyState
 from unknownid.eval.evaluate import _case_metrics
-from unknownid.eval.metrics import decide
 from unknownid.planner.acquisition import AcquisitionPlanner
 from unknownid.planner.error_model import ErrorModel
 
@@ -103,6 +102,11 @@ def run_open_world(
             "here is a false library match, not a correct open-world identification."
         ),
     }
-    for key in ("out_of_library_at_20", "out_of_library_after_action", "identified_wrong_library_match", "ambiguous"):
+    for key in (
+        "out_of_library_at_20",
+        "out_of_library_after_action",
+        "identified_wrong_library_match",
+        "ambiguous",
+    ):
         summary[f"{key}_rate"] = summary[key] / n if n else 0.0
     return summary

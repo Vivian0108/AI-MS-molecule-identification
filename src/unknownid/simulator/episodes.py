@@ -3,14 +3,12 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Iterable, Mapping, Sequence
 
 import numpy as np
 import pandas as pd
 
-from unknownid.core.ids import make_case_id
 from unknownid.core.evidence import EvidenceEvaluator, merge_evidence
 from unknownid.core.models import (
     Action,
@@ -28,12 +26,11 @@ from unknownid.core.posterior import (
 from unknownid.core.retrieve import Candidate, ReferenceStore
 from unknownid.core.spectra import ProcessedSpectrum
 from unknownid.paths import (
-    CALIBRATION_JSON,
     MANIFEST_JSON,
     ORACLE_DIR,
     PUBLIC_CASES_PARQUET,
 )
-from unknownid.planner.acquisition import AcquisitionPlanner, PlannerConfig
+from unknownid.planner.acquisition import AcquisitionPlanner
 from unknownid.planner.error_model import ErrorModel
 from unknownid.simulator.oracle import Measurement, OracleAccessError, VirtualInstrument
 
@@ -61,7 +58,7 @@ class CaseRepository:
         self.references = references
 
     @classmethod
-    def load(cls, references: ReferenceStore, path: Path = PUBLIC_CASES_PARQUET) -> "CaseRepository":
+    def load(cls, references: ReferenceStore, path: Path = PUBLIC_CASES_PARQUET) -> CaseRepository:
         return cls(pd.read_parquet(path), references)
 
     def __len__(self) -> int:
@@ -92,7 +89,7 @@ class ActionLog:
         self.path.parent.mkdir(parents=True, exist_ok=True)
 
     def write(self, entry: dict) -> None:
-        payload = {"utc": datetime.now(timezone.utc).isoformat(timespec="milliseconds"), **entry}
+        payload = {"utc": datetime.now(UTC).isoformat(timespec="milliseconds"), **entry}
         with self.path.open("a", encoding="utf-8") as handle:
             handle.write(json.dumps(payload) + "\n")
 
@@ -133,7 +130,9 @@ class InvestigationSession:
         self._decision = "ambiguous"
         self._qc: dict = {}
 
-        self._observe(self.instrument.start(case_id, budget=self.public_case.measurement_budget), initial=True)
+        self._observe(
+            self.instrument.start(case_id, budget=self.public_case.measurement_budget), initial=True
+        )
         self._initial_weights = dict(self._weights)
         self._initial_order = rank_candidates(self._weights)
 
@@ -238,7 +237,9 @@ class InvestigationSession:
             raise OracleAccessError("investigation is already stopped")
         energy = int(energy)
         if energy not in self.public_case.available_energies:
-            raise OracleAccessError(f"unsupported energy {energy}; allowed {self.public_case.available_energies}")
+            raise OracleAccessError(
+                f"unsupported energy {energy}; allowed {self.public_case.available_energies}"
+            )
         # Log the chosen action *before* the reveal.
         self.action_log.write(
             {
@@ -253,7 +254,12 @@ class InvestigationSession:
             measurement = self.instrument.measure(self.case_id, energy)
         except Exception as exc:
             self.action_log.write(
-                {"case_id": self.case_id, "kind": "measure_rejected", "energy_ev": energy, "error": str(exc)}
+                {
+                    "case_id": self.case_id,
+                    "kind": "measure_rejected",
+                    "energy_ev": energy,
+                    "error": str(exc),
+                }
             )
             raise
         self._actions.append(Action(kind="measure", energy_ev=energy))
@@ -299,7 +305,8 @@ class InvestigationSession:
         checks = {
             "n_candidates": len(candidates),
             "all_candidates_within_ppm": all(
-                abs(c.precursor_mz - precursor) / precursor * 1e6 <= self.repository.references.ppm_tolerance
+                abs(c.precursor_mz - precursor) / precursor * 1e6
+                <= self.repository.references.ppm_tolerance
                 for c in candidates
             ),
             "adduct_consistent": all(c.adduct == self.public_case.adduct for c in candidates),
@@ -328,9 +335,7 @@ class InvestigationSession:
         support = self._weights[top]
         margin = top2_margin(self._weights)
 
-        min_similarity = float(
-            self._config_value("confidence.identified_min_similarity", 0.30)
-        )
+        min_similarity = float(self._config_value("confidence.identified_min_similarity", 0.30))
         min_support = float(self._config_value("confidence.identified_min_support", 0.72))
         min_margin = float(self._config_value("confidence.identified_min_margin", 0.22))
         min_matched = int(self._config_value("confidence.min_matched_peaks", 2))
@@ -342,9 +347,7 @@ class InvestigationSession:
         # achiral LC-MS/MS.  Abstain rather than over-claim.
         connectivity = top.split("-")[0]
         stereo_competitor = any(
-            cid != top
-            and cid.split("-")[0] == connectivity
-            and self._weights.get(cid, 0.0) >= 0.10
+            cid != top and cid.split("-")[0] == connectivity and self._weights.get(cid, 0.0) >= 0.10
             for cid in ordered
         )
         if support >= min_support and margin >= min_margin and not stereo_competitor:
@@ -380,8 +383,12 @@ class InvestigationSession:
                 "No candidate produced sufficient matched evidence; the closed-world library is reported as inadequate."
             )
         if self.remaining_budget > 0:
-            limitations.append("The investigation stopped before exhausting the measurement budget.")
-        block = self._evidence.get(rank_candidates(self._weights)[0], None) if self._weights else None
+            limitations.append(
+                "The investigation stopped before exhausting the measurement budget."
+            )
+        block = (
+            self._evidence.get(rank_candidates(self._weights)[0], None) if self._weights else None
+        )
         if block is not None:
             connectivity = block.candidate_id.split("-")[0]
             if any(
@@ -404,7 +411,9 @@ class InvestigationSession:
                 for energy, measurement in sorted(self._observations.items())
             },
             "reference_accessions": {
-                candidate.molecule_id: {str(k): v for k, v in candidate.reference_accessions.items()}
+                candidate.molecule_id: {
+                    str(k): v for k, v in candidate.reference_accessions.items()
+                }
                 for candidate in self.candidates
             },
             "source_commit": manifest.get("source_commit"),
@@ -437,9 +446,15 @@ class InvestigationSession:
             "|---|---|---|---|---|---|",
         ]
         for index, item in enumerate(investigation.candidate_evidence, start=1):
-            cosine = ", ".join(f"{e} eV: {v:.3f}" for e, v in sorted(item.similarity_by_energy.items()))
-            matched = ", ".join(f"{e} eV: {v}" for e, v in sorted(item.matched_peaks_by_energy.items()))
-            accessions = ", ".join(f"{e} eV {a}" for e, a in sorted(item.reference_accessions.items()))
+            cosine = ", ".join(
+                f"{e} eV: {v:.3f}" for e, v in sorted(item.similarity_by_energy.items())
+            )
+            matched = ", ".join(
+                f"{e} eV: {v}" for e, v in sorted(item.matched_peaks_by_energy.items())
+            )
+            accessions = ", ".join(
+                f"{e} eV {a}" for e, a in sorted(item.reference_accessions.items())
+            )
             lines.append(
                 f"| {index} | {item.name} (`{item.candidate_id}`) | {item.weight:.3f} | {cosine} | {matched} | {accessions} |"
             )

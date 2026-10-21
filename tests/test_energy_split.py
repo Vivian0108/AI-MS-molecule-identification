@@ -7,7 +7,7 @@ import pandas as pd
 import pytest
 
 from unknownid.core.retrieve import ReferenceStore
-from unknownid.data.splits import assign_splits, assert_disjoint
+from unknownid.data.splits import assert_disjoint, assign_splits
 
 
 def test_reference_store_loads_only_endpoint_energies(synthetic_library: pd.DataFrame) -> None:
@@ -77,9 +77,7 @@ def test_scaffold_groups_never_cross_splits() -> None:
     assert sum(result.counts.values()) == len(frame)
 
     for group in range(5):
-        splits = {
-            result.assignment[f"MOL-{group}-{index}"] for index in range(4)
-        }
+        splits = {result.assignment[f"MOL-{group}-{index}"] for index in range(4)}
         assert len(splits) == 1, f"scaffold {group} crossed splits: {splits}"
 
 

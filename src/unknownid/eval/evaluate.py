@@ -3,37 +3,25 @@
 from __future__ import annotations
 
 import hashlib
-import json
 import time
-from collections import Counter
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from datetime import datetime, timezone
-from pathlib import Path
-from typing import Iterable, Mapping, Sequence
 
 import numpy as np
-import pandas as pd
 from scipy.stats import spearmanr
 
 from unknownid.core.evidence import EvidenceEvaluator
-from unknownid.core.posterior import entropy, top2_margin
 from unknownid.core.retrieve import ReferenceStore
 from unknownid.eval.baselines import (
     EvalCase,
-    FixedEnergy,
     OracleBestAction,
     Policy,
     PolicyState,
-    RandomPolicy,
-    SingleScan,
-    UnknownIDPolicy,
-    default_policies,
 )
 from unknownid.eval.bootstrap import bootstrap_mean_ci, paired_bootstrap_difference
-from unknownid.eval.metrics import abstention_summary, decide, reciprocal_rank, top1, topk
+from unknownid.eval.metrics import decide, reciprocal_rank, top1, topk
 from unknownid.planner.acquisition import AcquisitionPlanner
 from unknownid.planner.error_model import ErrorModel
-from unknownid.paths import CALIBRATION_JSON, EVALUATION_MD, REPORTS
 
 BUDGET_EVAL = 2  # evaluation curve only; the API default budget is 1
 
@@ -58,40 +46,47 @@ def _case_metrics(
         decision = decide(snapshot.weights, snapshot.evidence, **confidence)
         accepted = int(decision.decision == "identified")
         correct = int(accepted and decision.top_candidate == truth)
-        metrics.update({
-            f"top1_{k}": top1(snapshot.order(), truth),
-            f"mrr_{k}": reciprocal_rank(snapshot.order(), truth),
-            f"top3_{k}": topk(snapshot.order(), truth, 3),
-            f"coverage_{k}": accepted,
-            f"accepted_correct_{k}": correct,
-            f"accepted_error_{k}": accepted - correct,
-            # Per-case error indicator; aggregate risk is a ratio of sums.
-            f"risk_{k}": (accepted - correct) / accepted if accepted else None,
-            f"ambiguous_rate_{k}": int(decision.decision == "ambiguous"),
-            f"out_of_library_rate_{k}": int(decision.decision == "out_of_library"),
-            f"scans_{k}": len(snapshot.actions),
-            f"total_acquisitions_{k}": 1 + len(snapshot.actions),
-            f"decision_{k}": decision.decision,
-            f"predicted_{k}": decision.top_candidate,
-        })
+        metrics.update(
+            {
+                f"top1_{k}": top1(snapshot.order(), truth),
+                f"mrr_{k}": reciprocal_rank(snapshot.order(), truth),
+                f"top3_{k}": topk(snapshot.order(), truth, 3),
+                f"coverage_{k}": accepted,
+                f"accepted_correct_{k}": correct,
+                f"accepted_error_{k}": accepted - correct,
+                # Per-case error indicator; aggregate risk is a ratio of sums.
+                f"risk_{k}": (accepted - correct) / accepted if accepted else None,
+                f"ambiguous_rate_{k}": int(decision.decision == "ambiguous"),
+                f"out_of_library_rate_{k}": int(decision.decision == "out_of_library"),
+                f"scans_{k}": len(snapshot.actions),
+                f"total_acquisitions_{k}": 1 + len(snapshot.actions),
+                f"decision_{k}": decision.decision,
+                f"predicted_{k}": decision.top_candidate,
+            }
+        )
     final = state.stage(budget)
     decision = decide(final.weights, final.evidence, **confidence)
-    metrics.update({
-        "scans": len(final.actions),
-        "identified": metrics["coverage_2"],
-        "accepted_correct": metrics["accepted_correct_2"],
-        "accepted_error": metrics["accepted_error_2"],
-        "coverage": metrics["coverage_2"],
-        "out_of_library": metrics["out_of_library_rate_2"],
-        "ambiguous": metrics["ambiguous_rate_2"],
-        "support": float(decision.support), "margin": float(decision.margin),
-        "best_similarity": float(decision.best_similarity),
-        "entropy_0": float(state.stage(0).entropy),
-        "entropy_final": float(final.entropy),
-        "entropy_reduction": float(state.stage(0).entropy - final.entropy),
-        "decision": decision.decision, "predicted": decision.top_candidate,
-        "reasons": decision.reasons, "order": final.order(),
-    })
+    metrics.update(
+        {
+            "scans": len(final.actions),
+            "identified": metrics["coverage_2"],
+            "accepted_correct": metrics["accepted_correct_2"],
+            "accepted_error": metrics["accepted_error_2"],
+            "coverage": metrics["coverage_2"],
+            "out_of_library": metrics["out_of_library_rate_2"],
+            "ambiguous": metrics["ambiguous_rate_2"],
+            "support": float(decision.support),
+            "margin": float(decision.margin),
+            "best_similarity": float(decision.best_similarity),
+            "entropy_0": float(state.stage(0).entropy),
+            "entropy_final": float(final.entropy),
+            "entropy_reduction": float(state.stage(0).entropy - final.entropy),
+            "decision": decision.decision,
+            "predicted": decision.top_candidate,
+            "reasons": decision.reasons,
+            "order": final.order(),
+        }
+    )
     return metrics
 
 
@@ -120,12 +115,33 @@ def run_policy_once(
     return _case_metrics(state, case.molecule_id, budget=budget, confidence=confidence), runtime
 
 
-STAGE_MEANS = ("top1", "mrr", "top3", "coverage", "accepted_correct", "accepted_error",
-               "ambiguous_rate", "out_of_library_rate", "scans", "total_acquisitions")
+STAGE_MEANS = (
+    "top1",
+    "mrr",
+    "top3",
+    "coverage",
+    "accepted_correct",
+    "accepted_error",
+    "ambiguous_rate",
+    "out_of_library_rate",
+    "scans",
+    "total_acquisitions",
+)
 NUMERIC_KEYS = [f"{metric}_{k}" for k in range(3) for metric in STAGE_MEANS] + [
-    "scans", "identified", "accepted_correct", "accepted_error", "coverage", "out_of_library",
-    "ambiguous", "support", "margin", "best_similarity", "entropy_0", "entropy_final",
-    "entropy_reduction", "runtime_s",
+    "scans",
+    "identified",
+    "accepted_correct",
+    "accepted_error",
+    "coverage",
+    "out_of_library",
+    "ambiguous",
+    "support",
+    "margin",
+    "best_similarity",
+    "entropy_0",
+    "entropy_final",
+    "entropy_reduction",
+    "runtime_s",
 ]
 
 
@@ -175,7 +191,9 @@ def run_policy_suite(
                 }
                 for k in range(3):
                     accepted = averaged[f"coverage_{k}"]
-                    averaged[f"risk_{k}"] = averaged[f"accepted_error_{k}"] / accepted if accepted else None
+                    averaged[f"risk_{k}"] = (
+                        averaged[f"accepted_error_{k}"] / accepted if accepted else None
+                    )
                 averaged["runtime_s"] = float(np.mean(runtimes))
                 averaged["decision"] = "mixed"
                 averaged["reasons"] = []
@@ -211,7 +229,6 @@ def subset_ids(
     cases: Sequence[EvalCase],
     subset: str,
 ) -> list[str]:
-    by_case = {case.case_id: case for case in cases}
     if subset == "all":
         return [case.case_id for case in cases]
     if subset == "ambiguous":
@@ -238,8 +255,10 @@ def summarize_policy(
     ids = [case_id for case_id in case_ids if case_id in per_case]
     if not ids:
         return {"n": 0}
+
     def values(key):
         return [per_case[case_id][key] for case_id in ids]
+
     summary: dict = {"n": len(ids)}
     for key in [f"{metric}_{k}" for k in range(3) for metric in STAGE_MEANS] + ["scans"]:
         mean, low, high = bootstrap_mean_ci(values(key), seed=seed)
@@ -388,7 +407,9 @@ def entropy_validation(
         regrets.append(best - chosen["actual_entropy_reduction"])
     return {
         "n_pairs": len(rows),
-        "spearman": float(coefficient) if coefficient is not None and np.isfinite(coefficient) else None,
+        "spearman": float(coefficient)
+        if coefficient is not None and np.isfinite(coefficient)
+        else None,
         "pvalue": float(pvalue) if pvalue is not None and np.isfinite(pvalue) else None,
         "mean_regret": float(np.mean(regrets)) if regrets else None,
         "n_cases": len(regrets),
@@ -412,7 +433,9 @@ def failure_breakdown(
             continue
         case = by_case[case_id]
         top = metrics.get("predicted") or (metrics.get("order") or [None])[0]
-        top_name = references.candidate(top).name if top and top in references.candidate_ids else top
+        top_name = (
+            references.candidate(top).name if top and top in references.candidate_ids else top
+        )
         truth_name = references.candidate(case.molecule_id).name
         reasons = metrics.get("reasons") or []
         failures.append(
@@ -452,9 +475,13 @@ def _headline(
             if low is None or high is None:
                 continue
             if low > 0:
-                conclusive.append(f"adaptive beats {baseline} on {metric} (diff {diff['mean_difference']:+.3f}, CI [{low:+.3f}, {high:+.3f}])")
+                conclusive.append(
+                    f"adaptive beats {baseline} on {metric} (diff {diff['mean_difference']:+.3f}, CI [{low:+.3f}, {high:+.3f}])"
+                )
             elif high < 0:
-                conclusive.append(f"adaptive loses to {baseline} on {metric} (diff {diff['mean_difference']:+.3f}, CI [{low:+.3f}, {high:+.3f}])")
+                conclusive.append(
+                    f"adaptive loses to {baseline} on {metric} (diff {diff['mean_difference']:+.3f}, CI [{low:+.3f}, {high:+.3f}])"
+                )
     fixed = ambiguous.get("always_40", {})
     return (
         f"Ambiguous frozen test cohort: n={adaptive.get('n', 0)}. Stage one: UnknownID accepted-correct "
@@ -464,8 +491,11 @@ def _headline(
         f"Optional scans per case: {adaptive.get('scans_1')} versus {fixed.get('scans_1')}; "
         f"total acquisitions: {adaptive.get('total_acquisitions_1')} versus {fixed.get('total_acquisitions_1')}. "
         f"Top-1@1={adaptive.get('top1_1')} versus {fixed.get('top1_1')}. "
-        + ("Paired accuracy results: " + "; ".join(conclusive) if conclusive else
-           "No paired interval supports an accuracy improvement over fixed/random choice.")
+        + (
+            "Paired accuracy results: " + "; ".join(conclusive)
+            if conclusive
+            else "No paired interval supports an accuracy improvement over fixed/random choice."
+        )
         + " Observed equal performance does not establish equivalence or noninferiority. Small-cohort proof of concept only."
     )
 
@@ -523,30 +553,55 @@ def build_report(
     headline = _headline(summaries, comparisons, n_cases)
     lines += ["", "## Headline result", "", headline, ""]
 
-    lines += ["Scans always means optional scans. Total acquisitions = 1 + optional scans.",
-              "Stage 0 is the initial 20 eV observation; stages 1 and 2 cap optional acquisitions.",
-              "Stopped policies carry their last state forward. Stage one is the primary product budget.", ""]
+    lines += [
+        "Scans always means optional scans. Total acquisitions = 1 + optional scans.",
+        "Stage 0 is the initial 20 eV observation; stages 1 and 2 cap optional acquisitions.",
+        "Stopped policies carry their last state forward. Stage one is the primary product budget.",
+        "",
+    ]
     for cohort in ("ambiguous", "all", "close_call", "easy"):
         if cohort not in summaries:
             continue
         for k in range(3):
-            lines += ["", f"## Results — {cohort}, stage {k}" + (" (primary)" if k == 1 else " (secondary)"), "",
+            lines += [
+                "",
+                f"## Results — {cohort}, stage {k}" + (" (primary)" if k == 1 else " (secondary)"),
+                "",
                 "| Policy | n | Top-1 | MRR | Top-3 | Accepted correct | Coverage | Risk | Optional scans | Total acquisitions | Scans / accepted correct |",
-                "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|"]
+                "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
+            ]
             for policy in policy_order:
                 row = summaries[cohort].get(policy, {})
                 if not row.get("n"):
                     continue
+
                 def fmt(value, digits=3):
                     return "—" if value is None else f"{value:.{digits}f}"
-                lines.append(f"| {policy} | {row['n']} | " + " | ".join([
-                    fmt(row[f"top1_{k}"]), fmt(row[f"mrr_{k}"]), fmt(row[f"top3_{k}"]),
-                    fmt(row[f"accepted_correct_count_{k}"]), fmt(row[f"coverage_{k}"]),
-                    fmt(row[f"risk_{k}"]), fmt(row[f"scans_{k}"]),
-                    fmt(row[f"total_acquisitions_{k}"]), fmt(row[f"scans_per_accepted_correct_{k}"]),
-                ]) + " |")
-    lines += ["", "![Stage-one Pareto plot](pareto.svg)", "",
-              "Error bars are molecule-bootstrap 95% intervals. Oracle is a truth-aware diagnostic, not deployable.", ""]
+
+                lines.append(
+                    f"| {policy} | {row['n']} | "
+                    + " | ".join(
+                        [
+                            fmt(row[f"top1_{k}"]),
+                            fmt(row[f"mrr_{k}"]),
+                            fmt(row[f"top3_{k}"]),
+                            fmt(row[f"accepted_correct_count_{k}"]),
+                            fmt(row[f"coverage_{k}"]),
+                            fmt(row[f"risk_{k}"]),
+                            fmt(row[f"scans_{k}"]),
+                            fmt(row[f"total_acquisitions_{k}"]),
+                            fmt(row[f"scans_per_accepted_correct_{k}"]),
+                        ]
+                    )
+                    + " |"
+                )
+    lines += [
+        "",
+        "![Stage-one Pareto plot](pareto.svg)",
+        "",
+        "Error bars are molecule-bootstrap 95% intervals. Oracle is a truth-aware diagnostic, not deployable.",
+        "",
+    ]
 
     lines += [
         "",
@@ -605,9 +660,7 @@ def build_report(
         lines.append("| — | — | — | — | — | — | — | no top-1 failures in this cohort |")
 
     if open_world:
-        attempted = [
-            row for row in open_world.get("cases", []) if row.get("n_remaining", 0) > 0
-        ]
+        attempted = [row for row in open_world.get("cases", []) if row.get("n_remaining", 0) > 0]
         n_attempted = len(attempted)
         wrong_with_alternatives = sum(
             1 for row in attempted if row.get("decision_after_action") == "identified"

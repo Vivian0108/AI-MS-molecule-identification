@@ -14,14 +14,12 @@ from __future__ import annotations
 
 import hashlib
 import re
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Iterable, Optional
 
 _TAG_RE = re.compile(r"^([A-Z][A-Z0-9$_.\-]*):[ \t]?(.*)$")
-_CE_RE = re.compile(
-    r"^\s*(?P<value>\d+(?:\.\d+)?)\s*(?P<unit>eV|ev|EV|volts?|V)\s*$"
-)
+_CE_RE = re.compile(r"^\s*(?P<value>\d+(?:\.\d+)?)\s*(?P<unit>eV|ev|EV|volts?|V)\s*$")
 
 
 @dataclass
@@ -48,7 +46,7 @@ class MassBankRecord:
     names: list[str] = field(default_factory=list)
     smiles: str = ""
     formula: str = ""
-    exact_mass: Optional[float] = None
+    exact_mass: float | None = None
     inchikey: str = ""
     instrument: str = ""
     instrument_type: str = ""
@@ -57,21 +55,20 @@ class MassBankRecord:
     ionization: str = ""
     fragmentation_mode: str = ""
     collision_energy_raw: str = ""
-    collision_energy_value: Optional[float] = None
+    collision_energy_value: float | None = None
     collision_energy_unit: str = ""
-    precursor_mz: Optional[float] = None
+    precursor_mz: float | None = None
     precursor_type: str = ""
-    base_peak: Optional[float] = None
-    retention_time_min: Optional[float] = None
-    num_peak_tagged: Optional[int] = None
+    base_peak: float | None = None
+    retention_time_min: float | None = None
+    num_peak_tagged: int | None = None
     peaks: list[ParsedPeak] = field(default_factory=list)
     raw_fields: dict[str, list[str]] = field(default_factory=dict)
 
     @property
     def is_standard_compound(self) -> bool:
         return any(
-            "CONFIDENCE standard compound" in c
-            or "CONFIDENCE Reference Standard" in c
+            "CONFIDENCE standard compound" in c or "CONFIDENCE Reference Standard" in c
             for c in self.comments
         )
 
@@ -86,12 +83,14 @@ class MassBankRecord:
 
     @property
     def collision_energy_is_fixed_ev(self) -> bool:
-        return (
-            self.collision_energy_value is not None
-            and self.collision_energy_unit.lower() in {"ev", "v", "volt", "volts"}
-        )
+        return self.collision_energy_value is not None and self.collision_energy_unit.lower() in {
+            "ev",
+            "v",
+            "volt",
+            "volts",
+        }
 
-    def comment_value(self, prefix: str) -> Optional[str]:
+    def comment_value(self, prefix: str) -> str | None:
         for comment in self.comments:
             if comment.startswith(prefix):
                 return comment[len(prefix) :].strip()
@@ -100,7 +99,7 @@ class MassBankRecord:
 
 def _split_fields(text: str) -> list[Field]:
     fields: list[Field] = []
-    current: Optional[Field] = None
+    current: Field | None = None
     for raw_line in text.splitlines():
         line = raw_line.rstrip()
         if not line or line.startswith("//"):
@@ -157,7 +156,7 @@ class _Accessor:
         return lines
 
 
-def _parse_ce(raw: str) -> tuple[Optional[float], str]:
+def _parse_ce(raw: str) -> tuple[float | None, str]:
     if not raw:
         return None, ""
     match = _CE_RE.match(raw)
@@ -168,7 +167,7 @@ def _parse_ce(raw: str) -> tuple[Optional[float], str]:
     return float(match.group("value")), match.group("unit")
 
 
-def _parse_peaks(lines: list[str], declared: Optional[int]) -> list[ParsedPeak]:
+def _parse_peaks(lines: list[str], declared: int | None) -> list[ParsedPeak]:
     peaks: list[ParsedPeak] = []
     for line in lines:
         parts = line.split()

@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import pytest
 
+from tests.conftest import massbank_text
 from unknownid.config import load_config
 from unknownid.data.curate import chemical_qc
 from unknownid.io.massbank_parser import parse_record_text
-from tests.conftest import massbank_text
 
 
 @pytest.fixture(scope="module")
@@ -52,9 +52,7 @@ def test_multi_component_smiles_is_rejected() -> None:
 
 
 def test_inchikey_mismatch_is_not_silently_repaired() -> None:
-    record = parse_record_text(
-        massbank_text(inchikey="XLYOFNOQVPJJNP-UHFFFAOYSA-N")
-    )
+    record = parse_record_text(massbank_text(inchikey="XLYOFNOQVPJJNP-UHFFFAOYSA-N"))
     qc = chemical_qc(record)
 
     assert not qc.ok
@@ -62,9 +60,7 @@ def test_inchikey_mismatch_is_not_silently_repaired() -> None:
 
 
 def test_missing_metadata_is_reported() -> None:
-    text = massbank_text().replace(
-        "CH$LINK: INCHIKEY LFQSCWFLJHTTHZ-UHFFFAOYSA-N\n", ""
-    )
+    text = massbank_text().replace("CH$LINK: INCHIKEY LFQSCWFLJHTTHZ-UHFFFAOYSA-N\n", "")
     record = parse_record_text(text)
     qc = chemical_qc(record)
 

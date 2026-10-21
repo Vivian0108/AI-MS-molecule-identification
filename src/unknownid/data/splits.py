@@ -39,7 +39,7 @@ class SplitResult:
         path.write_text(json.dumps(self.to_dict(), indent=2), encoding="utf-8")
 
     @classmethod
-    def load(cls, path: Path = SPLITS_JSON) -> "SplitResult":
+    def load(cls, path: Path = SPLITS_JSON) -> SplitResult:
         data = json.loads(path.read_text(encoding="utf-8"))
         return cls(
             assignment=data["assignment"],
@@ -70,8 +70,7 @@ def assign_splits(
     frame["group_key"] = frame["group_key"].fillna("ID:" + frame["molecule_id"])
 
     grouped = {
-        key: sorted(group["molecule_id"].tolist())
-        for key, group in frame.groupby("group_key")
+        key: sorted(group["molecule_id"].tolist()) for key, group in frame.groupby("group_key")
     }
     # Deterministic order: largest groups first, shuffled within equal size.
     keys = sorted(grouped)
@@ -109,9 +108,7 @@ def assign_splits(
 def assert_disjoint(result: SplitResult) -> None:
     sets = {
         split: {
-            molecule_id
-            for molecule_id, assigned in result.assignment.items()
-            if assigned == split
+            molecule_id for molecule_id, assigned in result.assignment.items() if assigned == split
         }
         for split in ("train", "dev", "test")
     }

@@ -11,13 +11,11 @@ from __future__ import annotations
 import json
 import threading
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Literal
 
-import numpy as np
-import pandas as pd
-from pydantic import BaseModel, ValidationError
+from pydantic import ValidationError
 
 from unknownid.core.models import PeakList, PrivateOracleCase
 from unknownid.core.spectra import ProcessedSpectrum, preprocess_peaks
@@ -60,7 +58,7 @@ class OracleStore:
         self._lock = threading.Lock()
 
     @classmethod
-    def load(cls, path: str | Path, log_path: Path | None = None) -> "OracleStore":
+    def load(cls, path: str | Path, log_path: Path | None = None) -> OracleStore:
         payload = json.loads(Path(path).read_text(encoding="utf-8"))
         cases: dict[str, PrivateOracleCase] = {}
         for case_id, item in payload.items():
@@ -76,7 +74,9 @@ class OracleStore:
     def has_case(self, case_id: str) -> bool:
         return case_id in self._cases
 
-    def measure(self, case_id: str, energy: int, *, actor: str = "virtual_instrument") -> Measurement:
+    def measure(
+        self, case_id: str, energy: int, *, actor: str = "virtual_instrument"
+    ) -> Measurement:
         """Reveal one measured observation and append the access to the log."""
         if case_id not in self._cases:
             raise OracleAccessError(f"unknown case: {case_id}")
@@ -99,14 +99,13 @@ class OracleStore:
 
     def _append_log(self, case_id: str, energy: int, actor: str) -> None:
         entry = {
-            "utc": datetime.now(timezone.utc).isoformat(timespec="milliseconds"),
+            "utc": datetime.now(UTC).isoformat(timespec="milliseconds"),
             "case_id": case_id,
             "energy_ev": energy,
             "actor": actor,
         }
-        with self._lock:
-            with self._log_path.open("a", encoding="utf-8") as handle:
-                handle.write(json.dumps(entry) + "\n")
+        with self._lock, self._log_path.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps(entry) + "\n")
 
     # Evaluator-only.  Deliberately named so accidental agent use is obvious.
     def evaluator_truth(self, case_id: str) -> PrivateOracleCase:
@@ -136,9 +135,7 @@ class VirtualInstrument:
 
     @property
     def oracle(self):
-        raise PermissionError(
-            "The oracle is sealed.  Use VirtualInstrument.start/measure only."
-        )
+        raise PermissionError("The oracle is sealed.  Use VirtualInstrument.start/measure only.")
 
     def start(self, case_id: str, *, budget: int | None = None) -> Measurement:
         if case_id in self._started:

@@ -7,12 +7,11 @@ read the oracle, invent a peak, invent a posterior, or execute arbitrary Python.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Any, Callable, Literal
+from collections.abc import Callable
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
-from unknownid.core.models import Investigation, Plan
 from unknownid.service import UnknownIDService
 
 
@@ -167,13 +166,17 @@ class UnknownIDWorkflow:
             )
         warnings = []
         if len(evidence) > 1 and evidence[0].weight - evidence[1].weight < 0.15:
-            warnings.append("Top-2 relative support is close; do not present a confident identity yet.")
+            warnings.append(
+                "Top-2 relative support is close; do not present a confident identity yet."
+            )
         if any(
             cid.split("-")[0] == evidence[0].candidate_id.split("-")[0]
             for cid in session.public_case.candidate_ids
             if evidence and cid != evidence[0].candidate_id
         ):
-            warnings.append("A same-connectivity (stereoisomer) candidate is present; MS/MS may be blind to it.")
+            warnings.append(
+                "A same-connectivity (stereoisomer) candidate is present; MS/MS may be blind to it."
+            )
         summary = (
             f"{len(evidence)} precursor-consistent candidates; top relative support "
             f"{evidence[0].weight:.3f} for {evidence[0].name}."
@@ -197,7 +200,9 @@ class UnknownIDWorkflow:
         plan = self.service.session(case_id).plan()
         options = sorted(plan.options, key=lambda option: -option.score)
         recommended = plan.recommended
-        rationale = plan.note or "The planner selected the highest reliability-aware expected value."
+        rationale = (
+            plan.note or "The planner selected the highest reliability-aware expected value."
+        )
         if recommended.kind == "measure" and options:
             best = options[0]
             if plan.method == "monte_carlo_ig":
@@ -266,7 +271,9 @@ class UnknownIDWorkflow:
         ]
         notes = []
         if investigation.decision == "identified":
-            notes.append("Identification is conditional on the closed-world reference library and admitted evidence.")
+            notes.append(
+                "Identification is conditional on the closed-world reference library and admitted evidence."
+            )
         else:
             notes.append(f"Decision is `{investigation.decision}`; no identity claim is made.")
         if not qc.get("passed", False):

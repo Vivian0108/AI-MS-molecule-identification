@@ -7,12 +7,11 @@ literature-count substitutions.
 
 from __future__ import annotations
 
-import json
 from collections import Counter
+from collections.abc import Mapping
 from dataclasses import dataclass
-from datetime import datetime, timezone
-from pathlib import Path
-from typing import Any, Mapping
+from datetime import UTC, datetime
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -21,8 +20,8 @@ from unknownid.core.evidence import EvidenceEvaluator
 from unknownid.core.posterior import rank_candidates, top2_margin, update_weights
 from unknownid.core.retrieve import ReferenceStore
 from unknownid.core.spectra import cosine_greedy
-from unknownid.paths import AUDIT_CASES_PARQUET, AUDIT_MD, AUDIT_PARQUET, MANIFEST_JSON, REPORTS
 from unknownid.data.splits import SplitResult
+from unknownid.paths import AUDIT_CASES_PARQUET, AUDIT_MD, AUDIT_PARQUET, REPORTS
 
 METADATA_REASONS = {
     "wrong_instrument_model",
@@ -112,8 +111,7 @@ def analyse_cases(
     macq: Any,
 ) -> pd.DataFrame:
     observed = {
-        (row.molecule_id, int(row.collision_energy_ev)): row
-        for _, row in selected.iterrows()
+        (row.molecule_id, int(row.collision_energy_ev)): row for _, row in selected.iterrows()
     }
     evaluator = EvidenceEvaluator(kappa=kappa, tolerance_da=references.tolerance_da)
     rows = []
@@ -149,8 +147,18 @@ def analyse_cases(
             second = order[1]
             a30, b30 = references.template(top, 30), references.template(second, 30)
             a40, b40 = references.template(top, 40), references.template(second, 40)
-            d30 = 1.0 - cosine_greedy(a30.mz, a30.intensity, b30.mz, b30.intensity, references.tolerance_da)[0]
-            d40 = 1.0 - cosine_greedy(a40.mz, a40.intensity, b40.mz, b40.intensity, references.tolerance_da)[0]
+            d30 = (
+                1.0
+                - cosine_greedy(
+                    a30.mz, a30.intensity, b30.mz, b30.intensity, references.tolerance_da
+                )[0]
+            )
+            d40 = (
+                1.0
+                - cosine_greedy(
+                    a40.mz, a40.intensity, b40.mz, b40.intensity, references.tolerance_da
+                )[0]
+            )
         else:
             d30 = d40 = 0.0
 
@@ -241,7 +249,7 @@ def build_audit(
     raw_file_count: int,
 ) -> AuditResult:
     metrics: list[dict] = []
-    now = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    now = datetime.now(UTC).isoformat(timespec="seconds")
 
     # -- snapshot ----------------------------------------------------------
     _metric(metrics, "snapshot", "source_commit", manifest.get("source_commit", ""))
@@ -284,23 +292,44 @@ def build_audit(
         for value, count in selected[column].value_counts(dropna=False).items():
             _metric(metrics, "cohort_selected", f"{label}={value}", int(count))
 
-    _metric(metrics, "identity_qc", "distinct_molecules_all_passed", int(selected["molecule_id"].nunique()))
-    _metric(metrics, "identity_qc", "distinct_connectivity_blocks", int(selected["molecule_id"].str.split("-").str[0].nunique()))
+    _metric(
+        metrics,
+        "identity_qc",
+        "distinct_molecules_all_passed",
+        int(selected["molecule_id"].nunique()),
+    )
+    _metric(
+        metrics,
+        "identity_qc",
+        "distinct_connectivity_blocks",
+        int(selected["molecule_id"].str.split("-").str[0].nunique()),
+    )
     _metric(metrics, "identity_qc", "distinct_formulas", int(selected["formula"].nunique()))
-    _metric(metrics, "identity_qc", "reference_library_molecules", int(library["molecule_id"].nunique()))
+    _metric(
+        metrics, "identity_qc", "reference_library_molecules", int(library["molecule_id"].nunique())
+    )
     _metric(metrics, "identity_qc", "complete_five_energy_cases", len(complete))
     _metric(metrics, "identity_qc", "partial_cases", len(partial))
     for split in ("train", "dev", "test"):
-        _metric(metrics, "splits", f"{split}_molecules", int(sum(1 for v in splits.assignment.values() if v == split)))
+        _metric(
+            metrics,
+            "splits",
+            f"{split}_molecules",
+            int(sum(1 for v in splits.assignment.values() if v == split)),
+        )
     _metric(metrics, "splits", "seed", splits.seed)
     _metric(metrics, "splits", "scheme", splits.scheme)
 
-    ppm_errors = selected.loc[
-        selected["adduct"] == "[M+H]+", "ppm_error"
-    ].dropna().abs()
+    ppm_errors = selected.loc[selected["adduct"] == "[M+H]+", "ppm_error"].dropna().abs()
     for label, value in (
-        ("precursor_ppm_median_abs", float(ppm_errors.median()) if len(ppm_errors) else float("nan")),
-        ("precursor_ppm_p95_abs", float(ppm_errors.quantile(0.95)) if len(ppm_errors) else float("nan")),
+        (
+            "precursor_ppm_median_abs",
+            float(ppm_errors.median()) if len(ppm_errors) else float("nan"),
+        ),
+        (
+            "precursor_ppm_p95_abs",
+            float(ppm_errors.quantile(0.95)) if len(ppm_errors) else float("nan"),
+        ),
         ("precursor_ppm_max_abs", float(ppm_errors.max()) if len(ppm_errors) else float("nan")),
     ):
         _metric(metrics, "mass_accuracy", label, round(value, 4))
@@ -325,9 +354,14 @@ def build_audit(
 
     passed_raw = raw[raw["passed"]]
     duplicate_groups = passed_raw.groupby(["molecule_id", "collision_energy_ev"]).size()
-    _metric(metrics, "spectra", "molecule_energy_pairs_raw", int(len(duplicate_groups)))
+    _metric(metrics, "spectra", "molecule_energy_pairs_raw", len(duplicate_groups))
     _metric(metrics, "spectra", "pairs_with_replicates", int((duplicate_groups > 1).sum()))
-    _metric(metrics, "spectra", "max_replicates_per_pair", int(duplicate_groups.max()) if len(duplicate_groups) else 0)
+    _metric(
+        metrics,
+        "spectra",
+        "max_replicates_per_pair",
+        int(duplicate_groups.max()) if len(duplicate_groups) else 0,
+    )
     _metric(metrics, "spectra", "replicate_rule", cfg.get_path("replicates.rule", ""))
 
     # -- difficulty --------------------------------------------------------
@@ -350,7 +384,10 @@ def build_audit(
         "close_call_margin": int(
             (
                 (cases["n_candidates"] >= 2)
-                & (cases["top2_margin"] <= float(acquisition_cfg.get_path("confidence.ambiguous_top2_margin", 0.15)))
+                & (
+                    cases["top2_margin"]
+                    <= float(acquisition_cfg.get_path("confidence.ambiguous_top2_margin", 0.15))
+                )
             ).sum()
         ),
         "primary_ambiguous": int((cases["n_candidates"] >= 2).sum()),
@@ -359,18 +396,43 @@ def build_audit(
     }
     for name, value in counts.items():
         _metric(metrics, "difficulty", name, value)
-    _metric(metrics, "difficulty", "precursor_only_unique_rate", round(counts["precursor_unique"] / n, 4) if n else 0.0)
-    _metric(metrics, "difficulty", "initial_top1_accuracy", round(counts["initial_top1_correct"] / n, 4) if n else 0.0)
+    _metric(
+        metrics,
+        "difficulty",
+        "precursor_only_unique_rate",
+        round(counts["precursor_unique"] / n, 4) if n else 0.0,
+    )
+    _metric(
+        metrics,
+        "difficulty",
+        "initial_top1_accuracy",
+        round(counts["initial_top1_correct"] / n, 4) if n else 0.0,
+    )
     if n:
-        _metric(metrics, "difficulty", "top2_margin_median", round(float(cases["top2_margin"].median()), 4))
-        _metric(metrics, "difficulty", "n_candidates_mean", round(float(cases["n_candidates"].mean()), 3))
+        _metric(
+            metrics,
+            "difficulty",
+            "top2_margin_median",
+            round(float(cases["top2_margin"].median()), 4),
+        )
+        _metric(
+            metrics,
+            "difficulty",
+            "n_candidates_mean",
+            round(float(cases["n_candidates"].mean()), 3),
+        )
         _metric(metrics, "difficulty", "n_candidates_max", int(cases["n_candidates"].max()))
         _metric(metrics, "difficulty", "sep30_median", round(float(cases["sep30"].median()), 4))
         _metric(metrics, "difficulty", "sep40_median", round(float(cases["sep40"].median()), 4))
     for split in ("train", "dev", "test"):
         subset = cases[cases["split"] == split]
         _metric(metrics, "difficulty_by_split", f"{split}_cases", len(subset))
-        _metric(metrics, "difficulty_by_split", f"{split}_ambiguous", int((subset["n_candidates"] >= 2).sum()))
+        _metric(
+            metrics,
+            "difficulty_by_split",
+            f"{split}_ambiguous",
+            int((subset["n_candidates"] >= 2).sum()),
+        )
 
     metrics_df = pd.DataFrame(metrics)
     metrics_df["value"] = metrics_df["value"].astype(str)
@@ -380,7 +442,11 @@ def build_audit(
     for column in cases_safe.columns:
         if cases_safe[column].dtype == object:
             cases_safe[column] = cases_safe[column].apply(
-                lambda value: value if value is None or isinstance(value, (str, bool, int, float)) else str(value)
+                lambda value: (
+                    value
+                    if value is None or isinstance(value, (str, bool, int, float))
+                    else str(value)
+                )
             )
     cases_safe.to_parquet(AUDIT_CASES_PARQUET, index=False)
 
@@ -472,8 +538,8 @@ def build_audit(
         lines.append(f"| {license_name} | {count} |")
     lines += [
         "",
-        f"Only CC BY / CC BY-SA records were curated. Raw peaks remain in `data/raw/`; "
-        f"derived artefacts preserve per-record accession, license and SHA256 in `data/manifest.json`.",
+        "Only CC BY / CC BY-SA records were curated. Raw peaks remain in `data/raw/`; "
+        "derived artefacts preserve per-record accession, license and SHA256 in `data/manifest.json`.",
         "",
         "## Chemical identity and mass QC",
         "",
@@ -519,8 +585,8 @@ def build_audit(
         f"| Complete cases | {n} |",
         f"| Cases with >=2 precursor-consistent candidates at 10 ppm | {counts['precursor_ambiguous_ge2']} |",
         f"| Cases with >=3 candidates | {counts['precursor_ambiguous_ge3']} |",
-        f"| Precursor-only unique cases | {counts['precursor_unique']} ({counts['precursor_unique']/n:.1%}) |",
-        f"| Initial 20 eV top-1 accuracy | {counts['initial_top1_correct']}/{n} ({counts['initial_top1_correct']/n:.1%}) |",
+        f"| Precursor-only unique cases | {counts['precursor_unique']} ({counts['precursor_unique'] / n:.1%}) |",
+        f"| Initial 20 eV top-1 accuracy | {counts['initial_top1_correct']}/{n} ({counts['initial_top1_correct'] / n:.1%}) |",
         f"| Close-call ambiguous (>=2 candidates and top-2 support margin <= 0.15) | {counts['close_call_margin']} |",
         f"| Primary ambiguous subset (>=2 precursor-consistent candidates) | {counts['primary_ambiguous']} |",
         f"| Close-call subset (>=2 candidates and top-2 support margin <= 0.15) | {counts['close_call_margin']} |",
@@ -538,7 +604,9 @@ def build_audit(
     for split in ("train", "dev", "test"):
         subset = cases[cases["split"] == split]
         amb = int((subset["n_candidates"] >= 2).sum())
-        lines.append(f"| {split} | {sum(1 for v in splits.assignment.values() if v == split)} | {len(subset)} | {amb} |")
+        lines.append(
+            f"| {split} | {sum(1 for v in splits.assignment.values() if v == split)} | {len(subset)} | {amb} |"
+        )
     lines += [
         "",
         f"Deterministic seed: `{splits.seed}`; scheme: `{splits.scheme}`.  "

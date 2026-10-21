@@ -9,19 +9,19 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from unknownid.config import load_config  # noqa: E402
-from unknownid.core.evidence import EvidenceEvaluator  # noqa: E402
-from unknownid.core.retrieve import ReferenceStore  # noqa: E402
-from unknownid.eval.baselines import load_eval_cases  # noqa: E402
-from unknownid.eval.calibrate import calibrate  # noqa: E402
-from unknownid.paths import (  # noqa: E402
+from unknownid.config import load_config
+from unknownid.core.evidence import EvidenceEvaluator
+from unknownid.core.retrieve import ReferenceStore
+from unknownid.eval.baselines import load_eval_cases
+from unknownid.eval.calibrate import calibrate
+from unknownid.paths import (
     CURATED,
     LIBRARY_PARQUET,
-    PRIVATE_ORACLE_JSON,
     PUBLIC_CASES_PARQUET,
+    existing_oracle_path,
 )
-from unknownid.planner.acquisition import PlannerConfig  # noqa: E402
-from unknownid.planner.error_model import ErrorModel  # noqa: E402
+from unknownid.planner.acquisition import PlannerConfig
+from unknownid.planner.error_model import ErrorModel
 
 
 def main() -> int:
@@ -47,7 +47,7 @@ def main() -> int:
     dev_cases = load_eval_cases(
         references=references,
         public_cases_path=PUBLIC_CASES_PARQUET,
-        oracle_path=PRIVATE_ORACLE_JSON,
+        oracle_path=existing_oracle_path(),
         split="dev",
     )
     planner_config = PlannerConfig(
@@ -58,8 +58,12 @@ def main() -> int:
         seed=int(acquisition_cfg.get_path("monte_carlo.seed", 20261020)),
         tempering=float(acquisition_cfg.get_path("likelihood.likelihood_tempering", 0.85)),
         stop_ig_threshold=float(acquisition_cfg.get_path("confidence.stop_ig_threshold", 0.02)),
-        identified_min_support=float(acquisition_cfg.get_path("confidence.identified_min_support", 0.72)),
-        identified_min_margin=float(acquisition_cfg.get_path("confidence.identified_min_margin", 0.22)),
+        identified_min_support=float(
+            acquisition_cfg.get_path("confidence.identified_min_support", 0.72)
+        ),
+        identified_min_margin=float(
+            acquisition_cfg.get_path("confidence.identified_min_margin", 0.22)
+        ),
         stop_min_support=float(acquisition_cfg.get_path("confidence.stop_min_support", 0.90)),
         stop_min_margin=float(acquisition_cfg.get_path("confidence.stop_min_margin", 0.70)),
         tolerance_da=float(selection_cfg.get_path("preprocessing.match_tolerance_da", 0.02)),
@@ -68,7 +72,9 @@ def main() -> int:
     confidence = {
         "min_support": float(acquisition_cfg.get_path("confidence.identified_min_support", 0.72)),
         "min_margin": float(acquisition_cfg.get_path("confidence.identified_min_margin", 0.22)),
-        "min_similarity": float(acquisition_cfg.get_path("confidence.identified_min_similarity", 0.30)),
+        "min_similarity": float(
+            acquisition_cfg.get_path("confidence.identified_min_similarity", 0.30)
+        ),
         "min_matched": int(acquisition_cfg.get_path("confidence.min_matched_peaks", 2)),
     }
     print(f"==> calibrating on {len(dev_cases)} dev cases (test untouched)")

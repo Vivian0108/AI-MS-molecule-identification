@@ -7,10 +7,7 @@ run before ``reports/evaluation.md`` is produced; the test split is not touched.
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
-from pathlib import Path
-
-import numpy as np
+from datetime import UTC, datetime
 
 from unknownid.core.evidence import EvidenceEvaluator
 from unknownid.core.retrieve import ReferenceStore
@@ -26,9 +23,9 @@ from unknownid.eval.evaluate import (
     subset_ids,
     summarize_policy,
 )
+from unknownid.paths import CALIBRATION_JSON, CALIBRATION_MD, REPORTS
 from unknownid.planner.acquisition import AcquisitionPlanner, PlannerConfig
 from unknownid.planner.error_model import ErrorModel
-from unknownid.paths import CALIBRATION_JSON, CALIBRATION_MD, CURATED, REPORTS
 
 
 def calibrate(
@@ -100,7 +97,9 @@ def calibrate(
         reason = "Monte-Carlo IG did not positively rank actual entropy reduction on dev; heuristic selected."
     elif mc_accuracy < single_accuracy - 0.02:
         method = "disagreement_heuristic"
-        reason = "Monte-Carlo policy lost more than 0.02 top-1 accuracy versus no extra scan on dev."
+        reason = (
+            "Monte-Carlo policy lost more than 0.02 top-1 accuracy versus no extra scan on dev."
+        )
     elif mc_accuracy + 1e-12 < heuristic_accuracy:
         method = "disagreement_heuristic"
         reason = "Heuristic had higher dev top-1 accuracy than Monte-Carlo IG."
@@ -109,7 +108,7 @@ def calibrate(
         reason = "Error model calibrated, dev IG rank correlation positive, and no accuracy loss versus the heuristic."
 
     payload = {
-        "created_at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "created_at_utc": datetime.now(UTC).isoformat(timespec="seconds"),
         "method": method,
         "use_monte_carlo_ig": method == "monte_carlo_ig",
         "reason": reason,

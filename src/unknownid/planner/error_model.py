@@ -13,9 +13,9 @@ things:
 from __future__ import annotations
 
 import json
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Iterable, Mapping, Sequence
 
 import numpy as np
 from scipy.optimize import minimize_scalar
@@ -65,7 +65,7 @@ class EnergyNoise:
         }
 
     @classmethod
-    def from_dict(cls, data: dict) -> "EnergyNoise":
+    def from_dict(cls, data: dict) -> EnergyNoise:
         return cls(**data)
 
 
@@ -85,10 +85,7 @@ class ErrorModel:
         return all(noise.calibrated for noise in self.by_energy.values())
 
     def can_use_monte_carlo(self) -> bool:
-        return all(
-            self.by_energy[e].calibrated and self.by_energy[e].n >= 10
-            for e in (20, 30, 40)
-        )
+        return all(self.by_energy[e].calibrated and self.by_energy[e].n >= 10 for e in (20, 30, 40))
 
     # -- fitting -----------------------------------------------------------
     @classmethod
@@ -99,19 +96,21 @@ class ErrorModel:
         *,
         kappa_bounds: tuple[float, float] = (0.5, 40.0),
         min_cases: int = 10,
-    ) -> "ErrorModel":
+    ) -> ErrorModel:
         observations = list(observations)
         frames: dict[int, list[TrainingObservation]] = {}
         for obs in observations:
             frames.setdefault(int(obs.energy), []).append(obs)
-        by_molecule_20 = {
-            obs.molecule_id: obs for obs in frames.get(20, [])
-        }
+        by_molecule_20 = {obs.molecule_id: obs for obs in frames.get(20, [])}
 
         model = cls()
         noise20 = model._fit_energy(
-            frames.get(20, []), references, by_molecule_20=None, prior_kappa=None,
-            kappa_bounds=kappa_bounds, min_cases=min_cases,
+            frames.get(20, []),
+            references,
+            by_molecule_20=None,
+            prior_kappa=None,
+            kappa_bounds=kappa_bounds,
+            min_cases=min_cases,
         )
         model.by_energy[20] = noise20
         for energy in (30, 40):
@@ -188,7 +187,11 @@ class ErrorModel:
                 )[0]
                 for c in candidates
             }
-            if prior_kappa is None or by_molecule_20 is None or obs.molecule_id not in by_molecule_20:
+            if (
+                prior_kappa is None
+                or by_molecule_20 is None
+                or obs.molecule_id not in by_molecule_20
+            ):
                 prior = {c.molecule_id: 1.0 / len(candidates) for c in candidates}
             else:
                 obs20 = by_molecule_20[obs.molecule_id]
@@ -213,9 +216,7 @@ class ErrorModel:
                     prior.get(cid, 1e-12) * np.exp(kappa * value - maximum)
                     for cid, value in cos_e.items()
                 )
-                numerator = prior.get(true_id, 1e-12) * np.exp(
-                    kappa * cos_e[true_id] - maximum
-                )
+                numerator = prior.get(true_id, 1e-12) * np.exp(kappa * cos_e[true_id] - maximum)
                 total -= float(np.log(max(numerator / max(denom, 1e-300), 1e-12)))
             return total / max(len(cases), 1)
 
@@ -227,9 +228,7 @@ class ErrorModel:
         dropout = float(np.sum(unmatched_counts) / max(np.sum(template_counts), 1))
         mz_sigma = float(1.4826 * np.median(np.abs(mz_deltas)) if mz_deltas else 0.003)
         mz_sigma = max(min(mz_sigma, 0.02), 0.0005)
-        intensity_sigma = float(
-            min(max(np.std(log_ratios), 0.15), 1.5) if log_ratios else 0.45
-        )
+        intensity_sigma = float(min(max(np.std(log_ratios), 0.15), 1.5) if log_ratios else 0.45)
         return EnergyNoise(
             n=len(observations),
             mean_cosine=float(np.mean(cosines)),
@@ -268,9 +267,7 @@ class ErrorModel:
         if n_spurious and noise.spurious_pool:
             rel = rng.choice(noise.spurious_pool, size=n_spurious, replace=True)
             spurious_mz = np.asarray(rel, float) * precursor_mz
-            spurious_mz = spurious_mz[
-                (spurious_mz > 40.0) & (spurious_mz < precursor_mz + 1.5)
-            ]
+            spurious_mz = spurious_mz[(spurious_mz > 40.0) & (spurious_mz < precursor_mz + 1.5)]
             if spurious_mz.size:
                 spurious_int = rng.uniform(0.02, 0.35, spurious_mz.size)
                 mz = np.concatenate([mz, spurious_mz])
@@ -286,12 +283,12 @@ class ErrorModel:
         return {str(k): v.to_dict() for k, v in self.by_energy.items()}
 
     @classmethod
-    def from_dict(cls, data: dict) -> "ErrorModel":
+    def from_dict(cls, data: dict) -> ErrorModel:
         return cls({int(k): EnergyNoise.from_dict(v) for k, v in data.items()})
 
     def save(self, path: str | Path) -> None:
         Path(path).write_text(json.dumps(self.to_dict(), indent=2), encoding="utf-8")
 
     @classmethod
-    def load(cls, path: str | Path) -> "ErrorModel":
+    def load(cls, path: str | Path) -> ErrorModel:
         return cls.from_dict(json.loads(Path(path).read_text(encoding="utf-8")))

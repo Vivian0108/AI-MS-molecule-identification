@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-from unknownid.io.massbank_parser import parse_record_text
 from tests.conftest import massbank_text
+from unknownid.io.massbank_parser import parse_record_text
 
 
 def test_parses_identity_metadata_and_peaks(ethanol_record_text: str) -> None:

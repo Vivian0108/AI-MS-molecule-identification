@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+message: "Please cite UnknownID and the original MassBank records and spectral interpolation paper."
+title: "UnknownID: uncertainty-aware closed-world MS/MS identification"
+type: software
+version: 0.1.0
+license: MIT
+repository-code: https://github.com/Vivian0108/AI_MS_molecule_identification_draft
+authors:
+  - name: UnknownID contributors
+references:
+  - type: article
+    title: Augmentation of MS/MS Libraries with Spectral Interpolation for Improved Identification
+    doi: 10.1021/acs.jcim.2c00620
+    year: 2022
+  - type: data
+    title: MassBank
+    doi: 10.5281/zenodo.3378723

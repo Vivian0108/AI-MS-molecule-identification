@@ -2,10 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import replace
-from typing import Mapping, Sequence
-
-import numpy as np
+from collections.abc import Mapping, Sequence
 
 from unknownid.core.models import Evidence, MatchedPeak
 from unknownid.core.posterior import softmax
@@ -76,7 +73,9 @@ class EvidenceEvaluator:
         precursor = precursor_mz if precursor_mz is not None else candidate.precursor_mz
         observed_losses = neutral_losses(observed.mz, observed.intensity, precursor)
         template_losses = neutral_losses(template.mz, template.intensity, precursor)
-        nl_agreement, _ = neutral_loss_agreement(observed_losses, template_losses, self.tolerance_da)
+        nl_agreement, _ = neutral_loss_agreement(
+            observed_losses, template_losses, self.tolerance_da
+        )
 
         log_score = kappa_value * cosine + self.neutral_loss_weight * nl_agreement
         if n_matched < self.min_matched_peaks:

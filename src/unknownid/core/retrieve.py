@@ -6,8 +6,8 @@ It has no parameter, path or attribute that can reach the oracle store.
 
 from __future__ import annotations
 
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass, field
-from typing import Iterable, Sequence
 
 import numpy as np
 import pandas as pd
@@ -120,9 +120,7 @@ class ReferenceStore:
         tolerance = self.ppm_tolerance if ppm is None else float(ppm)
         out = []
         for candidate in self._candidates.values():
-            error_ppm = (
-                abs(candidate.precursor_mz - precursor_mz) / precursor_mz * 1e6
-            )
+            error_ppm = abs(candidate.precursor_mz - precursor_mz) / precursor_mz * 1e6
             if error_ppm <= tolerance:
                 out.append(candidate)
         out.sort(key=lambda c: (abs(c.precursor_mz - precursor_mz), c.molecule_id))

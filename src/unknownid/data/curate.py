@@ -8,19 +8,19 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 import numpy as np
 import pandas as pd
 from rdkit import Chem, RDLogger
 from rdkit.Chem import Descriptors, rdMolDescriptors
-from rdkit.Chem.Scaffolds import MurckoScaffold
 from rdkit.Chem.inchi import MolToInchiKey
+from rdkit.Chem.Scaffolds import MurckoScaffold
 
-from unknownid.core.spectra import PROTON_MASS, preprocess_peaks
 from unknownid.core.ids import make_case_id
+from unknownid.core.spectra import PROTON_MASS, preprocess_peaks
 from unknownid.io.massbank_parser import MassBankRecord, iter_record_files, parse_record_file
 
 RDLogger.DisableLog("rdApp.*")
@@ -125,9 +125,7 @@ def _metadata_reasons(record: MassBankRecord, cfg: Any) -> list[str]:
     else:
         energies = [int(e) for e in cfg.get_path("energies.all", [])]
         tolerance = float(cfg.get_path("energies.tolerance_ev", 0.5))
-        if not any(
-            abs(record.collision_energy_value - e) <= tolerance for e in energies
-        ):
+        if not any(abs(record.collision_energy_value - e) <= tolerance for e in energies):
             reasons.append("collision_energy_outside_grid")
     if record.num_peak_tagged is not None and record.num_peak_tagged != len(record.peaks):
         reasons.append("peak_count_mismatch")
@@ -228,7 +226,7 @@ def curate_raw(raw_dir: Path, cfg: Any) -> tuple[pd.DataFrame, dict[str, Any]]:
         "source_directory": cfg.get_path("dataset.contributor"),
         "source_commit": commit,
         "persistent_archive": cfg.get_path("dataset.persistent_archive"),
-        "retrieved_at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "retrieved_at_utc": datetime.now(UTC).isoformat(timespec="seconds"),
         "record_count": len(files),
         "processing_config_version": cfg.get_path("version"),
         "parser": "unknownid.io.massbank_parser",
@@ -259,9 +257,7 @@ def select_representatives(df: pd.DataFrame, cfg: Any) -> pd.DataFrame:
     return chosen.sort_values(["molecule_id", "collision_energy_ev"]).reset_index(drop=True)
 
 
-def build_case_tables(
-    spectra: pd.DataFrame, cfg: Any
-) -> tuple[pd.DataFrame, pd.DataFrame]:
+def build_case_tables(spectra: pd.DataFrame, cfg: Any) -> tuple[pd.DataFrame, pd.DataFrame]:
     energies = [int(e) for e in cfg.get_path("energies.all", [])]
     mid_energies = [int(e) for e in cfg.get_path("energies.mid", [20, 30, 40])]
     min_mid = int(cfg.get_path("filters.min_retained_peaks_mid", 3))
@@ -271,9 +267,7 @@ def build_case_tables(
     rows = []
     partial = []
     for molecule_id, group in grouped:
-        by_energy = {
-            int(row.collision_energy_ev): row for _, row in group.iterrows()
-        }
+        by_energy = {int(row.collision_energy_ev): row for _, row in group.iterrows()}
         present = sorted(by_energy)
         first = group.iloc[0]
         missing = [e for e in energies if e not in by_energy]

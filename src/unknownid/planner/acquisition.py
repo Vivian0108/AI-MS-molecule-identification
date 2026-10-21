@@ -12,8 +12,8 @@ Two policies are implemented:
 
 from __future__ import annotations
 
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from typing import Mapping, Sequence
 
 import numpy as np
 
@@ -95,7 +95,9 @@ class AcquisitionPlanner:
                 available,
                 remaining_budget,
                 current_entropy,
-                note="budget exhausted" if remaining_budget <= 0 else "no unobserved energy available",
+                note="budget exhausted"
+                if remaining_budget <= 0
+                else "no unobserved energy available",
             )
         if len(weights) <= 1:
             return self._stop_plan(
@@ -130,7 +132,10 @@ class AcquisitionPlanner:
                 note="shortlist already resolved under the precommitted confidence rule",
                 options=options,
             )
-        if self.method == "monte_carlo_ig" and best.predicted_information_gain <= self.config.stop_ig_threshold:
+        if (
+            self.method == "monte_carlo_ig"
+            and best.predicted_information_gain <= self.config.stop_ig_threshold
+        ):
             return self._stop_plan(
                 case_id,
                 observed,
@@ -197,10 +202,7 @@ class AcquisitionPlanner:
                 "Expected information gain estimated by Monte Carlo; noise model "
                 "fitted on train identities only and validated on dev."
             )
-        return (
-            "Reliability-aware template-disagreement heuristic; not calibrated "
-            "information gain."
-        )
+        return "Reliability-aware template-disagreement heuristic; not calibrated information gain."
 
     def _stop_plan(
         self,
@@ -252,9 +254,7 @@ class AcquisitionPlanner:
             reliability = float(self.error_model.reliability.get(energy, 0.0))
 
             if self.method == "monte_carlo_ig":
-                ig = self._monte_carlo_ig(
-                    weights, templates, precursors, energy, rng
-                )
+                ig = self._monte_carlo_ig(weights, templates, precursors, energy, rng)
                 option = AcquisitionOption(
                     energy_ev=int(energy),
                     predicted_information_gain=float(max(ig, 0.0)),
@@ -313,8 +313,7 @@ class AcquisitionPlanner:
             return 0.0
         probs = probs / probs.sum()
         template_arrays = {
-            cid: (templates[cid][energy].mz, templates[cid][energy].intensity)
-            for cid in ids
+            cid: (templates[cid][energy].mz, templates[cid][energy].intensity) for cid in ids
         }
         entropies: list[float] = []
         for _ in range(self.config.monte_carlo_samples):

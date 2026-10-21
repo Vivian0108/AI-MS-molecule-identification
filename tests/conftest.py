@@ -38,7 +38,9 @@ def massbank_text(
         for mz, intensity in peaks
     )
     declared = len(peaks) if num_peak is None else num_peak
-    comment = "COMMENT: CONFIDENCE standard compound" if standard else "COMMENT: CONFIDENCE tentative"
+    comment = (
+        "COMMENT: CONFIDENCE standard compound" if standard else "COMMENT: CONFIDENCE tentative"
+    )
     return f"""ACCESSION: {accession}
 LICENSE: {license}
 CH$NAME: {name}

@@ -7,7 +7,7 @@ UI and reports state whether calibration was validated.
 
 from __future__ import annotations
 
-from typing import Mapping
+from collections.abc import Mapping
 
 import numpy as np
 
@@ -84,9 +84,7 @@ def update_weights(
             continue
         mz_t, i_t = templates[candidate_id]
         cosine, _ = cosine_greedy(mz_obs, i_obs, mz_t, i_t, tolerance)
-        log_weights[candidate_id] = (
-            np.log(max(prior_weight, 1e-12)) + tempering * kappa * cosine
-        )
+        log_weights[candidate_id] = np.log(max(prior_weight, 1e-12)) + tempering * kappa * cosine
     finite = {k: v for k, v in log_weights.items() if np.isfinite(v)}
     if not finite:
         return normalize(prior)
@@ -95,9 +93,7 @@ def update_weights(
     return normalize(exp)
 
 
-def credible_interval(
-    weights: Mapping[str, float], mass: float = 0.95
-) -> tuple[list[str], float]:
+def credible_interval(weights: Mapping[str, float], mass: float = 0.95) -> tuple[list[str], float]:
     """Return the smallest candidate set reaching ``mass`` support."""
     ordered = rank_candidates(weights)
     cumulative = 0.0

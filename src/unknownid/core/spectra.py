@@ -7,8 +7,8 @@ itself is used by the test-suite as an independent cross-check.
 
 from __future__ import annotations
 
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
-from typing import Iterable, Sequence
 
 import numpy as np
 
@@ -216,7 +216,7 @@ def align_spectra(
     aligned: list[tuple[int | None, int | None]] = [(r, c) for r, c in pairs]
     aligned += [(r, None) for r in range(a_mz.size) if r not in used_a]
     aligned += [(None, c) for c in range(b_mz.size) if c not in used_b]
-    aligned.sort(key=lambda pair: (a_mz[pair[0]] if pair[0] is not None else 1e9))
+    aligned.sort(key=lambda pair: a_mz[pair[0]] if pair[0] is not None else 1e9)
     return aligned
 
 

@@ -13,7 +13,7 @@ import hashlib
 import json
 import platform
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 
@@ -23,25 +23,22 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from unknownid.config import load_config  # noqa: E402
-from unknownid.core.retrieve import ReferenceStore  # noqa: E402
-from unknownid.core.spectra import ProcessedSpectrum  # noqa: E402
-from unknownid.data.audit import build_audit  # noqa: E402
-from unknownid.data.curate import (  # noqa: E402
+from unknownid.config import load_config
+from unknownid.core.retrieve import ReferenceStore
+from unknownid.core.spectra import ProcessedSpectrum
+from unknownid.data.audit import build_audit
+from unknownid.data.curate import (
     build_case_specs,
     build_case_tables,
     build_reference_library,
     curate_raw,
     select_representatives,
 )
-from unknownid.data.splits import SplitResult, assign_splits, assert_disjoint  # noqa: E402
-from unknownid.paths import (  # noqa: E402
-    AUDIT_CASES_PARQUET,
+from unknownid.data.splits import SplitResult, assert_disjoint, assign_splits
+from unknownid.paths import (
     COMPLETE_CASES_PARQUET,
     CURATED,
-    DATA,
     LIBRARY_PARQUET,
-    MANIFEST_JSON,
     ORACLE_DIR,
     PARTIAL_CASES_PARQUET,
     PRIVATE_ORACLE_JSON,
@@ -52,7 +49,7 @@ from unknownid.paths import (  # noqa: E402
     SPLITS_JSON,
     ensure_dirs,
 )
-from unknownid.planner.error_model import ErrorModel, TrainingObservation  # noqa: E402
+from unknownid.planner.error_model import ErrorModel, TrainingObservation
 
 
 def _atomic_write_json(path: Path, payload: dict) -> None:
@@ -101,7 +98,9 @@ def _parquet_safe(frame: pd.DataFrame) -> pd.DataFrame:
             sample = out[column].dropna()
             if len(sample) and isinstance(sample.iloc[0], dict):
                 out[column] = out[column].apply(
-                    lambda value: json.dumps(value, sort_keys=True) if isinstance(value, dict) else value
+                    lambda value: (
+                        json.dumps(value, sort_keys=True) if isinstance(value, dict) else value
+                    )
                 )
     return out
 
@@ -131,8 +130,7 @@ def build_private_oracle(
     library: pd.DataFrame,
 ) -> dict:
     observed = {
-        (row.molecule_id, int(row.collision_energy_ev)): row
-        for _, row in selected.iterrows()
+        (row.molecule_id, int(row.collision_energy_ev)): row for _, row in selected.iterrows()
     }
     references: dict[str, dict[int, str]] = {}
     for _, row in library.iterrows():
@@ -164,7 +162,9 @@ def build_private_oracle(
     return payload
 
 
-def fit_error_model(selected: pd.DataFrame, train_ids: set[str], references: ReferenceStore) -> ErrorModel:
+def fit_error_model(
+    selected: pd.DataFrame, train_ids: set[str], references: ReferenceStore
+) -> ErrorModel:
     observations = []
     for _, row in selected.iterrows():
         if row.molecule_id not in train_ids:
@@ -246,7 +246,7 @@ def main() -> int:
     references.assert_reference_only()
 
     version_payload = {
-        "created_at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "created_at_utc": datetime.now(UTC).isoformat(timespec="seconds"),
         "selection_config_sha256": _sha256(ROOT / "config" / "selection.yaml"),
         "acquisition_config_sha256": _sha256(ROOT / "config" / "acquisition.yaml"),
         "source_commit": manifest.get("source_commit"),
@@ -298,10 +298,7 @@ def main() -> int:
         train_ids = {mid for mid, split in splits.assignment.items() if split == "train"}
         model = fit_error_model(selected, train_ids, references)
         model.save(CURATED / "error_model.json")
-        print(
-            "    kappa="
-            + ", ".join(f"{e}:{model.by_energy[e].kappa:.2f}" for e in (20, 30, 40))
-        )
+        print("    kappa=" + ", ".join(f"{e}:{model.by_energy[e].kappa:.2f}" for e in (20, 30, 40)))
 
     print("==> done")
     return 0

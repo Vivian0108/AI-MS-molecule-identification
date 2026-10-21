@@ -6,10 +6,9 @@ so that every artefact written to disk and every API payload is validated.
 
 from __future__ import annotations
 
-from typing import Literal, Optional
+from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator
-
 
 Adduct = Literal["[M+H]+"]
 
@@ -48,7 +47,7 @@ class SpectrumRecord(BaseModel):
     is_reference_standard: bool
     name: str = ""
     scaffold: str = ""
-    retention_time_min: Optional[float] = None
+    retention_time_min: float | None = None
     source_path: str = ""
 
 
@@ -91,7 +90,7 @@ class Evidence(BaseModel):
     matched_peaks_by_energy: dict[int, int]
     matched_fragments: list[MatchedPeak] = Field(default_factory=list)
     unexplained_peaks: list[float] = Field(default_factory=list)
-    neutral_loss_agreement: Optional[float] = None
+    neutral_loss_agreement: float | None = None
     log_score: float = 0.0
     weight: float = 0.0  # relative support, NOT a calibrated identity probability
     name: str = ""
@@ -116,12 +115,12 @@ class AcquisitionOption(BaseModel):
 
 class Action(BaseModel):
     kind: Literal["measure", "stop"]
-    energy_ev: Optional[int] = None
-    predicted_information_gain: Optional[float] = None
+    energy_ev: int | None = None
+    predicted_information_gain: float | None = None
 
     @field_validator("energy_ev")
     @classmethod
-    def _allowed_energy(cls, value: Optional[int]) -> Optional[int]:
+    def _allowed_energy(cls, value: int | None) -> int | None:
         if value is not None and value not in (30, 40):
             raise ValueError("v1 only allows the 30 and 40 eV actions")
         return value
@@ -153,8 +152,8 @@ class Investigation(BaseModel):
     candidate_evidence: list[Evidence]
     selected_actions: list[Action]
     decision: Literal["identified", "ambiguous", "out_of_library"] = "ambiguous"
-    predicted_identity: Optional[str] = None
-    confidence: Optional[float] = None
+    predicted_identity: str | None = None
+    confidence: float | None = None
     limitations: list[str] = Field(default_factory=list)
-    qc: Optional[dict] = None
+    qc: dict | None = None
     provenance: dict = Field(default_factory=dict)

@@ -21,3 +21,7 @@ data/oracle/actions.jsonl
 .DS_Store
 .idea/
 .vscode/
+
+# Local export/cache artefacts
+.cache/
+exports/

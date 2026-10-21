@@ -7,7 +7,7 @@ policies.
 
 from __future__ import annotations
 
-from typing import Mapping, Sequence
+from collections.abc import Mapping, Sequence
 
 import numpy as np
 
@@ -27,7 +27,11 @@ def bootstrap_mean_ci(
         [rng.choice(array, size=array.size, replace=True).mean() for _ in range(n_boot)]
     )
     alpha = (1.0 - level) / 2.0
-    return float(array.mean()), float(np.quantile(means, alpha)), float(np.quantile(means, 1 - alpha))
+    return (
+        float(array.mean()),
+        float(np.quantile(means, alpha)),
+        float(np.quantile(means, 1 - alpha)),
+    )
 
 
 def paired_bootstrap_difference(
@@ -40,14 +44,19 @@ def paired_bootstrap_difference(
 ) -> dict:
     common = sorted(set(first) & set(second))
     if not common:
-        return {"n": 0, "mean_difference": 0.0, "ci_low": 0.0, "ci_high": 0.0, "wins": 0, "losses": 0}
+        return {
+            "n": 0,
+            "mean_difference": 0.0,
+            "ci_low": 0.0,
+            "ci_high": 0.0,
+            "wins": 0,
+            "losses": 0,
+        }
     a = np.asarray([first[key] for key in common], float)
     b = np.asarray([second[key] for key in common], float)
     diff = a - b
     rng = np.random.default_rng(seed)
-    stats = np.array(
-        [rng.choice(diff, size=diff.size, replace=True).mean() for _ in range(n_boot)]
-    )
+    stats = np.array([rng.choice(diff, size=diff.size, replace=True).mean() for _ in range(n_boot)])
     alpha = (1.0 - level) / 2.0
     return {
         "n": len(common),

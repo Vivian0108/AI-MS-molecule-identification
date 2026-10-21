@@ -9,18 +9,16 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass, field
-from typing import Mapping, Sequence
 
 import numpy as np
 import pandas as pd
 
 from unknownid.core.evidence import EvidenceEvaluator, merge_evidence
-from unknownid.core.ids import make_case_id
 from unknownid.core.models import Evidence
 from unknownid.core.posterior import entropy, rank_candidates, update_weights
 from unknownid.core.retrieve import Candidate, ReferenceStore
 from unknownid.core.spectra import ProcessedSpectrum, preprocess_peaks
-from unknownid.planner.acquisition import AcquisitionPlanner, PlannerConfig
+from unknownid.planner.acquisition import AcquisitionPlanner
 from unknownid.planner.error_model import ErrorModel
 
 POLICY_NAMES = [
@@ -84,15 +82,11 @@ def load_eval_cases(
         if isinstance(candidate_ids, np.ndarray):
             candidate_ids = candidate_ids.tolist()
         observations = {
-            int(energy): preprocess_peaks(
-                payload["mz"], payload["intensity"], rel_floor=0.0
-            )
+            int(energy): preprocess_peaks(payload["mz"], payload["intensity"], rel_floor=0.0)
             for energy, payload in private["hidden_spectra"].items()
         }
         candidates = [references.candidate(cid) for cid in candidate_ids]
-        templates = {
-            cid: references.templates(cid, (20, 30, 40)) for cid in candidate_ids
-        }
+        templates = {cid: references.templates(cid, (20, 30, 40)) for cid in candidate_ids}
         cases.append(
             EvalCase(
                 case_id=case_id,
@@ -157,7 +151,9 @@ class PolicyState:
     def set_precursor_only(self) -> None:
         scores = {}
         for candidate in self.case.candidates:
-            ppm = abs(candidate.precursor_mz - self.case.precursor_mz) / self.case.precursor_mz * 1e6
+            ppm = (
+                abs(candidate.precursor_mz - self.case.precursor_mz) / self.case.precursor_mz * 1e6
+            )
             scores[candidate.molecule_id] = -ppm
         maximum = max(scores.values())
         exp = {key: float(np.exp(value - maximum)) for key, value in scores.items()}
@@ -225,7 +221,9 @@ class PolicyState:
 class Policy:
     name = "base"
 
-    def run(self, state: PolicyState, *, budget: int, rng: np.random.Generator | None = None) -> None:
+    def run(
+        self, state: PolicyState, *, budget: int, rng: np.random.Generator | None = None
+    ) -> None:
         raise NotImplementedError
 
 
@@ -324,16 +322,22 @@ class OracleBestAction(Policy):
         branches = []
         for energy in (30, 40):
             branch = PolicyState(
-                state.case, references=state.references, evaluator=state.evaluator,
-                error_model=state.error_model, tempering=state.tempering,
+                state.case,
+                references=state.references,
+                evaluator=state.evaluator,
+                error_model=state.error_model,
+                tempering=state.tempering,
             )
             branch.measure(energy)
             branches.append(branch)
         # Lexicographic: top-1 correctness, then truth support; exact ties choose 30.
-        chosen = max(branches, key=lambda branch: (
-            int(branch.stage(1).order()[0] == self.truth),
-            branch.weights.get(self.truth, 0.0),
-        ))
+        chosen = max(
+            branches,
+            key=lambda branch: (
+                int(branch.stage(1).order()[0] == self.truth),
+                branch.weights.get(self.truth, 0.0),
+            ),
+        )
         state.weights = dict(chosen.weights)
         state.evidence = dict(chosen.evidence)
         state.actions = list(chosen.actions)

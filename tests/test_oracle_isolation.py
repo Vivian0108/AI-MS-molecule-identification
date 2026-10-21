@@ -156,12 +156,8 @@ def test_plan_is_invariant_to_hidden_measurements(sealed_oracle) -> None:
 
     before = plan()
     truth = store.evaluator_truth("case-synthetic")
-    truth.hidden_spectra[30] = PeakList(
-        mz=[13.37, 77.77, 199.99], intensity=[0.1, 0.2, 0.3]
-    )
-    truth.hidden_spectra[40] = PeakList(
-        mz=[11.11, 88.88, 177.77], intensity=[0.3, 0.2, 0.1]
-    )
+    truth.hidden_spectra[30] = PeakList(mz=[13.37, 77.77, 199.99], intensity=[0.1, 0.2, 0.3])
+    truth.hidden_spectra[40] = PeakList(mz=[11.11, 88.88, 177.77], intensity=[0.3, 0.2, 0.1])
     after = plan()
 
     assert before.model_dump() == after.model_dump()
