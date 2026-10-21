@@ -27,6 +27,8 @@ from unknownid.eval.evaluate import (  # noqa: E402
     subset_ids,
     summarize_policy,
 )
+from unknownid.eval.diagnostics import energy_stop_diagnostics
+from unknownid.eval.artifacts import generation_metadata, render_report, write_pareto
 from unknownid.eval.open_world import run_open_world  # noqa: E402
 from unknownid.paths import (  # noqa: E402
     CALIBRATION_JSON,
@@ -139,6 +141,8 @@ def main() -> int:
         confidence=confidence,
         tempering=planner_config.tempering,
     )
+    diagnostics = energy_stop_diagnostics(test_cases,references=references,evaluator=evaluator,
+        error_model=error_model,planner=planner,confidence=confidence,tempering=planner_config.tempering)
     failures = failure_breakdown(test_cases, results, references, policy="unknownid")
     open_world = run_open_world(
         test_cases,
@@ -172,21 +176,9 @@ def main() -> int:
         "split_seed": int(selection_cfg.get_path("splits.seed", 20261020)),
         "calibration_method": calibration["method"],
     }
-    markdown = build_report(
-        summaries=summaries,
-        comparisons=comparisons,
-        ig=ig,
-        failures=failures,
-        calibration=calibration,
-        config=report_config,
-        n_cases=n_cases,
-        open_world=open_world,
-        generated_at=generated_at,
-    )
-    REPORTS.mkdir(parents=True, exist_ok=True)
-    EVALUATION_MD.write_text(markdown, encoding="utf-8")
     payload = {
         "generated_at_utc": generated_at,
+        "generation_metadata": generation_metadata(),
         "split": "test",
         "method": planner.method,
         "config": report_config,
@@ -194,12 +186,16 @@ def main() -> int:
         "summaries": summaries,
         "paired_comparisons": comparisons,
         "ig_validation": ig,
+        "energy_stop_diagnostics": diagnostics,
         "failures": failures,
         "open_world": open_world,
         "calibration": calibration,
         "per_case": results,
     }
     (REPORTS / "evaluation.json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    REPORTS.mkdir(parents=True, exist_ok=True)
+    EVALUATION_MD.write_text(render_report(payload), encoding="utf-8")
+    write_pareto(payload, REPORTS / "pareto.svg")
     print(f"==> wrote {EVALUATION_MD} and reports/evaluation.json")
     print(f"    test all: unknownid top1@1={summaries['all']['unknownid']['top1_1']:.3f} "
           f"single={summaries['all']['single_scan']['top1_1']:.3f}")

@@ -351,7 +351,7 @@ def entropy_validation(
                 tempering=tempering,
             )
             trial.measure(energy)
-            actual[energy] = max(trial.stage(0).entropy - trial.stage(1).entropy, 0.0)
+            actual[energy] = trial.stage(0).entropy - trial.stage(1).entropy
         for energy in (30, 40):
             option = predicted.get(energy)
             if option is None:
@@ -455,22 +455,18 @@ def _headline(
                 conclusive.append(f"adaptive beats {baseline} on {metric} (diff {diff['mean_difference']:+.3f}, CI [{low:+.3f}, {high:+.3f}])")
             elif high < 0:
                 conclusive.append(f"adaptive loses to {baseline} on {metric} (diff {diff['mean_difference']:+.3f}, CI [{low:+.3f}, {high:+.3f}])")
-    scans_adaptive = adaptive.get("scans_1")
-    scans_fixed = ambiguous.get("always_40", {}).get("scans_1")
-    base = (
-        f"Ambiguous test cohort: n={n_cases.get('ambiguous (>=2 precursor-consistent candidates)', 0)}. "
-        f"Adaptive top-1@1={adaptive.get('top1_1')}; single-scan={ambiguous.get('single_scan', {}).get('top1_1')}; "
-        f"always-40={ambiguous.get('always_40', {}).get('top1_1')}. "
-        f"Adaptive used {scans_adaptive} scans on average by the first decision, versus {scans_fixed} for always-40."
-    )
-    if conclusive:
-        return base + " Statistically conclusive paired differences: " + "; ".join(conclusive) + "."
+    fixed = ambiguous.get("always_40", {})
     return (
-        base
-        + " No paired 95% confidence interval excludes zero for top-1 accuracy against fixed or random "
-        "energy choice. The defensible finding is therefore a cost/efficiency result (equal accuracy with "
-        "fewer acquisitions on this cohort), not an accuracy improvement. The test ambiguous subset is small, "
-        "so this is a proof-of-concept and not a general claim."
+        f"Ambiguous frozen test cohort: n={adaptive.get('n', 0)}. Stage one: UnknownID accepted-correct "
+        f"{adaptive.get('accepted_correct_count_1')}, coverage={adaptive.get('coverage_1')}, "
+        f"selective risk={adaptive.get('risk_1')}; always-40 accepted-correct "
+        f"{fixed.get('accepted_correct_count_1')}, coverage={fixed.get('coverage_1')}, risk={fixed.get('risk_1')}. "
+        f"Optional scans per case: {adaptive.get('scans_1')} versus {fixed.get('scans_1')}; "
+        f"total acquisitions: {adaptive.get('total_acquisitions_1')} versus {fixed.get('total_acquisitions_1')}. "
+        f"Top-1@1={adaptive.get('top1_1')} versus {fixed.get('top1_1')}. "
+        + ("Paired accuracy results: " + "; ".join(conclusive) if conclusive else
+           "No paired interval supports an accuracy improvement over fixed/random choice.")
+        + " Observed equal performance does not establish equivalence or noninferiority. Small-cohort proof of concept only."
     )
 
 
@@ -503,8 +499,7 @@ def build_report(
         "",
         "## Claim tested",
         "",
-        "For genuinely ambiguous, closed-world known-library cases, does an adaptive collision-energy "
-        "choice improve identification per additional acquisition versus fixed and random-energy policies?",
+        "UnknownID uses uncertainty-aware stopping and experiment selection to achieve a target identification coverage with fewer optional measurements than an always-measure policy. This is a hypothesis; the stage-one results below determine what is supported.",
         "",
         "## Frozen design",
         "",
@@ -528,37 +523,41 @@ def build_report(
     headline = _headline(summaries, comparisons, n_cases)
     lines += ["", "## Headline result", "", headline, ""]
 
-    for cohort in ("all", "ambiguous", "close_call", "easy"):
+    lines += ["Scans always means optional scans. Total acquisitions = 1 + optional scans.",
+              "Stage 0 is the initial 20 eV observation; stages 1 and 2 cap optional acquisitions.",
+              "Stopped policies carry their last state forward. Stage one is the primary product budget.", ""]
+    for cohort in ("ambiguous", "all", "close_call", "easy"):
         if cohort not in summaries:
             continue
-        lines += [
-            "",
-            f"## Results — {cohort}",
-            "",
-            "| Policy | Top-1 @0 | Top-1 @1 | Top-1 @2 | MRR @2 | Top-3 @2 | Scans @1 | Scans @2 | Coverage | Risk |",
-            "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
-        ]
-        for policy in policy_order:
-            summary = summaries[cohort].get(policy)
-            if not summary or not summary.get("n"):
-                continue
-            risk = "—" if summary.get("risk") is None else f"{summary['risk']:.3f}"
-            lines.append(
-                f"| {policy} | {summary['top1_0']:.3f} | {summary['top1_1']:.3f} | "
-                f"{summary['top1_2']:.3f} | {summary['mrr_2']:.3f} | {summary['top3_2']:.3f} | "
-                f"{summary['scans_1']:.2f} | {summary['scans_2']:.2f} | {summary['coverage']:.3f} | {risk} |"
-            )
+        for k in range(3):
+            lines += ["", f"## Results — {cohort}, stage {k}" + (" (primary)" if k == 1 else " (secondary)"), "",
+                "| Policy | n | Top-1 | MRR | Top-3 | Accepted correct | Coverage | Risk | Optional scans | Total acquisitions | Scans / accepted correct |",
+                "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|"]
+            for policy in policy_order:
+                row = summaries[cohort].get(policy, {})
+                if not row.get("n"):
+                    continue
+                def fmt(value, digits=3):
+                    return "—" if value is None else f"{value:.{digits}f}"
+                lines.append(f"| {policy} | {row['n']} | " + " | ".join([
+                    fmt(row[f"top1_{k}"]), fmt(row[f"mrr_{k}"]), fmt(row[f"top3_{k}"]),
+                    fmt(row[f"accepted_correct_count_{k}"]), fmt(row[f"coverage_{k}"]),
+                    fmt(row[f"risk_{k}"]), fmt(row[f"scans_{k}"]),
+                    fmt(row[f"total_acquisitions_{k}"]), fmt(row[f"scans_per_accepted_correct_{k}"]),
+                ]) + " |")
+    lines += ["", "![Stage-one Pareto plot](pareto.svg)", "",
+              "Error bars are molecule-bootstrap 95% intervals. Oracle is a truth-aware diagnostic, not deployable.", ""]
 
     lines += [
         "",
         "## Paired differences versus the UnknownID policy",
         "",
-        "Positive values favour UnknownID; negative values favour the baseline.  "
+        "Benefits are UnknownID minus baseline; scans_1 is baseline minus UnknownID (scan savings). Positive values favour UnknownID. "
         "CIs are 95% molecule-level paired bootstrap intervals.  An interval spanning zero "
         "is reported as inconclusive, not as a win.",
         "",
-        "| Cohort | Baseline | Metric | Difference | 95% CI | Wins/Losses |",
-        "|---|---|---|---:|---|---|",
+        "| Cohort | Baseline | Metric | Difference | 95% CI | UnknownID wins/losses | Differing molecules |",
+        "|---|---|---|---:|---|---|---:|",
     ]
     for cohort in ("all", "ambiguous"):
         if cohort not in comparisons:
@@ -568,7 +567,7 @@ def build_report(
                 lines.append(
                     f"| {cohort} | {policy} | {metric} | {diff['mean_difference']:+.4f} | "
                     f"[{diff['ci_low']:+.4f}, {diff['ci_high']:+.4f}] | "
-                    f"{diff['wins']}/{diff['losses']} |"
+                    f"{diff['wins']}/{diff['losses']} | {diff['differing_molecules']} |"
                 )
 
     lines += [
