@@ -298,7 +298,14 @@ def pairwise_comparisons(
                 for case_id in case_ids
                 if case_id in per_case and case_id in reference
             }
-            entry[metric] = paired_bootstrap_difference(first, second, seed=seed)
+            # Benefit: focal UnknownID minus comparison policy. Cost: savings.
+            if metric.startswith("scans"):
+                entry[metric] = paired_bootstrap_difference(first, second, seed=seed)
+                entry[metric]["direction"] = "baseline minus UnknownID (optional scan savings)"
+            else:
+                entry[metric] = paired_bootstrap_difference(second, first, seed=seed)
+                entry[metric]["direction"] = "UnknownID minus baseline"
+            entry[metric]["differing_molecules"] = entry[metric]["wins"] + entry[metric]["losses"]
         comparisons[policy_name] = entry
     return comparisons
 
