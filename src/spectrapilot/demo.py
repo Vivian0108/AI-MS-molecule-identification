@@ -67,6 +67,20 @@ class DemoService(SpectraPilotService):
             ):
                 raise ServiceError("demo configuration differs from its frozen bundle")
 
+    def discovery_manifest(self):
+        """Neutral sample catalog; curation roles never label an investigation."""
+        return {
+            **{key: value for key, value in self.manifest.items() if key != "cases"},
+            "cases": [
+                {
+                    "case_id": row["case_id"],
+                    "title": f"Sample {index}",
+                    "description": "Unknown sample; inspect the acquired evidence to investigate.",
+                }
+                for index, row in enumerate(self.manifest["cases"], 1)
+            ],
+        }
+
     def _closed_plan(self, plan):
         return {
             **plan,

@@ -165,6 +165,9 @@ def test_planning_does_not_call_optional_oracle(pilot, monkeypatch):
 def test_api_health_boundaries_and_both_exports():
     with TestClient(create_app()) as client:
         assert client.get("/health").json() == {"status": "ok", "mode": "demo", "cases": 3}
+        catalog = client.get("/cases").json()["cases"]
+        assert [row["title"] for row in catalog] == ["Sample 1", "Sample 2", "Sample 3"]
+        assert all("role" not in row for row in catalog)
         started = client.post("/investigations", json={}).json()
         cid = started["case"]["case_id"]
         assert started["observed_actions"] == ["CID20"]
@@ -219,7 +222,17 @@ def test_results_snapshot_matches_generated_scientific_source(pilot):
 def test_streamlit_resolution_intervention_and_exports():
     at = AppTest.from_file(str(ROOT / "app/spectrapilot_demo.py"), default_timeout=20).run()
     assert not at.exception
+    assert [option for option in at.radio(key="case_selector").options] == [
+        "Sample 1",
+        "Sample 2",
+        "Sample 3",
+    ]
     at.button(key="start_case").click().run()
+    assert not any(button.key == "measure_recommended" for button in at.button)
+    assert any(heading.value == "1 · Start with the unknown spectrum" for heading in at.subheader)
+    at.button(key="analyze_case").click().run()
+    assert not any(button.key == "measure_recommended" for button in at.button)
+    at.button(key="compare_case").click().run()
     assert not at.exception
     baseline = at.session_state["pilot"].get_evidence(at.session_state["active_case"])["ranking"]
     at.button(key="exclude_peak").click().run()
@@ -244,6 +257,8 @@ def test_streamlit_stop_and_abstain(index, expected):
     at = AppTest.from_file(str(ROOT / "app/spectrapilot_demo.py"), default_timeout=20).run()
     at.radio(key="case_selector").set_value(index).run()
     at.button(key="start_case").click().run()
+    at.button(key="analyze_case").click().run()
+    at.button(key="compare_case").click().run()
     if index == 2:
         at.button(key="measure_recommended").click().run()
     at.button(key="stop_case").click().run()

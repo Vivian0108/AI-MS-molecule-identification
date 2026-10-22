@@ -53,7 +53,7 @@ def create_app():
 
     @app.get("/cases")
     def cases():
-        return app.state.pilot.manifest
+        return app.state.pilot.discovery_manifest()
 
     @app.post("/investigations")
     def start(request: Start):
