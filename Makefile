@@ -87,4 +87,4 @@ demo-api:
 	$(PY) -m uvicorn spectrapilot.demo_api:app --host 127.0.0.1 --port $(DEMO_API_PORT)
 
 demo-verify:
-	$(PY) -m pytest -q tests/test_spectrapilot_demo.py
+	$(PY) -m pytest -q tests/test_spectrapilot_demo.py tests/test_spectrapilot_presentation.py
