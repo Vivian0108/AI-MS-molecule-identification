@@ -4,7 +4,7 @@ PIP ?= .venv/bin/pip
 export PYTHONPATH := src
 export PYTHONHASHSEED := 0
 
-.PHONY: help setup fetch-data prepare audit demo-cases calibrate eval test app api verify
+.PHONY: help setup fetch-data prepare audit demo-cases calibrate eval test app api verify interactive-baseline
 
 help:
 	@echo "UnknownID targets"
@@ -56,3 +56,8 @@ api:
 verify: test
 	$(PY) -c "import unknownid, unknownid.api.app, unknownid.service; print('imports ok')"
 	$(PY) -c "from unknownid.config import load_config; load_config('selection'); load_config('acquisition'); print('configs ok')"
+
+# Uses only the first three precursor-ambiguous development cases from the
+# committed MultiMS2 records. Does not require a raw-data download or preparation.
+interactive-baseline:
+	$(PY) scripts/run_interactive_baseline.py

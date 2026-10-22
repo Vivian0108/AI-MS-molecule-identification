@@ -19,8 +19,9 @@ class ServiceError(RuntimeError):
 
 
 class SpectraPilotService:
-    def __init__(self, *, default_split: str = "dev") -> None:
+    def __init__(self, *, default_split: str = "dev", oracle_path: Path | None = None) -> None:
         self.default_split = default_split
+        self.oracle_path = oracle_path
         self.selection_cfg = load_config("multims2")
         self.policy_cfg = load_config("policies")
         self._sessions: dict[str, InvestigationSession] = {}
@@ -33,7 +34,11 @@ class SpectraPilotService:
                 ppm_tolerance=float(self.selection_cfg.get_path("candidate_pool.ppm", 10.0))
             )
             self.repository = CaseRepository.load(self.references)
-            self.oracle = OracleStore.load()
+            self.oracle = (
+                OracleStore.load(self.oracle_path)
+                if self.oracle_path is not None
+                else OracleStore.load()
+            )
         except FileNotFoundError as exc:
             raise ServiceError(str(exc)) from exc
         self.instrument = VirtualInstrument(self.oracle, default_budget=1)
@@ -97,7 +102,7 @@ class SpectraPilotService:
         case = self.case_summary(session.case_id)
         payload = {
             "case": case,
-            "candidates": [self.references.metadata(cid) for cid in case["candidate_ids"]],
+            "candidates": [self.references.metadata(cid) for cid in session.case.candidate_ids],
             "observed_actions": session.observed_actions,
             "remaining_budget": session.remaining_budget,
             "ranking": session.ranking().model_dump(),
