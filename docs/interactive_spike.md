@@ -26,6 +26,27 @@ Outputs:
 - `data/multims2/oracle_private/interactive_spike/`: ignored dev-only oracle and
   full JSON/Markdown traces for subsequent intervention comparisons.
 
+### Validation on 2026-10-22
+
+- Before edits: 44 tests passed in 11.66 s.
+- After edits: `make verify` passed, including 47 tests in 2.67 s, original
+  API/service imports and original config checks.
+- Ruff check and format check passed for the added runner and tests.
+- All three selected development cases completed and exported JSON and Markdown.
+  One recommended STOP; two recommended CID40; one of the measured cases changed
+  its top-ranked candidate. Correctness was not evaluated.
+- Used Python 3.12.12 and the previously installed locked research environment
+  at `/private/tmp/unknownid-feas-env/.venv`; no fresh dependency installation was
+  rehearsed. Package versions are in the generated JSON. Main currently has no
+  dependency lockfile.
+
+Exact command in this session (override `PY` for another environment):
+
+```sh
+make interactive-baseline PY=/private/tmp/unknownid-feas-env/.venv/bin/python
+make verify PY=/private/tmp/unknownid-feas-env/.venv/bin/python
+```
+
 The original service could not start from a clean clone because its private
 oracle is ignored, and `_state` incorrectly expected candidate IDs in the public
 case summary. The spike supplies a separate dev oracle path and obtains candidate

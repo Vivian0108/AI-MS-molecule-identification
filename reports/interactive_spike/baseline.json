@@ -1,0 +1,80 @@
+{
+  "study": "interactive evidence feasibility spike \u2014 baseline only",
+  "scientific_evaluation": false,
+  "selection_rule": "first three lexicographically sorted precursor-ambiguous dev case IDs",
+  "timestamp_utc": "2026-10-22T18:57:36.678956+00:00",
+  "git_commit": "8b66efe48edeb1b8d63c0cabd3ae1fb1272b43b7",
+  "python": "3.12.12",
+  "dependencies": {
+    "numpy": "2.5.4",
+    "pandas": "3.0.6",
+    "pyarrow": "26.0.0",
+    "pydantic": "2.14.1",
+    "rdkit": "2026.9.1",
+    "pytest": "9.1.1"
+  },
+  "input_sha256": {
+    "configs/multims2.yaml": "9696674e9541d18ce52344afa7d5a6cb3c593c2bfacce3dd41365bce92f539c9",
+    "configs/policies.yaml": "4516c93ed7ea2cd0257310acf99d0a94ec677685dd3271f33fea241cee235010",
+    "data/multims2/curated/split_manifest.json": "407df65b2ca39963fae50be6cbf886d09404b4ce251228376d06bbf37048ef94",
+    "data/multims2/curated/records.parquet": "b331116edc591e098d39c9c49ac6e3f35e64a919cd8aea80e8044dce825c5a37",
+    "data/multims2/curated/cases.parquet": "ca5eb993948b20482514f334be0117504202abd7fee5281a1c5cc6d3e4a349b7",
+    "data/multims2/reference/templates.parquet": "8620a57f7a1bce7a5e15cb27a37ea85f183f183190ef6ed4234b98ddbcbf8ca1"
+  },
+  "cases": [
+    {
+      "case_id": "case-07a97a0a6a07",
+      "split": "dev",
+      "n_candidates": 2,
+      "initial_top1": "BFKZQWOYQFSDDO-UHFFFAOYSA-N",
+      "recommended_action": "STOP",
+      "observed_actions": [
+        "CID20"
+      ],
+      "final_top1": "BFKZQWOYQFSDDO-UHFFFAOYSA-N",
+      "decision": "OUT_OF_LIBRARY",
+      "optional_scans": 0,
+      "json_export_ok": true,
+      "markdown_export_ok": true
+    },
+    {
+      "case_id": "case-0a1e06ef187c",
+      "split": "dev",
+      "n_candidates": 8,
+      "initial_top1": "ULGSYLSRXGDBDV-UHFFFAOYSA-N",
+      "recommended_action": "CID40",
+      "observed_actions": [
+        "CID20",
+        "CID40"
+      ],
+      "final_top1": "ULGSYLSRXGDBDV-UHFFFAOYSA-N",
+      "decision": "IDENTIFIED",
+      "optional_scans": 1,
+      "json_export_ok": true,
+      "markdown_export_ok": true
+    },
+    {
+      "case_id": "case-0b7596d031d3",
+      "split": "dev",
+      "n_candidates": 2,
+      "initial_top1": "VHWNAFASIAKDIM-UHFFFAOYSA-N",
+      "recommended_action": "CID40",
+      "observed_actions": [
+        "CID20",
+        "CID40"
+      ],
+      "final_top1": "LIZLVLBJNYYYKG-UHFFFAOYSA-N",
+      "decision": "IDENTIFIED",
+      "optional_scans": 1,
+      "json_export_ok": true,
+      "markdown_export_ok": true
+    }
+  ],
+  "limitations": [
+    "Runtime smoke check only; no truth evaluation or identification accuracy claim.",
+    "No MCP, interventions or canvas implemented at this baseline stage.",
+    "Original service thresholds, references and planner unchanged.",
+    "Committed curated records include target spectra and identities: application-level sealing only.",
+    "Reference CID40 uses CID60 spectra; EAD16 uses train-only kNN templates."
+  ]
+}
