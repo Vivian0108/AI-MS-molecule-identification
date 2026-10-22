@@ -81,3 +81,16 @@ Generate new `reports/spectrapilot/train_reference_quality.json` and `.md` from
 code, including fold membership, per-target metrics, donor provenance, hashes
 and environment metadata. Put large predicted spectra in ignored private study
 artifacts. Preserve all existing configurations, data, planner and reports.
+
+## Implementation clarification before predictor outcomes
+
+The first run stopped at schema validation before any predictions: the saved
+candidate-universe artifact has no `scaffold` column. Preparation computes
+`QCResult.scaffold` but drops it in `_record_row`, so the original split function
+uses its connectivity fallback for all compounds despite the saved scaffold
+label. Do not rewrite that historical split. For this study derive Bemis-Murcko
+scaffolds from canonical SMILES and apply the already declared five-fold
+grouping rule to training compounds only. Record whether the original split is
+exactly reproduced by connectivity fallback. Thresholds, comparison methods,
+cohorts and seeds above remain unchanged. No predictor outcomes were available
+when this clarification was recorded.
