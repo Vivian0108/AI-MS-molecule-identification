@@ -6,7 +6,7 @@
 
 ![SpectraPilot investigation](docs/screenshots/02-observe.png)
 
-**Observe → choose or stop → report.** Read the current answer and recommended action; collect one more spectrum or stop; see what changed and export the outcome. Spectra, candidate scores and audit details are available in expandable sections. You can exclude an observed peak with a reason and undo the intervention.
+**Observe → choose or stop → report.** See the actual candidate structures and the sample’s mass; compare their measured/reference fingerprints; collect one more spectrum or stop; see what changed and export the outcome. Detailed scores and audit controls remain expandable. You can exclude an observed peak with a reason and undo the intervention.
 
 **Measured result:** In an exploratory scaffold-grouped training cross-validation study of 277 ambiguous molecules, the library-assisted planner used **243 optional acquisitions versus 277** for always-CID40 (12.3% fewer), with **156 versus 157 accepted-correct identifications and 15 accepted errors for each**. This is a tradeoff, not evidence of equivalent accuracy. [Generated scientific report](reports/spectrapilot/train_stage1_reference.md).
 
@@ -24,11 +24,11 @@ make demo
 
 Open **http://127.0.0.1:8502**. No full dataset, private oracle, `make fetch-data`, or `make prepare` is needed. The small licensed bundle is committed under [`data/demo/`](data/demo/README.md). Installation time depends on the network; subsequent startup is one command.
 
-- **Resolve uncertainty:** the leading candidate changes after CID40 and the rule accepts an identification.
+- **Resolve uncertainty:** five structures share formula C15H12O4 but differ in OH positions. CID20 gives similar fingerprint fits. After CID40, Candidate C’s CID60 reference proxy matches better than the initial leader’s (cosine 0.57 vs 0.04); the combined rule supports it. The proxy energy mismatch is explicitly shown.
 - **Save a measurement:** the planner recommends stopping after CID20.
 - **Abstain responsibly:** one additional spectrum still leaves ambiguity.
 
-Run `make demo-verify` for the 11 automated demo checks. `make demo-api` starts the optional API on port 8001; `/health` reports demo mode. The UI uses the service directly and does not need that API process.
+Run `make demo-verify` for the 14 automated demo and evidence-display checks. `make demo-api` starts the optional API on port 8001; `/health` reports demo mode. The UI uses the service directly and does not need that API process.
 
 ## Why it matters
 
@@ -63,7 +63,7 @@ No benefit from adaptive CID versus EAD selection has been established: the stud
 - [Three-minute script and questions](docs/JUDGE_DEMO.md)
 - [Reproducibility and provenance](docs/DEMO_REPRODUCIBILITY.md)
 - [Readiness checklist](HACKATHON_READINESS.md)
-- Screens: [start](docs/screenshots/01-start.png), [observe](docs/screenshots/02-observe.png), [measure](docs/screenshots/03-measure.png), [export](docs/screenshots/04-report.png), [stop](docs/screenshots/05-stop.png), [abstain](docs/screenshots/06-abstain.png), [results](docs/screenshots/07-results.png)
+- Screens: [start](docs/screenshots/01-start.png), [observe](docs/screenshots/02-observe.png), [measure](docs/screenshots/03-measure.png), [export](docs/screenshots/04-report.png), [stop](docs/screenshots/05-stop.png), [abstain](docs/screenshots/06-abstain.png), [results](docs/screenshots/07-results.png), [initial fingerprint evidence](docs/screenshots/08-initial-evidence.png), [additional fingerprint evidence](docs/screenshots/09-additional-evidence.png)
 
 ## Research workflow
 

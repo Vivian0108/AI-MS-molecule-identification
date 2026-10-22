@@ -16,7 +16,7 @@
 - [x] Judge README, screenshots, three-minute script, FAQ and reproducibility commands.
 - [x] Existing `reports/`, `configs/` and `data/multims2/` unchanged relative to `5fb4d99`.
 
-## Exact verification results
+## Original clean-clone verification results
 
 Rehearsal date: 2026-10-22. A temporary **local clean Git clone** was created from this branch, without private research oracles or untracked files. Network installation used hash verification against the committed lockfiles. The working directory's user data and any existing service on port 8501 were preserved.
 
@@ -60,9 +60,15 @@ Local UI: **http://127.0.0.1:8502**. This is not a hosted public demo. Optional 
 
 ## Presentation simplification
 
-The default screen now focuses on **What do we know? → What should we do? → What changed?**. The main action is **Collect one more spectrum** or **Finish & create report**. A before/after comparison explains resolution or continued uncertainty; the stop example states the optional measurement avoided. Technical spectra, scores, alternative actions, interventions and audit data are collapsed. Judge instructions and all seven screenshots were updated.
+The default screen now focuses on **What do we know? → What should we do? → What changed?**. The main action is **Collect one more spectrum** or **Finish & create report**. A before/after comparison explains resolution or continued uncertainty; the stop example states the optional measurement avoided. Named structures and an acquired-spectrum fingerprint comparison are now visible; detailed scores, alternative actions, interventions and audit controls remain collapsed. Judge instructions and screenshots were updated.
 
-Verification after this UI change: 11 demo tests passed; Ruff formatting/lint checks passed; headless Chrome completed all three outcomes and both report downloads, and confirmed scientific evidence is initially collapsed. The scientific model, configurations, data bundle and generated scientific reports were unchanged.
+The earlier simplified layout passed 11 demo tests. The subsequent structure/evidence update passed **14 demo tests on Python 3.12 (2.38 s) and Python 3.11 (3.29 s)**, and **103 full-suite tests (10.25 s)** plus import/config checks in the locked research environment. Ruff formatting/lint checks passed. Headless Chrome completed all three outcomes and both report downloads. The scientific model, configurations, data bundle and generated scientific reports were unchanged.
+
+### Structure and evidence explanation
+
+All 15 public candidate structures are rendered from SMILES and committed as SVGs, with source/output hashes and the RDKit build version. No RDKit is required at runtime. Chemical names are shown where provided; unnamed source records remain explicitly unnamed. For the resolve case, OH positions distinguish five structures that share formula C15H12O4. A visible comparison shows measured peaks against two candidate references, per-observation cosine similarity, and matches for the three strongest non-precursor peaks. Exclusions and undo are reflected in the display. Unacquired actions are rejected; the explanation performs no measurement and cannot access truth.
+
+The CID40/CID60 mismatch and the distinction between a fingerprint match and a bond-level fragment assignment are disclosed. New screenshots show [initial evidence](docs/screenshots/08-initial-evidence.png) and [additional evidence](docs/screenshots/09-additional-evidence.png).
 
 ## Supported claims
 

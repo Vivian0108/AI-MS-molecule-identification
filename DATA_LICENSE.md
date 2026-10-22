@@ -26,3 +26,5 @@ Keep those notices and attribution when redistributing records or adaptations;
 CC BY-SA adaptations retain their applicable share-alike terms. These MassBank
 records are not included in the new MultiMS2 demo bundle. Their licenses are
 not replaced by the code's MIT license or MultiMS2's CC0 notice.
+
+The demo's SVG structure drawings in `app/assets/structures/` are generated with RDKit from the same public CC0 candidate SMILES. Their manifest records input and output hashes. These are depictions of candidate connectivity, not inferred fragment structures or new experimental data.

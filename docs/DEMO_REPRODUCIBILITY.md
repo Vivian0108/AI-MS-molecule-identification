@@ -44,3 +44,13 @@ The underlying scientific reports are existing generated artifacts and are not r
 MultiMS2 is pinned in `configs/multims2.yaml` and the bundle manifest to source commit `9219d19d8ef370a1ef0eadf0594b7dfe5e2bf83a`. The upstream data notice is retained in `data/demo/DATA_LICENSE.txt`; per-query record IDs, USIs, scan IDs and source attribution are retained in `data/demo/instrument/attribution.json`. Public reference donor/anchor provenance is in `data/demo/public/reference_provenance.json`. Code is MIT; MultiMS2 data is CC0-1.0. Historical MassBank data retains its individual record licenses. See `DATA_LICENSE.md`.
 
 Truth separation is an application boundary, not cryptographic secrecy. Local users can inspect the bundle. A curated source identity check never changes a decision that has already been stopped.
+
+## Structure and fingerprint display
+
+Committed SVG structures in `app/assets/structures/` are generated from the public candidate SMILES by `scripts/render_demo_structures.py`, using RDKit only at build time. Launching the demo needs no RDKit. The adjacent manifest records the source hash, each SVG hash, SMILES and RDKit version. OH-ring counts are derived from public connectivity; unnamed entries remain explicitly unnamed. Rebuild, if needed, with the research Python environment:
+
+```bash
+.research-venv/bin/python scripts/render_demo_structures.py
+```
+
+The visible fingerprint comparison reads only an already acquired observation and public references. It reapplies active peak exclusions and uses the existing scorer to reproduce per-observation peak matches and cosine similarity. It cannot collect a new measurement or select an unobserved spectrum. Whole-fingerprint similarity is distinct from the combined ranking, and matched peaks are not validated bond/fragment assignments.

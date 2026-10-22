@@ -5,15 +5,15 @@ Preparation: `make demo`, open http://127.0.0.1:8502. Select **Resolve uncertain
 | Time | Action and narration |
 |---|---|
 | 0:00–0:20 | “Mass spectrometers can collect more spectra, but every extra acquisition costs time. Similar library candidates should not become a confident answer without sufficient evidence.” |
-| 0:20–0:50 | Click **Start with the first measurement**. Point to **What do we know?**: the leading match is not yet supported as an identification. Only the initial archived spectrum has been acquired. |
+| 0:20–0:50 | Click **Start with the first measurement**. Show the five actual structures: all share C15H12O4 and the same precursor mass, but their OH positions differ. We are asking which library structure produced this fingerprint. Point to **What do we know?**: the leading match is not yet supported as an identification. Only the initial archived spectrum has been acquired. |
 | 0:50–1:10 | Point to **What should we do?**: collect one more spectrum. Explain that an extra measurement costs instrument time, so it needs a reason. |
-| 1:10–1:40 | Click **Collect one more spectrum**. Show **What changed?**: unresolved after the first measurement, identification supported after the extra one. The leading candidate also changes. If asked, expand **Inspect the scientific evidence** to show the actual spectrum. |
+| 1:10–1:40 | Click **Collect one more spectrum**. Show **What changed?**: unresolved after the first measurement, identification supported after the extra one. The leading candidate also changes. Scroll to **Why does a structure have evidence?**: sample, Candidate C reference, and initial-leader reference share a mass axis. Point to 0.57 versus 0.04 cosine similarity. Disclose that these CID40 comparisons use CID60 reference proxies. Matching a peak does not establish a bond-breaking mechanism. |
 | 1:40–2:00 | Optional: expand the observed-peak intervention, exclude one peak with a reason, show changed evidence, then undo. Do not claim an arbitrary excluded peak is chemically invalid. |
 | 2:00–2:20 | Click **Finish & create report**, then download JSON and Markdown under **Save the outcome**. Curated source identity is an explicit post-stop check. |
 | 2:20–2:40 | Select **Save a measurement**, start and show stop. Select **Abstain responsibly**, start, measure CID40 and stop: ambiguity remains. |
 | 2:40–3:00 | Open **Evidence & results**. “In exploratory training CV, 243 versus 277 optional scans gave 156 versus 157 accepted-correct identifications, with 15 errors each. This is closed-world triage; we have not established a general accuracy advantage or live-instrument performance.” |
 
-For a simple demonstration, leave scientific evidence, interventions and audit details collapsed. Skip the peak intervention unless a judge asks about scientist control. Never substitute demo outcomes for aggregate evaluation.
+For a simple demonstration, show the structures and the visible fingerprint comparison; leave detailed scores, interventions and audit controls collapsed. Skip the peak intervention unless a judge asks about scientist control. Never substitute demo outcomes for aggregate evaluation.
 
 ## Concise answers
 

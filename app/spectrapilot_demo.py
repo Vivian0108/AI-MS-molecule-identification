@@ -5,10 +5,18 @@ from __future__ import annotations
 import json
 
 import pandas as pd
+from html import escape
+from pathlib import Path
+
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 import streamlit as st
 
 from spectrapilot.demo import DemoService
+from spectrapilot.presentation import compare_observed_candidates
+
+ASSETS = Path(__file__).resolve().parent / "assets/structures"
+STRUCTURES = json.loads((ASSETS / "manifest.json").read_text())["candidates"]
 
 st.set_page_config(page_title="SpectraPilot · Measurement triage", page_icon="🧪", layout="wide")
 st.markdown(
@@ -43,6 +51,8 @@ def reset():
         "spectrum_action",
         "peak_index",
         "edit_action",
+        "compare_action",
+        "compare_other",
     ):
         st.session_state.pop(key, None)
 
@@ -64,6 +74,8 @@ def measure(case_id, action):
         f"Archived {action} measurement revealed",
     )
     st.session_state.spectrum_action = action
+    st.session_state.compare_action = action
+    st.session_state.pop("compare_other", None)
 
 
 def exclude(case_id, action, index, reason):
@@ -126,6 +138,84 @@ def spectrum_plot(observation, excluded):
     return figure
 
 
+def candidate_title(item, names):
+    label = names[item["candidate_id"]]
+    if item["name"] == item["candidate_id"]:
+        family = STRUCTURES[item["candidate_id"]].get("family", "Library structure")
+        return f"{family} · {label}"
+    return f"{item['name']} · {label}"
+
+
+def structure_gallery(candidates, names, leader):
+    for offset in range(0, len(candidates), 5):
+        group = candidates[offset : offset + 5]
+        for column, item in zip(st.columns(len(group)), group):
+            with column:
+                st.markdown(f"**{names[item['candidate_id']]}**")
+                info = STRUCTURES[item["candidate_id"]]
+                st.image(str(ASSETS / info["file"]), width="stretch")
+                title = candidate_title(item, names).split(" · ")[0]
+                st.markdown(
+                    f'<div style="font-size:13px;line-height:1.35;min-height:38px">{escape(title)}</div>',
+                    unsafe_allow_html=True,
+                )
+                if info.get("description"):
+                    st.caption(
+                        "OH groups: " + " + ".join(str(count) for count in info["ring_oh_counts"])
+                    )
+                if item["name"] == item["candidate_id"]:
+                    st.caption("No common name supplied.")
+                if item["candidate_id"] == leader:
+                    st.caption("↑ Leading fingerprint match")
+
+
+def fingerprint_comparison(data, names):
+    labels = [f"Sample — measured {data['action']}"]
+    for row in data["candidates"]:
+        source = (
+            "CID60 library proxy"
+            if row["reference_source"] == "reference_cid60"
+            else "predicted reference"
+        )
+        labels.append(f"{names[row['candidate_id']]} — {source}")
+    fig = make_subplots(
+        rows=3, cols=1, shared_xaxes=True, vertical_spacing=0.13, subplot_titles=labels
+    )
+    spectra = [(data["observed_mz"], data["observed_intensity"])] + [
+        (row["reference_mz"], row["reference_intensity"]) for row in data["candidates"]
+    ]
+    for index, ((mz, intensity), color) in enumerate(
+        zip(spectra, ["#163c46", "#087f74", "#b5752a"]), 1
+    ):
+        x, y = [], []
+        for mass, height in zip(mz, intensity):
+            x.extend([mass, mass, None])
+            y.extend([0, height, None])
+        fig.add_trace(
+            go.Scatter(
+                x=x,
+                y=y,
+                mode="lines",
+                line=dict(color=color, width=2),
+                hovertemplate="m/z %{x:.4f}<br>Relative intensity %{y:.2f}<extra></extra>",
+            ),
+            row=index,
+            col=1,
+        )
+    for mass, _ in data["strongest_fragments"]:
+        fig.add_vline(x=mass, line_color="#becdca", line_dash="dot", line_width=1)
+    fig.update_layout(
+        height=390,
+        showlegend=False,
+        margin=dict(l=15, r=15, t=35, b=30),
+        paper_bgcolor="#f6f8f7",
+        plot_bgcolor="white",
+    )
+    fig.update_yaxes(range=[0, 1.08], showticklabels=False, gridcolor="#eef3f1")
+    fig.update_xaxes(title_text="Fragment mass-to-charge (m/z)", row=3, col=1)
+    return fig
+
+
 pilot = service()
 examples = pilot.manifest["cases"]
 with st.sidebar:
@@ -144,10 +234,10 @@ with st.sidebar:
     st.caption("Real archived spectra, replayed on request. No live instrument is connected.")
     st.caption("Three selected development examples, not an accuracy test.")
 
-st.title("Do we need another measurement?")
+st.title("Which molecule is in this sample?")
 st.write(
-    "A spectrum is a molecular fingerprint. When several molecules look alike, "
-    "SpectraPilot helps a scientist choose: measure again, stop, or leave the answer unresolved."
+    "Compare possible structures with the sample’s measured fingerprint. "
+    "Then decide: collect more evidence, identify a library match, or leave it unresolved."
 )
 st.caption("Demo mode — curated development examples · Closed-world library identification")
 
@@ -157,9 +247,13 @@ investigation_tab, results_tab, scope_tab = st.tabs(
 with investigation_tab:
     if not st.session_state.get("active_case"):
         st.subheader(example["title"])
+        intro = pilot.case_summary(example["case_id"])
         st.write(
-            "Start with one measured fingerprint and a shortlist of possible molecules. "
-            "Then see whether another measurement is worth taking."
+            f"An unknown sample has an ion at m/z {intro['precursor_mz']:.5f}. "
+            f"{intro['n_candidates']} library structures fit that mass. Which one, if any, does its fragmentation fingerprint support?"
+        )
+        st.caption(
+            "We identify a match within this library; we do not infer a new structure from scratch."
         )
         st.button(
             "Start with the first measurement",
@@ -184,8 +278,32 @@ with investigation_tab:
             candidate: f"Candidate {chr(65 + index)}"
             for index, candidate in enumerate(sorted(item["candidate_id"] for item in candidates))
         }
-        lead = names[candidates[0]["candidate_id"]]
-        initial_lead = names[baseline_candidates[0]["candidate_id"]]
+        by_id = {item["candidate_id"]: item for item in candidates}
+        lead = candidate_title(candidates[0], names)
+        initial_lead = candidate_title(baseline_candidates[0], names)
+        formulas = sorted({item["formula"] for item in candidates})
+        st.markdown(
+            "**The question: which of these structures produced the sample’s fingerprint?**"
+        )
+        st.write(
+            f"The measured intact ion is at **m/z {case['precursor_mz']:.5f}**. "
+            f"All {case['n_candidates']} candidates fit its mass within 10 ppm. "
+            + (
+                f"They share formula **{formulas[0]}**, so mass alone cannot distinguish their atom arrangements."
+                if len(formulas) == 1
+                else "Mass alone does not choose among them."
+            )
+        )
+        stable_candidates = sorted(candidates, key=lambda item: item["candidate_id"])
+        structure_gallery(stable_candidates, names, candidates[0]["candidate_id"])
+        if all(
+            STRUCTURES[item["candidate_id"]].get("family") == "Trihydroxychalcone"
+            for item in candidates
+        ):
+            st.caption(
+                "Compare the red oxygen / OH groups: these structures differ in where those groups sit on the two rings. That structural difference is real; its fragmentation mechanism is not assigned here."
+            )
+        st.divider()
         initial_decision = st.session_state.baseline["decision_if_stopped"]
         enough = preview == "IDENTIFIED"
         measured_extra = len(observations) > 1
@@ -338,6 +456,75 @@ with investigation_tab:
                 key="download_md",
                 width="stretch",
             )
+
+        st.subheader("Why does a structure have evidence?")
+        st.write(
+            "We compare the measured fragment peaks with a reference fingerprint associated with each structure. "
+            "Matching peak masses and relative heights support a candidate; a shared mass alone is not proof."
+        )
+        first_id = candidates[0]["candidate_id"]
+        preferred_other = (
+            baseline_candidates[0]["candidate_id"]
+            if measured_extra
+            else candidates[1]["candidate_id"]
+        )
+        others = [item["candidate_id"] for item in candidates if item["candidate_id"] != first_id]
+        if preferred_other not in others:
+            preferred_other = others[0]
+        action = st.selectbox(
+            "Compare a measurement already collected",
+            list(observations),
+            index=len(observations) - 1,
+            key="compare_action",
+        )
+        other_id = st.selectbox(
+            "Compare the leading match with",
+            others,
+            index=others.index(preferred_other),
+            format_func=lambda cid: candidate_title(by_id[cid], names),
+            key=f"compare_other_{case_id}_{first_id}_{len(observations)}",
+        )
+        comparison = compare_observed_candidates(pilot, case_id, action, [first_id, other_id])
+        a, b = comparison["candidates"]
+        st.write(
+            f"**{candidate_title(by_id[first_id], names)}** vs **{candidate_title(by_id[other_id], names)}**"
+        )
+        st.write(
+            f"At {action}, whole-fingerprint similarity is **{a['cosine']:.2f} for {names[a['candidate_id']]}** "
+            f"and **{b['cosine']:.2f} for {names[b['candidate_id']]}**. "
+            "Higher means peak positions and relative heights fit better; it is not an identity probability."
+        )
+        if not enough:
+            st.caption(
+                "The collected evidence still does not meet the identification rule, even though one candidate ranks first."
+            )
+        st.plotly_chart(
+            fingerprint_comparison(comparison, names), width="stretch", key="fingerprint_compare"
+        )
+        peak_rows = []
+        for mass, intensity in comparison["strongest_fragments"]:
+            row = {"Observed fragment m/z": f"{mass:.4f}"}
+            for candidate in comparison["candidates"]:
+                match = next(
+                    (pair for pair in candidate["matches"] if pair["observed_mz"] == mass), None
+                )
+                row[names[candidate["candidate_id"]]] = (
+                    f"Matches {match['template_mz']:.4f}" if match else "No matching peak"
+                )
+            peak_rows.append(row)
+        if peak_rows:
+            st.dataframe(pd.DataFrame(peak_rows), hide_index=True, width="stretch")
+        if any(row["reference_source"] == "reference_cid60" for row in comparison["candidates"]):
+            st.caption(
+                "Reference limitation: the CID40 comparison uses an allowed CID60 library spectrum as a proxy. The energies differ; it is not a measured CID40 reference for that candidate."
+            )
+        else:
+            st.caption(
+                "These are predicted reference fingerprints from training structure-neighbours, not experimental spectra of each candidate at this energy."
+            )
+        st.caption(
+            f"Rows show the three strongest measured fragment peaks, excluding the intact ion; match tolerance ±{comparison['tolerance_da']:.2f} Da. The score uses the whole spectrum, including intensity agreement. Matching a peak does not prove a particular bond break or fragment structure. The final ranking combines all collected measurements."
+        )
 
         st.divider()
         with st.expander("Inspect the scientific evidence"):
