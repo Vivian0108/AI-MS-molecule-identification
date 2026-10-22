@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import base64
 import json
 
 import pandas as pd
@@ -20,15 +21,7 @@ STRUCTURES = json.loads((ASSETS / "manifest.json").read_text())["candidates"]
 
 st.set_page_config(page_title="SpectraPilot · Measurement triage", page_icon="🧪", layout="wide")
 st.markdown(
-    """<style>
-.stApp {background:#f6f8f7;color:#142e35} .block-container {padding-top:2rem;max-width:1400px}
-h1,h2,h3 {letter-spacing:-.035em} h1 {font-size:2.7rem!important}
-[data-testid="stMetric"] {background:white;border:1px solid #dce7e2;border-radius:12px;padding:14px}
-[data-testid="stSidebar"] {background:#eaf1ee}
-.eyebrow {color:#087b70;font:600 12px monospace;letter-spacing:.16em;margin-bottom:8px}
-.scope {color:#536a6c;font-size:14px;margin-bottom:18px}
-.flow {background:#122f36;color:#e5f4ed;border-radius:14px;padding:16px 22px;margin:18px 0}
-</style>""",
+    "<style>" + (ASSETS.parent / "demo.css").read_text() + "</style>",
     unsafe_allow_html=True,
 )
 
@@ -141,10 +134,11 @@ def spectrum_plot(observation, excluded):
         plot_bgcolor="white",
         xaxis_title="m/z",
         yaxis_title="Relative intensity",
-        font=dict(color="#183d43"),
+        font=dict(color="#3b596e", size=12, family="sans-serif"),
         showlegend=False,
     )
     figure.update_yaxes(range=[0, 1.08], gridcolor="#eef3f1")
+    figure.update_xaxes(range=[min(observation["mz"]) - 5, max(observation["mz"]) + 8])
     return figure
 
 
@@ -156,27 +150,111 @@ def candidate_title(item, names):
     return f"{item['name']} · {label}"
 
 
+def structure_image(candidate_id):
+    svg = (ASSETS / STRUCTURES[candidate_id]["file"]).read_bytes()
+    encoded = base64.b64encode(svg).decode("ascii")
+    return f'<img src="data:image/svg+xml;base64,{encoded}" alt="Molecular structure {candidate_id}" />'
+
+
 def structure_gallery(candidates, names, leader):
-    for offset in range(0, len(candidates), 5):
-        group = candidates[offset : offset + 5]
-        for column, item in zip(st.columns(len(group)), group):
-            with column:
-                st.markdown(f"**{names[item['candidate_id']]}**")
-                info = STRUCTURES[item["candidate_id"]]
-                st.image(str(ASSETS / info["file"]), width="stretch")
-                title = candidate_title(item, names).split(" · ")[0]
-                st.markdown(
-                    f'<div style="font-size:13px;line-height:1.35;min-height:38px">{escape(title)}</div>',
-                    unsafe_allow_html=True,
-                )
-                if info.get("description"):
-                    st.caption(
-                        "OH groups: " + " + ".join(str(count) for count in info["ring_oh_counts"])
-                    )
-                if item["name"] == item["candidate_id"]:
-                    st.caption("No common name supplied.")
-                if item["candidate_id"] == leader:
-                    st.caption("↑ Leading fingerprint match")
+    cards = []
+    for item in candidates:
+        cid = item["candidate_id"]
+        info = STRUCTURES[cid]
+        title = candidate_title(item, names).split(" · ")[0]
+        badge = '<span class="rank-tag">Leading match</span>' if cid == leader else ""
+        oh = ""
+        if info.get("ring_oh_counts"):
+            oh = (
+                '<span class="oh-tag">OH groups: '
+                + " + ".join(str(count) for count in info["ring_oh_counts"])
+                + "</span>"
+            )
+        note = (
+            '<div class="source-note">No common name supplied</div>' if item["name"] == cid else ""
+        )
+        cards.append(
+            f'<article class="molecule-card {"leader" if cid == leader else ""}">'
+            f'<div class="card-id">{escape(names[cid])}{badge}</div>'
+            f'<div role="img" aria-label="Structure of {escape(title, quote=True)}">{structure_image(cid)}</div>'
+            f'<div class="compound-name" title="{escape(title, quote=True)}">{escape(title)}</div>{oh}{note}</article>'
+        )
+    st.html('<div class="structure-grid">' + "".join(cards) + "</div>")
+
+
+def story_header(pilot, example):
+    cid = st.session_state.get("active_case")
+    stage, status, closed = 0, "Awaiting sample", False
+    if cid:
+        stage, status = 1, "Initial spectrum loaded"
+        if st.session_state.get("analyzed_case") == cid:
+            stage, status = 2, "Mass-compatible structures found"
+        if st.session_state.get("compared_case") == cid:
+            state = pilot.get_evidence(cid)
+            stage, status = 3, "Evidence compared"
+            if len(state["observed_actions"]) > 1:
+                stage, status = 4, "Additional spectrum acquired"
+            if state["stopped"]:
+                stage, status, closed = 4, "Investigation closed", True
+    st.markdown(
+        f'<section class="hero {"compact" if cid else ""}"><div class="hero-top"><span class="hero-kicker">SpectraPilot / Measurement triage</span>'
+        f'<span class="session-tag">{escape(example["title"])} · {status}</span></div>'
+        '<h1>Which molecule is<br><span class="hero-accent">in this sample?</span></h1>'
+        "<p>Follow the spectral evidence. Decide whether another measurement is worth taking. "
+        "Record a conclusion you can inspect.</p>"
+        '<div class="hero-foot"><span>Archived experimental spectra</span><span>One optional acquisition</span>'
+        "<span>Auditable evidence report</span></div></section>"
+        '<div class="scope-note">Demo mode — curated development examples · Closed-world library identification</div>',
+        unsafe_allow_html=True,
+    )
+    labels = ["Observe", "Find matches", "Compare evidence", "Decide", "Conclude"]
+    steps = []
+    for index, label in enumerate(labels):
+        done = index < stage or closed
+        style = "done" if done else "active" if index == stage else ""
+        number = "✓" if done else f"{index + 1:02d}"
+        steps.append(f'<div class="journey-step {style}"><b>{number}</b><span>{label}</span></div>')
+    st.markdown(
+        '<nav class="journey" aria-label="Investigation progress">' + "".join(steps) + "</nav>",
+        unsafe_allow_html=True,
+    )
+
+
+def verdict_card(title, supported):
+    st.markdown(
+        f'<div class="verdict {"good" if supported else ""}"><div class="verdict-kicker">Current evidence</div>'
+        f'<div class="verdict-title">{escape(title)}</div></div>',
+        unsafe_allow_html=True,
+    )
+
+
+def result_comparison(initial, current, names, initial_decision, enough, action):
+    def card(item, title, outcome, style):
+        return (
+            f'<article class="result-card {style}"><div class="result-label">{title}</div>'
+            f"<h3>{outcome}</h3>{structure_image(item['candidate_id'])}"
+            f"<p>Leading match: {escape(candidate_title(item, names))}</p></article>"
+        )
+
+    before = card(
+        initial,
+        "Initial 20 eV measurement",
+        "Identification supported" if initial_decision == "IDENTIFIED" else "Unresolved",
+        "",
+    )
+    after = card(
+        current,
+        f"After additional {escape(action)} measurement",
+        "Identification supported" if enough else "Still unresolved",
+        "final" if enough else "unresolved",
+    )
+    st.html(
+        '<div class="result-pair">'
+        + before
+        + '<div class="result-arrow">→</div>'
+        + after
+        + "</div>"
+    )
 
 
 def fingerprint_comparison(data, names):
@@ -218,7 +296,7 @@ def fingerprint_comparison(data, names):
         height=390,
         showlegend=False,
         margin=dict(l=15, r=15, t=35, b=30),
-        paper_bgcolor="#f6f8f7",
+        paper_bgcolor="#f4f7fa",
         plot_bgcolor="white",
     )
     fig.update_yaxes(range=[0, 1.08], showticklabels=False, gridcolor="#eef3f1")
@@ -229,8 +307,10 @@ def fingerprint_comparison(data, names):
 pilot = service()
 examples = pilot.discovery_manifest()["cases"]
 with st.sidebar:
-    st.markdown("### 🧪 SpectraPilot")
-    st.caption("Know when to measure. Know when to stop.")
+    st.markdown(
+        '<div class="brand"><span class="brand-mark">SP</span>SpectraPilot</div><div class="brand-sub">From spectra to decisions</div>',
+        unsafe_allow_html=True,
+    )
     selected = st.radio(
         "Choose an unknown sample",
         range(len(examples)),
@@ -244,26 +324,22 @@ with st.sidebar:
     st.caption("Real archived spectra, replayed on request. No live instrument is connected.")
     st.caption("Three selected development examples, not an accuracy test.")
 
-st.title("Which molecule is in this sample?")
-st.write(
-    "Compare possible structures with the sample’s measured fingerprint. "
-    "Then decide: collect more evidence, identify a library match, or leave it unresolved."
-)
-st.caption("Demo mode — curated development examples · Closed-world library identification")
-st.caption("UNKNOWN SPECTRUM → MASS MATCHES → FRAGMENT EVIDENCE → NEXT MEASUREMENT → CONCLUSION")
+story_header(pilot, example)
 
 investigation_tab, library_tab, results_tab, scope_tab = st.tabs(
     ["Investigate", "Reference library", "Evidence & results", "About the science"]
 )
 with investigation_tab:
     if not st.session_state.get("active_case"):
-        st.subheader(example["title"])
-        st.write(
-            "Begin with an unknown sample’s measured spectrum. "
-            "Use its precursor mass to search the library, then inspect the fragment evidence."
-        )
-        st.caption(
-            "We identify a match within this library; we do not infer a new structure from scratch."
+        st.markdown(
+            f'<section class="intro-card"><div class="eyebrow">Case file / {escape(example["title"])}</div>'
+            "<h2>Start with what you measured.</h2>"
+            "<p>An unknown sample. A measured spectrum. Several possible structures. "
+            "Your task is to follow the evidence and choose the next step.</p>"
+            '<div class="brief"><div><strong>01 / Observe</strong>Inspect a real archived MS/MS spectrum.</div>'
+            "<div><strong>02 / Investigate</strong>Find structures that fit the measured evidence.</div>"
+            "<div><strong>03 / Decide</strong>Collect more evidence or record a conclusion.</div></div></section>",
+            unsafe_allow_html=True,
         )
         st.button(
             "Load unknown spectrum",
@@ -271,6 +347,7 @@ with investigation_tab:
             type="primary",
             on_click=start,
             args=(example["case_id"],),
+            width="stretch",
         )
         st.caption("You can reveal at most one extra archived spectrum in each example.")
     else:
@@ -279,9 +356,11 @@ with investigation_tab:
             case = pilot.case_summary(case_id)
             observed = pilot.observations(case_id)[0]
             st.subheader("1 · Start with the unknown spectrum")
-            st.write(
-                f"**{example['title']}** · measured precursor **m/z {case['precursor_mz']:.5f}** · "
-                f"{case['adduct']} · initial 20 eV spectrum"
+            st.markdown(
+                f'<div class="spectrum-strip"><div><label>Measured precursor m/z</label><strong>{case["precursor_mz"]:.5f}</strong></div>'
+                "<div><label>Acquired spectrum</label><strong>20 eV · CID</strong></div>"
+                f'<span class="tag">{escape(case["adduct"])} · 1 measurement collected</span></div>',
+                unsafe_allow_html=True,
             )
             figure = spectrum_plot(observed, set())
             figure.add_vline(
@@ -289,8 +368,11 @@ with investigation_tab:
                 line_dash="dot",
                 line_color="#a55e20",
                 annotation_text="Intact precursor ion",
+                annotation_position="top left",
             )
-            st.plotly_chart(figure, width="stretch", key="unknown_spectrum")
+            st.plotly_chart(
+                figure, width="stretch", key="unknown_spectrum", config={"displayModeBar": False}
+            )
             st.write(
                 "Each peak represents an ion detected from this sample. Which library structures could explain this fingerprint?"
             )
@@ -381,10 +463,10 @@ with investigation_tab:
                 with current:
                     st.subheader("3 · What does the evidence support?")
                     if enough:
-                        st.success(answer)
+                        verdict_card(answer, True)
                         st.write(f"**{lead}** meets the current identification rule.")
                     else:
-                        st.warning(answer)
+                        verdict_card(answer, False)
                         st.write(
                             f"**{lead}** ranks first, but the evidence does not justify choosing it as the answer."
                         )
@@ -455,21 +537,14 @@ with investigation_tab:
 
                 if measured_extra:
                     st.subheader("What changed after the extra measurement?")
-                    earlier, now = st.columns(2)
-                    with earlier:
-                        with st.container(border=True):
-                            st.markdown("**After the first measurement**")
-                            st.write(
-                                "Identification supported"
-                                if initial_decision == "IDENTIFIED"
-                                else "Unresolved"
-                            )
-                            st.caption(f"Leading match: {initial_lead}")
-                    with now:
-                        with st.container(border=True):
-                            st.markdown("**After the extra measurement**")
-                            st.write("Identification supported" if enough else "Still unresolved")
-                            st.caption(f"Leading match: {lead}")
+                    result_comparison(
+                        baseline_candidates[0],
+                        candidates[0],
+                        names,
+                        initial_decision,
+                        enough,
+                        list(observations)[-1],
+                    )
                     if enough and initial_decision != "IDENTIFIED":
                         st.write(
                             "**The extra measurement supplied enough evidence to support an identification.**"
@@ -486,8 +561,9 @@ with investigation_tab:
                         st.caption(f"The leading match changed from {initial_lead} to {lead}.")
                 elif stopped and enough:
                     st.subheader("What was saved?")
-                    st.write(
-                        "**One optional measurement avoided.** The report uses only the first spectrum."
+                    st.markdown(
+                        '<div class="saved-card"><strong>1</strong><p><b>optional measurement avoided</b><br>The conclusion uses the initial spectrum alone.</p></div>',
+                        unsafe_allow_html=True,
                     )
                 if st.session_state.get("change"):
                     st.caption(st.session_state.change[2])
