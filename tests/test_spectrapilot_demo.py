@@ -198,6 +198,12 @@ def test_api_health_boundaries_and_both_exports():
             client.post(f"/investigations/{cid}/reveal-identity").json()["outcome"]
             == "accepted-correct"
         )
+        restarted = client.post("/investigations", json={"case_id": cid}).json()
+        assert restarted["observed_actions"] == ["CID20"]
+        assert restarted["remaining_budget"] == 1
+        assert "curated_identity_check" not in restarted
+        assert client.get(f"/investigations/{cid}/report").status_code == 400
+        assert client.post(f"/investigations/{cid}/reveal-identity").status_code == 400
         assert client.get("/oracle").status_code == client.get("/truth").status_code == 404
 
 

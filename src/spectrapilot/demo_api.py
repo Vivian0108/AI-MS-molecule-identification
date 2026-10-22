@@ -58,7 +58,9 @@ def create_app():
     @app.post("/investigations")
     def start(request: Start):
         pilot = app.state.pilot
-        return pilot.start_case(request.case_id or pilot.manifest["cases"][0]["case_id"])
+        case_id = request.case_id or pilot.manifest["cases"][0]["case_id"]
+        pilot.reset_case(case_id)
+        return pilot.start_case(case_id)
 
     @app.get("/investigations/{case_id}/evidence")
     def evidence(case_id: str):

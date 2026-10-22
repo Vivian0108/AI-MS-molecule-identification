@@ -13,7 +13,7 @@ make demo-verify
 make demo
 ```
 
-The committed bundle under `data/demo/` contains three development cases and all reference and query data needed for the interaction. It contains no frozen test spectra and no full private evaluation oracle. The runtime neither reads the research Parquet tables nor accesses external services. `make demo` uses port 8502 and `make demo-api` uses 8001. `/health` returns demo mode.
+The committed bundle under `data/demo/` contains three development cases and all reference and query data needed for the interaction. It contains no frozen test spectra and no full private evaluation oracle. The runtime neither reads the research Parquet tables nor accesses external services. `make demo` uses port 8502 and `make demo-api` uses 8001. `/health` returns demo mode. The API is a local, single-user demonstration: posting `/investigations` starts that case afresh and replaces its previous local session; it is not a multi-user investigation server.
 
 ## Full tests and research environment
 
