@@ -72,6 +72,12 @@ The updated source and all SVG assets were then checked in the temporary clean c
 
 The CID40/CID60 mismatch and the distinction between a fingerprint match and a bond-level fragment assignment are disclosed. New screenshots show [initial evidence](docs/screenshots/08-initial-evidence.png) and [additional evidence](docs/screenshots/09-additional-evidence.png).
 
+### Guided investigation story
+
+The current interaction is **unknown spectrum → mass matches → fragment comparison → next measurement → conclusion**. Sample 1/2/3 labels replace outcome spoilers in the UI and API catalog. Rankings and recommendations appear only after fragment comparison, and optional experimental spectra only after measurement. The Reference library tab exposes the 15 bundled structures and distinguishes predicted fingerprints from CID60 library proxies. The curation audit remains intact for reproducibility.
+
+Verification: **14 demo tests passed in 2.58 s** and **103 full-suite tests passed in 11.53 s**, with imports/config checks passing. The tests cover neutral API labels and the spectrum/search/comparison sequence. Python 3.11 also passed all 14 demo tests in 3.79 s. Headless Chrome completed the staged investigation for all three samples, browsed the reference library and downloaded both report formats. Ten screenshots and the three-minute judge script were refreshed. The existing upstream deprecation warning remains. Numerical science, frozen configurations and reports were not changed.
+
 ## Supported claims
 
 The application demonstrates archived measurement reveal, candidate rescoring, a stop decision, abstention, reversible observed-peak interventions and evidence exports. It can run from the committed development bundle without a full dataset rebuild.

@@ -54,3 +54,7 @@ Committed SVG structures in `app/assets/structures/` are generated from the publ
 ```
 
 The visible fingerprint comparison reads only an already acquired observation and public references. It reapplies active peak exclusions and uses the existing scorer to reproduce per-observation peak matches and cosine similarity. It cannot collect a new measurement or select an unobserved spectrum. Whole-fingerprint similarity is distinct from the combined ranking, and matched peaks are not validated bond/fragment assignments.
+
+## Discovery-led investigation
+
+The UI and `/cases` API catalog use neutral Sample 1/2/3 titles. The original bundle retains its curation audit for reproducibility, but role labels do not name samples in the application. The screen reveals the initial measured spectrum first, mass-compatible structures after a library search, and rankings/recommendations after explicit fragment comparison. These are presentation stages over the unchanged scientific service; they do not change thresholds or reveal optional spectra. A separate Reference library tab shows the 15 bundled structures and reference sources.

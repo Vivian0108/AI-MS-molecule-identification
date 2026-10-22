@@ -4,7 +4,7 @@
 
 **Solution:** SpectraPilot shows the evidence, recommends another archived measurement or a stop, and exports an auditable identification or abstention.
 
-![SpectraPilot investigation](docs/screenshots/02-observe.png)
+![Start with the unknown spectrum](docs/screenshots/01-start.png)
 
 **Observe → choose or stop → report.** See the actual candidate structures and the sample’s mass; compare their measured/reference fingerprints; collect one more spectrum or stop; see what changed and export the outcome. Detailed scores and audit controls remain expandable. You can exclude an observed peak with a reason and undo the intervention.
 
@@ -24,9 +24,14 @@ make demo
 
 Open **http://127.0.0.1:8502**. No full dataset, private oracle, `make fetch-data`, or `make prepare` is needed. The small licensed bundle is committed under [`data/demo/`](data/demo/README.md). Installation time depends on the network; subsequent startup is one command.
 
-- **Resolve uncertainty:** five structures share formula C15H12O4 but differ in OH positions. CID20 gives similar fingerprint fits. After CID40, Candidate C’s CID60 reference proxy matches better than the initial leader’s (cosine 0.57 vs 0.04); the combined rule supports it. The proxy energy mismatch is explicitly shown.
-- **Save a measurement:** the planner recommends stopping after CID20.
-- **Abstain responsibly:** one additional spectrum still leaves ambiguity.
+Choose **Sample 1**, **Sample 2**, or **Sample 3**. Each begins without an outcome label:
+
+1. **Load unknown spectrum:** inspect the precursor m/z and measured peaks.
+2. **Search the reference library:** discover the mass-compatible structures.
+3. **Compare fragment fingerprints:** inspect the evidence and recommendation.
+4. Collect another archived spectrum or stop, then record what the evidence supports.
+
+The **Reference library** tab shows the 15 known structures and whether their fingerprints are predicted or measured library proxies. Identification, stopping and unresolved outcomes appear only as the analysis supports them. These remain curated demonstrations, not blinded evaluation.
 
 Run `make demo-verify` for the 14 automated demo and evidence-display checks. `make demo-api` starts the optional API on port 8001; `/health` reports demo mode. The UI uses the service directly and does not need that API process.
 
@@ -50,7 +55,7 @@ flowchart LR
   T[Separate curated source identity] -->|explicit check after stopping only| E
 ```
 
-The oracle boundary is enforced by application interfaces, not encryption: anyone with filesystem access can inspect the redistributable development files. Neither hidden measured spectra nor evaluator truth are returned in initial evidence or planning payloads. A selected case's title intentionally indicates the kind of demonstration.
+The oracle boundary is enforced by application interfaces, not encryption: anyone with filesystem access can inspect the redistributable development files. Neither hidden measured spectra nor evaluator truth are returned in initial evidence or planning payloads. Sample titles are neutral; curation-role labels are not exposed by the screen or the demo API catalog.
 
 ## Evidence and limitations
 
@@ -63,7 +68,7 @@ No benefit from adaptive CID versus EAD selection has been established: the stud
 - [Three-minute script and questions](docs/JUDGE_DEMO.md)
 - [Reproducibility and provenance](docs/DEMO_REPRODUCIBILITY.md)
 - [Readiness checklist](HACKATHON_READINESS.md)
-- Screens: [start](docs/screenshots/01-start.png), [observe](docs/screenshots/02-observe.png), [measure](docs/screenshots/03-measure.png), [export](docs/screenshots/04-report.png), [stop](docs/screenshots/05-stop.png), [abstain](docs/screenshots/06-abstain.png), [results](docs/screenshots/07-results.png), [initial fingerprint evidence](docs/screenshots/08-initial-evidence.png), [additional fingerprint evidence](docs/screenshots/09-additional-evidence.png)
+- Screens: [start](docs/screenshots/01-start.png), [observe](docs/screenshots/02-observe.png), [measure](docs/screenshots/03-measure.png), [export](docs/screenshots/04-report.png), [stop](docs/screenshots/05-stop.png), [abstain](docs/screenshots/06-abstain.png), [results](docs/screenshots/07-results.png), [initial fingerprint evidence](docs/screenshots/08-initial-evidence.png), [additional fingerprint evidence](docs/screenshots/09-additional-evidence.png), [reference library](docs/screenshots/10-library.png)
 
 ## Research workflow
 
