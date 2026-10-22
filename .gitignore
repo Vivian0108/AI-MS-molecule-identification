@@ -21,3 +21,8 @@ data/oracle/actions.jsonl
 .DS_Store
 .idea/
 .vscode/
+
+# SpectraPilot v2 external data and private stores
+external/
+data/multims2/oracle_private/
+data/multims2/evaluator_private/

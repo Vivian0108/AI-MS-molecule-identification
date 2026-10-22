@@ -1,0 +1,50 @@
+version: spectrapilot-v2.0
+dataset:
+  name: MultiMS2
+  source_repo: https://github.com/zamboni-lab/MultiMS2
+  commit: 9219d19d8ef370a1ef0eadf0594b7dfe5e2bf83a
+  paper_doi: 10.1093/gigascience/giag069
+  license: CC0-1.0 for data, MIT for code
+  mgf: external/MultiMS2/data/multims2_spectra.mgf
+  partitions: external/MultiMS2/data/MULTIMS2-PARTITION-{1,2,3,4,5}.tsv
+filters:
+  ion_mode: positive
+  adduct: "[M+H]+"
+  instrument: ZENOTOF7600
+  ms_level: 2
+  min_peaks: 3
+  ppm_precursor: 10.0
+  require_chimeric_pass: true
+  require_structure: true
+energies:
+  cid: [20, 40, 60]
+  ead: [12, 16, 24]
+  initial: {fragmentation: CID, energy_ev: 20}
+  actions:
+    - {fragmentation: CID, energy_ev: 40}
+    - {fragmentation: EAD, energy_ev: 16}
+  reference: {fragmentation: CID, energy_ev: 60}
+preprocessing:
+  relative_intensity_floor: 0.01
+  match_tolerance_da: 0.02
+template_model:
+  fingerprint_radius: 2
+  fingerprint_bits: 2048
+  k_cid: 15
+  k_ead: 20
+  min_similarity: 0.05
+  source: train_only_structure_knn
+splits:
+  seed: 20261021
+  train: 0.70
+  dev: 0.15
+  test: 0.15
+candidate_pool:
+  ppm: 10.0
+  sensitivity_ppm: [5.0, 20.0]
+evaluation:
+  bootstrap_resamples: 2000
+  random_repetitions: 20
+  seed: 20261021
+  scan_cost: 1.0
+  ead_cost_ratios: [1.0, 2.0, 4.0]

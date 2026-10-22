@@ -1,0 +1,19 @@
+version: spectrapilot-policies-v1
+planner:
+  method: separation_heuristic
+  stop_support: 0.90
+  stop_margin: 0.65
+  stop_score: 0.01
+  ead_cost_ratio: 1.0
+confidence:
+  identified_min_support: 0.72
+  identified_min_margin: 0.22
+  identified_min_fit: 0.30
+  identified_min_matched_peaks: 2
+  out_of_library_max_fit: 0.20
+  out_of_library_max_matched_peaks: 1
+  insufficient_min_peaks: 3
+open_world:
+  reject_min_fit: 0.24
+  reject_min_matched_peaks: 2
+  accepted_coverage_target: 0.90
