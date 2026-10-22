@@ -1,0 +1,33 @@
+{
+  "thresholds": [
+    0.17136905673137198,
+    0.20739328951542094,
+    0.2948912839408553,
+    0.5201849568352014,
+    0.5364293196483777,
+    0.560471326421928,
+    0.5774968798619627,
+    0.6223354945449424,
+    0.9818995460719739
+  ],
+  "values": [
+    0.0,
+    0.5,
+    0.6,
+    0.75,
+    0.7777777777777778,
+    0.8,
+    0.8275862068965517,
+    0.9166666666666666,
+    1.0
+  ],
+  "n": 522,
+  "brier": 0.06362098325039267,
+  "split": "dev",
+  "score": "support",
+  "notes": [
+    "Isotonic regression on a single support score.",
+    "Fitted on a held-out development split, never on test.",
+    "Low capacity by design: no feature interactions to overfit."
+  ]
+}

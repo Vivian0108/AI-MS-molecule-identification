@@ -55,6 +55,7 @@ class SeparationPlanner:
         available_actions: Sequence[MeasurementAction],
         top_fit: float = 0.0,
         top_matched: int = 0,
+        **_: object,
     ) -> Plan:
         observed = list(observed_actions)
         available = [

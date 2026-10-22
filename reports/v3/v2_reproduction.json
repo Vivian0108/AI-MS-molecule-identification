@@ -1,0 +1,223 @@
+{
+  "created_utc": "2026-10-22T18:40:44+00:00",
+  "split": "test",
+  "n_cases": 157,
+  "source_commit_note": "v3 branch work tree; v2 code path frozen behind --decision-version v2_legacy",
+  "artifact_sha256": {
+    "cases": "ca5eb993948b20482514f334be0117504202abd7fee5281a1c5cc6d3e4a349b7",
+    "records": "b331116edc591e098d39c9c49ac6e3f35e64a919cd8aea80e8044dce825c5a37",
+    "templates": "8620a57f7a1bce7a5e15cb27a37ea85f183f183190ef6ed4234b98ddbcbf8ca1",
+    "truth": "c7c6ca87b703503d503290a855821a12499fbb1c6558f1a2369db21de9b5fd17",
+    "oracle": "e9a80d8b5803d58c84f4bece40fc4ec68e32167768bad32e52b5332f9127a915",
+    "mgf": "4ef86f75a12ad2fdadbd63732e2d6690f4e506a6ff08f171758c1808d1249673"
+  },
+  "repetitions": 20,
+  "resamples": 2000,
+  "v2_summaries": {
+    "cid20_only": {
+      "n": 157,
+      "cohort": "v2_frozen_test",
+      "splits": [
+        "test"
+      ],
+      "top1_accuracy": 0.8343949044585988,
+      "top1_ci_low": 0.7707006369426752,
+      "top1_ci_high": 0.89171974522293,
+      "top3_accuracy": 0.9872611464968153,
+      "mrr": 0.909447983014862,
+      "mean_extra_scans": 0.0,
+      "msms_accepted_coverage": 0.03184713375796178,
+      "msms_accepted_accuracy": 0.8,
+      "msms_false_id_rate_at_coverage": 0.2,
+      "msms_selective_risk": 0.006369426751592357,
+      "accepted_coverage": 0.03184713375796178,
+      "accepted_accuracy": 0.8,
+      "false_id_rate_at_coverage": 0.2,
+      "selective_risk": 0.006369426751592357,
+      "mass_only_fraction": 0.0,
+      "abstention_rate": 0.9681528662420382,
+      "status_counts": {
+        "AMBIGUOUS": 4,
+        "INSUFFICIENT_DATA": 18,
+        "MSMS_SUPPORTED": 5,
+        "OUT_OF_LIBRARY": 130
+      },
+      "proof_tier_counts": {
+        "abstained": 152,
+        "msms_supported": 5
+      }
+    },
+    "always_cid40": {
+      "n": 157,
+      "cohort": "v2_frozen_test",
+      "splits": [
+        "test"
+      ],
+      "top1_accuracy": 0.9363057324840764,
+      "top1_ci_low": 0.89171974522293,
+      "top1_ci_high": 0.9681528662420382,
+      "top3_accuracy": 0.9936305732484076,
+      "mrr": 0.9644373673036093,
+      "mean_extra_scans": 1.0,
+      "msms_accepted_coverage": 0.7006369426751592,
+      "msms_accepted_accuracy": 0.9818181818181818,
+      "msms_false_id_rate_at_coverage": 0.01818181818181818,
+      "msms_selective_risk": 0.012738853503184714,
+      "accepted_coverage": 0.7006369426751592,
+      "accepted_accuracy": 0.9818181818181818,
+      "false_id_rate_at_coverage": 0.01818181818181818,
+      "selective_risk": 0.012738853503184714,
+      "mass_only_fraction": 0.0,
+      "abstention_rate": 0.29936305732484075,
+      "status_counts": {
+        "AMBIGUOUS": 10,
+        "INSUFFICIENT_DATA": 18,
+        "MSMS_SUPPORTED": 110,
+        "OUT_OF_LIBRARY": 19
+      },
+      "proof_tier_counts": {
+        "abstained": 47,
+        "msms_supported": 110
+      }
+    },
+    "always_ead16": {
+      "n": 157,
+      "cohort": "v2_frozen_test",
+      "splits": [
+        "test"
+      ],
+      "top1_accuracy": 0.8343949044585988,
+      "top1_ci_low": 0.7707006369426752,
+      "top1_ci_high": 0.89171974522293,
+      "top3_accuracy": 0.9936305732484076,
+      "mrr": 0.9113588110403396,
+      "mean_extra_scans": 1.0,
+      "msms_accepted_coverage": 0.03184713375796178,
+      "msms_accepted_accuracy": 0.8,
+      "msms_false_id_rate_at_coverage": 0.2,
+      "msms_selective_risk": 0.006369426751592357,
+      "accepted_coverage": 0.03184713375796178,
+      "accepted_accuracy": 0.8,
+      "false_id_rate_at_coverage": 0.2,
+      "selective_risk": 0.006369426751592357,
+      "mass_only_fraction": 0.0,
+      "abstention_rate": 0.9681528662420382,
+      "status_counts": {
+        "AMBIGUOUS": 4,
+        "INSUFFICIENT_DATA": 18,
+        "MSMS_SUPPORTED": 5,
+        "OUT_OF_LIBRARY": 130
+      },
+      "proof_tier_counts": {
+        "abstained": 152,
+        "msms_supported": 5
+      }
+    },
+    "random": {
+      "n": 157,
+      "cohort": "v2_frozen_test",
+      "splits": [
+        "test"
+      ],
+      "top1_accuracy": 0.8888535031847132,
+      "top1_ci_low": 0.8445859872611464,
+      "top1_ci_high": 0.9270700636942676,
+      "top3_accuracy": 0.9952229299363057,
+      "mrr": 0.9400477707006368,
+      "mean_extra_scans": 1.0,
+      "msms_accepted_coverage": 0.3684713375796178,
+      "msms_accepted_accuracy": 0.9749351771823681,
+      "msms_false_id_rate_at_coverage": 0.025064822817631807,
+      "msms_selective_risk": 0.009235668789808917,
+      "accepted_coverage": 0.3684713375796178,
+      "accepted_accuracy": 0.9749351771823681,
+      "false_id_rate_at_coverage": 0.025064822817631807,
+      "selective_risk": 0.009235668789808917,
+      "mass_only_fraction": 0.0,
+      "abstention_rate": 0.9681528662420382,
+      "status_counts": {
+        "AMBIGUOUS": 3,
+        "INSUFFICIENT_DATA": 18,
+        "MIXED": 112,
+        "MSMS_SUPPORTED": 5,
+        "OUT_OF_LIBRARY": 19
+      },
+      "proof_tier_counts": {
+        "abstained": 98,
+        "msms_supported": 59
+      }
+    },
+    "separation": {
+      "n": 157,
+      "cohort": "v2_frozen_test",
+      "splits": [
+        "test"
+      ],
+      "top1_accuracy": 0.9363057324840764,
+      "top1_ci_low": 0.8980891719745223,
+      "top1_ci_high": 0.9681528662420382,
+      "top3_accuracy": 0.9936305732484076,
+      "mrr": 0.9644373673036093,
+      "mean_extra_scans": 0.36942675159235666,
+      "msms_accepted_coverage": 0.267515923566879,
+      "msms_accepted_accuracy": 0.9523809523809523,
+      "msms_false_id_rate_at_coverage": 0.047619047619047616,
+      "msms_selective_risk": 0.012738853503184714,
+      "accepted_coverage": 0.267515923566879,
+      "accepted_accuracy": 0.9523809523809523,
+      "false_id_rate_at_coverage": 0.047619047619047616,
+      "selective_risk": 0.012738853503184714,
+      "mass_only_fraction": 0.0,
+      "abstention_rate": 0.732484076433121,
+      "status_counts": {
+        "AMBIGUOUS": 6,
+        "INSUFFICIENT_DATA": 18,
+        "MSMS_SUPPORTED": 42,
+        "OUT_OF_LIBRARY": 91
+      },
+      "proof_tier_counts": {
+        "abstained": 115,
+        "msms_supported": 42
+      }
+    },
+    "hindsight_best": {
+      "n": 157,
+      "cohort": "v2_frozen_test",
+      "splits": [
+        "test"
+      ],
+      "top1_accuracy": 0.9554140127388535,
+      "top1_ci_low": 0.9235668789808917,
+      "top1_ci_high": 0.9808917197452229,
+      "top3_accuracy": 0.9872611464968153,
+      "mrr": 0.9734607218683651,
+      "mean_extra_scans": 1.0,
+      "msms_accepted_coverage": 0.6878980891719745,
+      "msms_accepted_accuracy": 0.9814814814814815,
+      "msms_false_id_rate_at_coverage": 0.018518518518518517,
+      "msms_selective_risk": 0.012738853503184714,
+      "accepted_coverage": 0.6878980891719745,
+      "accepted_accuracy": 0.9814814814814815,
+      "false_id_rate_at_coverage": 0.018518518518518517,
+      "selective_risk": 0.012738853503184714,
+      "mass_only_fraction": 0.0,
+      "abstention_rate": 0.31210191082802546,
+      "status_counts": {
+        "AMBIGUOUS": 6,
+        "INSUFFICIENT_DATA": 18,
+        "MSMS_SUPPORTED": 108,
+        "OUT_OF_LIBRARY": 25
+      },
+      "proof_tier_counts": {
+        "abstained": 49,
+        "msms_supported": 108
+      }
+    }
+  },
+  "coverage_regression_count": 68,
+  "coverage_regression_root_causes": {
+    "precursor_unique_candidate_abstained": 67,
+    "no_independent_support_and_no_mass_only_rule": 1
+  },
+  "elapsed_seconds": 31.9
+}

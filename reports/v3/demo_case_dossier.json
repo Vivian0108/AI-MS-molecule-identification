@@ -1,0 +1,27 @@
+[
+  {
+    "case_id": "case-0217e6b5044e",
+    "action": "CID40",
+    "decision": "MSMS_SUPPORTED",
+    "proof_level": "msms_supported",
+    "precommit_sha256": "27e558e5151004920c228ac41d2e94f708f51519ebd045648416f2da71ea96c0",
+    "hypothesis_statuses": [
+      "refuted",
+      "refuted",
+      "supported"
+    ],
+    "truth": "BNFRJXLZYUTIII-UHFFFAOYSA-N"
+  },
+  {
+    "case_id": "case-0450558c55a6",
+    "action": "CID40",
+    "decision": "AMBIGUOUS",
+    "proof_level": "abstained",
+    "precommit_sha256": "0aa91051f2ebd6218ce475907f8aff1e90b25fad6c0cbec4621b1cca9a7dd7fe",
+    "hypothesis_statuses": [
+      "supported",
+      "supported"
+    ],
+    "truth": "JEMBKQSZZOKYTO-UHFFFAOYSA-N"
+  }
+]

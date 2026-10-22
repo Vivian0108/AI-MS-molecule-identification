@@ -20,7 +20,7 @@ class MeasurementAction(BaseModel):
     adduct: str = "[M+H]+"
     estimated_cost: float = 1.0
     policy_score: Optional[float] = None
-    score_type: Literal["EIG", "HEURISTIC", "NONE"] = "NONE"
+    score_type: Literal["EIG", "HEURISTIC", "SUPERVISED_RISK_PROXY", "NONE"] = "NONE"
 
     @model_validator(mode="after")
     def _check_shape(self):
@@ -62,7 +62,7 @@ class MeasurementAction(BaseModel):
         *,
         estimated_cost: float = 1.0,
         policy_score: float | None = None,
-        score_type: Literal["EIG", "HEURISTIC", "NONE"] = "NONE",
+        score_type: Literal["EIG", "HEURISTIC", "SUPERVISED_RISK_PROXY", "NONE"] = "NONE",
     ) -> "MeasurementAction":
         if key == "STOP":
             return cls(kind="STOP")

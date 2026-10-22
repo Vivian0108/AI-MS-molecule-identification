@@ -1,0 +1,91 @@
+version: spectrapilot-v3.0
+seed: 20261021
+# The v2 system is preserved verbatim as a frozen legacy baseline.  Nothing in
+# this file changes v2 behaviour; it only configures the v3 additions.
+legacy:
+  scorer: legacy_cosine
+  planner: separation_heuristic
+
+decision:
+  # MSMS_SUPPORTED requires both a ranked winner and independent spectral support.
+  msms_min_support: 0.72
+  msms_min_margin: 0.22
+  msms_min_fit: 0.30
+  msms_min_matched_peaks: 2
+  # Independent spectral support means the fitted template is trustworthy.  A
+  # low-reliability structure-kNN template cannot create MS/MS support.
+  min_template_reliability_for_msms: 0.30
+  # A unique precursor-consistent candidate with no independent support is a
+  # MASS_ONLY_MATCH.  It is never MSMS_SUPPORTED and never OUT_OF_LIBRARY.
+  unique_candidate_status: MASS_ONLY_MATCH
+  # Open-world rejection is only allowed from reliable experimental references
+  # or a validated open-set risk model; never from a weak predicted template.
+  ool_max_fit: 0.20
+  ool_max_matched_peaks: 1
+  ool_requires_experimental_source: true
+  insufficient_min_peaks: 3
+
+features:
+  match_tolerance_da: 0.02
+  ppm_tolerance: 10.0
+  # Peaks below this relative intensity are not treated as unexplained evidence.
+  unexplained_intensity_floor: 0.01
+  max_observed_peaks_for_fragments: 24
+
+fragments:
+  # msbuddy provides the subformula enumeration.  If it is unavailable the
+  # extractor records a missing feature instead of inventing one.
+  backend: msbuddy
+  enabled: auto
+  ppm_tolerance: 10.0
+  # Subformula compatibility can falsify an assignment; it never proves a
+  # connectivity.  EAD is radical-driven, so its bookkeeping is flagged.
+  trusted_methods_for_falsification: [CID]
+  heuristic_methods: [EAD]
+
+ranker:
+  enabled: true
+  model: hist_gradient_boosting
+  calibration: isotonic
+  folds: 5
+  group_by: scaffold
+  # Negative examples are same-formula or within-ppm distractors only.
+  negatives: same_formula_or_ppm
+  seed: 20261021
+  min_training_episodes: 60
+  output: data/multims2/curated/ranker_v3.json
+
+open_world:
+  enabled: true
+  unknown_cutoff: 0.50
+  acceptable_risk: 0.15
+  model: hist_gradient_boosting
+  output: data/multims2/curated/open_world_v3.json
+  challenge_groups: [closed, hard_alternatives, trivial]
+
+ead:
+  # Method-aware EAD evidence: train-only per-fragment diagnostic presence model.
+  diagnostic_model: presence_classifier
+  min_positive_count: 8
+  min_fragment_frequency: 0.02
+  max_fragments_per_candidate: 60
+  output: data/multims2/curated/ead_presence_v3.json
+
+predictors:
+  # Structured spectrum predictors are optional and must be validated before
+  # they are enabled.  No checkpoint is bundled with this repository.
+  cid_predictor: null          # e.g. ms-pred ICEBERG/GLACIER, if ever installed
+  ead_predictor: null
+  require_validated: true
+  allow_network_download: false
+
+benchmark:
+  bootstrap_resamples: 4000
+  random_repetitions: 20
+  budget: 1
+  ceiling_budget: 2
+  primary_cohort: ambiguous
+  primary_metric: top1_correct
+  # Test cases were inspected during v2 development, so retuned v3 results on
+  # test are labelled exploratory, not blind.
+  test_status: development_exposed

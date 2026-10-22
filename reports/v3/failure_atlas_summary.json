@@ -1,0 +1,51 @@
+{
+  "n": 157,
+  "diagnostic_only": true,
+  "failure_counts": {
+    "A": 2,
+    "B": 0,
+    "C": 1,
+    "D": 3,
+    "E": 0,
+    "F": 27,
+    "RECOVERED": 124
+  },
+  "failure_share": {
+    "A": 0.012738853503184714,
+    "B": 0.0,
+    "C": 0.006369426751592357,
+    "D": 0.01910828025477707,
+    "E": 0.0,
+    "F": 0.17197452229299362,
+    "RECOVERED": 0.7898089171974523
+  },
+  "retrieval_top1_initial": 0.8407643312101911,
+  "retrieval_top1_cid40": 0.9426751592356688,
+  "retrieval_top1_ead16": 0.8343949044585988,
+  "retrieval_top1_combined": 0.9426751592356688,
+  "retrieval_top1_policy": 0.9426751592356688,
+  "action_ceiling": 0.9617834394904459,
+  "pool_separable_share": 0.7575757575757576,
+  "median_measured_separability": 0.9550988819326887,
+  "median_measured_separability_same_formula": 0.48688662704323926,
+  "median_template_fidelity": 0.5006508163980282,
+  "n_same_formula_multi": 47,
+  "n_multi_candidate": 67,
+  "failures_with_information_present": 10,
+  "failures_chemistry_limited": 13,
+  "n_failures": 33,
+  "status_subclass_counts": {
+    "recovered": 124,
+    "abstained_after_correct_retrieval": 24,
+    "retrieval_error": 6,
+    "false_identification": 3
+  },
+  "median_failing_template_fidelity": 0.3227386554073511,
+  "median_failing_measured_separability": 0.3146018804775671,
+  "cid40_reference_share": 0.8853503184713376,
+  "cid40_template_reliability_median": 0.75,
+  "split": "test",
+  "scorer": "consistent_cosine (deployed S1)",
+  "planner": "decision_aware_risk_reduction",
+  "calibration": "isotonic support calibrator fitted on dev"
+}

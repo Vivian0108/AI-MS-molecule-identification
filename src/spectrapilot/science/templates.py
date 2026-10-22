@@ -16,6 +16,17 @@ from spectrapilot.models import Candidate, Template
 from spectrapilot.paths import CURATED, REFERENCE
 
 
+def _nominal_energy(action: str) -> float | None:
+    """Nominal collision energy encoded in an action key ('CID40' -> 40.0)."""
+    digits = "".join(char for char in str(action) if char.isdigit())
+    if not digits:
+        return None
+    try:
+        return float(digits)
+    except ValueError:
+        return None
+
+
 class ReferenceStore:
     def __init__(
         self,
@@ -57,15 +68,23 @@ class ReferenceStore:
             action = str(row["action"])
             if action not in self.reference_only_actions:
                 raise ValueError(f"ReferenceStore received disallowed action {action}")
+            source = str(row["source"])
+            # v3 provenance: a CID60 reference used as a CID40 template is an
+            # explicit +20 eV surrogate, not a true conditional prediction.
+            if source == "reference_cid60":
+                expected_energy = 60.0
+            else:
+                expected_energy = _nominal_energy(action)
             self._templates[(candidate_id, action)] = Template(
                 candidate_id=candidate_id,
                 action=action,
                 mz=np.asarray(row["peaks_mz"], float),
                 intensity=np.asarray(row["peaks_intensity"], float),
-                source=str(row["source"]),
+                source=source,
                 reliability=float(row["reliability"]),
                 n_donors=int(row["n_donors"]),
                 mean_similarity=float(row["mean_similarity"]),
+                expected_energy_ev=expected_energy,
             )
 
     @classmethod

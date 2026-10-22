@@ -1,0 +1,17 @@
+{
+  "n_rows": 4788,
+  "n_episodes": 737,
+  "n_features": 36,
+  "n_groups": 527,
+  "oof_auc": 0.9668301280160463,
+  "oof_brier": 0.07170045173039231,
+  "oof_top1_accuracy": 0.9365671641791045,
+  "calibration": "isotonic (out-of-fold, grouped by scaffold)",
+  "model": "hist_gradient_boosting",
+  "folds": 5,
+  "notes": [
+    "Trained on train-split episodes only.",
+    "Negatives are the real precursor-consistent distractors.",
+    "Out-of-fold scores are grouped by Bemis-Murcko scaffold."
+  ]
+}

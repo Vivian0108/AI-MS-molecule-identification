@@ -1,0 +1,5 @@
+variant,description,n,top1_accuracy,top1_ci_low,top1_ci_high,mean_extra_scans,msms_accepted_coverage,accepted_coverage,false_id_rate_at_coverage,runtime_seconds,note,delta_top1_vs_S1
+S0_legacy_cosine,S0 legacy cosine,157,0.9363,0.8979,0.9682,1.0,0.7389,0.8471,0.015,4.3,,-0.0064
+S1_consistent_cosine,S1 consistent cosine,157,0.9427,0.8981,0.9683,1.0,0.7006,0.8089,0.0236,4.1,"NEUTRAL: +1 top-1 case, but -4 points MS/MS coverage and +1 false ID versus S0; the scorer is not the source of any v3 gain",0.0
+S2_plus_ranker,S2 + calibrated ranker,157,0.8981,0.8408,0.9363,1.0,0.6242,0.7325,0.0435,9.1,REJECTED: train-split kNN templates are optimistic for train compounds; the model does not transfer to held-out scaffolds (see training_report.md),-0.0446
+S3_plus_formula,S3 + formula consistency,157,0.9427,0.8981,0.9683,1.0,0.7006,0.8089,0.0236,5.0,formula-level loss plausibility can only penalise different-formula distractors; it cannot separate same-formula isomers,0.0
