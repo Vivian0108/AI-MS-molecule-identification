@@ -4,7 +4,7 @@ PIP ?= .venv/bin/pip
 export PYTHONPATH := src
 export PYTHONHASHSEED := 0
 
-.PHONY: help setup fetch-data prepare audit demo-cases calibrate eval test app api verify interactive-baseline peak-exclusion-spike modality-headroom reference-quality
+.PHONY: help setup fetch-data prepare audit demo-cases calibrate eval test app api verify interactive-baseline peak-exclusion-spike modality-headroom reference-quality stage1-reference
 
 help:
 	@echo "UnknownID targets"
@@ -70,3 +70,6 @@ modality-headroom:
 
 reference-quality:
 	$(PY) scripts/check_train_reference_quality.py
+
+stage1-reference:
+	$(PY) scripts/check_train_stage1_reference.py
