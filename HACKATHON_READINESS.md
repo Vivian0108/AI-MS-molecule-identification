@@ -78,6 +78,12 @@ The current interaction is **unknown spectrum → mass matches → fragment comp
 
 Verification: **14 demo tests passed in 2.58 s** and **103 full-suite tests passed in 11.53 s**, with imports/config checks passing. The tests cover neutral API labels and the spectrum/search/comparison sequence. Python 3.11 also passed all 14 demo tests in 3.79 s. Headless Chrome completed the staged investigation for all three samples, browsed the reference library and downloaded both report formats. Ten screenshots and the three-minute judge script were refreshed. The existing upstream deprecation warning remains. Numerical science, frozen configurations and reports were not changed.
 
+### Visual presentation
+
+The demonstration uses a dark teal introduction and sidebar, an evidence-driven progress strip, a prominent measured-precursor panel, molecular candidate cards, and before/after structure cards. The header becomes compact after loading so the scientific content remains prominent. Leading-match highlights appear only after comparison. Green/amber outcome styling reflects the current decision rule; it does not assert source-identity correctness. The scan-saving card is shown only after stopping with no optional measurement. Layouts adapt to narrower screens and respect reduced-motion preferences.
+
+All spectra and structure drawings remain based on the existing data; no decorative spectrum or fabricated result was introduced. The visual update passed 14 demo tests and Ruff checks; the full locked research environment passed 103 tests in 11.56 s plus imports/config checks. Chrome verified all three outcomes, the five candidate images and two result images, progress states, report downloads and the narrow-screen layout. The original scientific configuration and reports were unchanged.
+
 ## Supported claims
 
 The application demonstrates archived measurement reveal, candidate rescoring, a stop decision, abstention, reversible observed-peak interventions and evidence exports. It can run from the committed development bundle without a full dataset rebuild.

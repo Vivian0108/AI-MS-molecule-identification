@@ -68,7 +68,7 @@ No benefit from adaptive CID versus EAD selection has been established: the stud
 - [Three-minute script and questions](docs/JUDGE_DEMO.md)
 - [Reproducibility and provenance](docs/DEMO_REPRODUCIBILITY.md)
 - [Readiness checklist](HACKATHON_READINESS.md)
-- Screens: [start](docs/screenshots/01-start.png), [observe](docs/screenshots/02-observe.png), [measure](docs/screenshots/03-measure.png), [export](docs/screenshots/04-report.png), [stop](docs/screenshots/05-stop.png), [abstain](docs/screenshots/06-abstain.png), [results](docs/screenshots/07-results.png), [initial fingerprint evidence](docs/screenshots/08-initial-evidence.png), [additional fingerprint evidence](docs/screenshots/09-additional-evidence.png), [reference library](docs/screenshots/10-library.png)
+- Screens: [welcome](docs/screenshots/00-welcome.png), [start](docs/screenshots/01-start.png), [observe](docs/screenshots/02-observe.png), [measure](docs/screenshots/03-measure.png), [export](docs/screenshots/04-report.png), [stop](docs/screenshots/05-stop.png), [abstain](docs/screenshots/06-abstain.png), [results](docs/screenshots/07-results.png), [initial fingerprint evidence](docs/screenshots/08-initial-evidence.png), [additional fingerprint evidence](docs/screenshots/09-additional-evidence.png), [reference library](docs/screenshots/10-library.png)
 
 ## Research workflow
 
