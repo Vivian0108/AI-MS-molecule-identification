@@ -58,6 +58,12 @@ Local UI: **http://127.0.0.1:8502**. This is not a hosted public demo. Optional 
 - [Bundle provenance](data/demo/build_manifest.json)
 - [Code license](LICENSE) and [data licenses](DATA_LICENSE.md)
 
+## Presentation simplification
+
+The default screen now focuses on **What do we know? → What should we do? → What changed?**. The main action is **Collect one more spectrum** or **Finish & create report**. A before/after comparison explains resolution or continued uncertainty; the stop example states the optional measurement avoided. Technical spectra, scores, alternative actions, interventions and audit data are collapsed. Judge instructions and all seven screenshots were updated.
+
+Verification after this UI change: 11 demo tests passed; Ruff formatting/lint checks passed; headless Chrome completed all three outcomes and both report downloads, and confirmed scientific evidence is initially collapsed. The scientific model, configurations, data bundle and generated scientific reports were unchanged.
+
 ## Supported claims
 
 The application demonstrates archived measurement reveal, candidate rescoring, a stop decision, abstention, reversible observed-peak interventions and evidence exports. It can run from the committed development bundle without a full dataset rebuild.

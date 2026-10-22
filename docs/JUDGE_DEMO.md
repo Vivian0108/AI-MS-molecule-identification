@@ -5,15 +5,15 @@ Preparation: `make demo`, open http://127.0.0.1:8502. Select **Resolve uncertain
 | Time | Action and narration |
 |---|---|
 | 0:00–0:20 | “Mass spectrometers can collect more spectra, but every extra acquisition costs time. Similar library candidates should not become a confident answer without sufficient evidence.” |
-| 0:20–0:50 | Start the resolve case. Show CID20, five competing candidates, one optional acquisition remaining and the ambiguous decision. “Only the initial archived spectrum is visible.” |
-| 0:50–1:10 | Scroll to the recommendation and its candidate-separation rationale. “The planner can choose a measurement or stop; support is a ranking score, not an identity probability.” |
-| 1:10–1:40 | Click **Measure CID40**. Show the newly revealed experimental spectrum, changed leading candidate and updated decision. “This is archived experimental evidence, not a spectrum invented by the assistant.” |
+| 0:20–0:50 | Click **Start with the first measurement**. Point to **What do we know?**: the leading match is not yet supported as an identification. Only the initial archived spectrum has been acquired. |
+| 0:50–1:10 | Point to **What should we do?**: collect one more spectrum. Explain that an extra measurement costs instrument time, so it needs a reason. |
+| 1:10–1:40 | Click **Collect one more spectrum**. Show **What changed?**: unresolved after the first measurement, identification supported after the extra one. The leading candidate also changes. If asked, expand **Inspect the scientific evidence** to show the actual spectrum. |
 | 1:40–2:00 | Optional: expand the observed-peak intervention, exclude one peak with a reason, show changed evidence, then undo. Do not claim an arbitrary excluded peak is chemically invalid. |
-| 2:00–2:20 | Stop, download JSON and Markdown. Show the evidence and intervention audit trail. Curated source identity is an explicit post-stop check. |
+| 2:00–2:20 | Click **Finish & create report**, then download JSON and Markdown under **Save the outcome**. Curated source identity is an explicit post-stop check. |
 | 2:20–2:40 | Select **Save a measurement**, start and show stop. Select **Abstain responsibly**, start, measure CID40 and stop: ambiguity remains. |
-| 2:40–3:00 | Open Measured results. “In exploratory training CV, 243 versus 277 optional scans gave 156 versus 157 accepted-correct identifications, with 15 errors each. This is closed-world triage; we have not established a general accuracy advantage or live-instrument performance.” |
+| 2:40–3:00 | Open **Evidence & results**. “In exploratory training CV, 243 versus 277 optional scans gave 156 versus 157 accepted-correct identifications, with 15 errors each. This is closed-world triage; we have not established a general accuracy advantage or live-instrument performance.” |
 
-If time is tight, skip the peak intervention and show the other two cases with their screenshots. Never substitute demo outcomes for aggregate evaluation.
+For a simple demonstration, leave scientific evidence, interventions and audit details collapsed. Skip the peak intervention unless a judge asks about scientist control. Never substitute demo outcomes for aggregate evaluation.
 
 ## Concise answers
 

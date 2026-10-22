@@ -130,59 +130,45 @@ pilot = service()
 examples = pilot.manifest["cases"]
 with st.sidebar:
     st.markdown("### 🧪 SpectraPilot")
-    st.caption("AUDITABLE MS/MS MEASUREMENT TRIAGE")
-    st.divider()
+    st.caption("Know when to measure. Know when to stop.")
     selected = st.radio(
-        "Curated development case",
+        "Try a different outcome",
         range(len(examples)),
         format_func=lambda index: examples[index]["title"],
         key="case_selector",
         on_change=reset,
     )
     example = examples[selected]
-    st.caption(example["description"])
-    st.caption(f"Case `{example['case_id']}`")
+    st.button("Restart this example", key="reset_case", on_click=reset, width="stretch")
     st.divider()
-    st.markdown("**What is replayed?**")
-    st.caption("Real archived MultiMS2 spectra. This app does not control a live instrument.")
-    st.caption(
-        "CID20 first. Choose CID40, EAD16 or stop. One optional acquisition per investigation."
-    )
-    st.markdown("[MultiMS2 source](https://github.com/zamboni-lab/MultiMS2)")
-    st.caption("Data: CC0-1.0 · Code: MIT")
-    st.button("Reset this example", key="reset_case", on_click=reset, width="stretch")
+    st.caption("Real archived spectra, replayed on request. No live instrument is connected.")
+    st.caption("Three selected development examples, not an accuracy test.")
 
-st.markdown('<div class="eyebrow">SPECTRAPILOT / VIRTUAL MS/MS LAB</div>', unsafe_allow_html=True)
-st.title("Make the next measurement count.")
-st.markdown(
-    '<div class="scope">Closed-world library identification · auditable evidence · explicit abstention</div>',
-    unsafe_allow_html=True,
+st.title("Do we need another measurement?")
+st.write(
+    "A spectrum is a molecular fingerprint. When several molecules look alike, "
+    "SpectraPilot helps a scientist choose: measure again, stop, or leave the answer unresolved."
 )
-st.info(
-    "Demo mode — curated development examples. These cases illustrate behavior; they are not independent evaluation evidence.",
-    icon="🧪",
-)
-st.markdown(
-    '<div class="flow">01 &nbsp; OBSERVE &nbsp; → &nbsp; 02 &nbsp; CHOOSE OR STOP &nbsp; → &nbsp; 03 &nbsp; REPORT</div>',
-    unsafe_allow_html=True,
-)
+st.caption("Demo mode — curated development examples · Closed-world library identification")
 
 investigation_tab, results_tab, scope_tab = st.tabs(
-    ["Investigation", "Measured results", "Scope & provenance"]
+    ["Try the demo", "Evidence & results", "About the science"]
 )
 with investigation_tab:
     if not st.session_state.get("active_case"):
         st.subheader(example["title"])
         st.write(
-            "Begin with only the archived 20 eV observation. Inspect the competing candidates, then follow or question the recommendation."
+            "Start with one measured fingerprint and a shortlist of possible molecules. "
+            "Then see whether another measurement is worth taking."
         )
         st.button(
-            "Start investigation",
+            "Start with the first measurement",
             key="start_case",
             type="primary",
             on_click=start,
             args=(example["case_id"],),
         )
+        st.caption("You can reveal at most one extra archived spectrum in each example.")
     else:
         case_id = st.session_state.active_case
         evidence = pilot.get_evidence(case_id)
@@ -192,178 +178,245 @@ with investigation_tab:
         recommendation = plan["recommended"]
         observations = {item["action"]: item for item in pilot.observations(case_id)}
         preview = evidence["decision_if_stopped"]
-        label = {
-            "IDENTIFIED": "Ready to identify",
-            "AMBIGUOUS": "Ambiguous",
-            "OUT_OF_LIBRARY": "Insufficient fit",
-            "INSUFFICIENT_DATA": "Insufficient data",
-        }[preview]
-        metrics = st.columns(4)
-        metrics[0].metric(
-            "Acquisitions",
-            len(observations),
-            help="Includes the initial CID20 observation; it is not a free scan.",
-        )
-        metrics[1].metric("Optional budget left", evidence["remaining_budget"])
-        metrics[2].metric("Library candidates", case["n_candidates"])
-        metrics[3].metric(
-            "Final decision" if stopped else "Evidence if stopped now",
-            "Identified" if stopped and preview == "IDENTIFIED" else label,
-        )
-        if st.session_state.get("change"):
-            before, after, title = st.session_state.change
-            old = before["ranking"]["candidates"][0]["candidate_id"]
-            new = after["ranking"]["candidates"][0]["candidate_id"]
-            st.success(
-                f"{title}. "
-                + (
-                    "The leading candidate changed."
-                    if old != new
-                    else "The leading candidate is unchanged."
+        candidates = evidence["ranking"]["candidates"]
+        baseline_candidates = st.session_state.baseline["ranking"]["candidates"]
+        names = {
+            candidate: f"Candidate {chr(65 + index)}"
+            for index, candidate in enumerate(sorted(item["candidate_id"] for item in candidates))
+        }
+        lead = names[candidates[0]["candidate_id"]]
+        initial_lead = names[baseline_candidates[0]["candidate_id"]]
+        initial_decision = st.session_state.baseline["decision_if_stopped"]
+        enough = preview == "IDENTIFIED"
+        measured_extra = len(observations) > 1
+        answer = "Identification supported" if enough else "Not enough evidence to identify"
+        if measured_extra and not enough:
+            answer = "Still unresolved — no identification"
+
+        current, next_step = st.columns([1.1, 1], gap="large")
+        with current:
+            st.subheader("1 · What do we know?")
+            if enough:
+                st.success(answer)
+                st.write(f"**{lead}** meets the current identification rule.")
+            else:
+                st.warning(answer)
+                st.write(
+                    f"**{lead}** ranks first, but the evidence does not justify choosing it as the answer."
                 )
-            )
-        left, right = st.columns([1.15, 1], gap="large")
-        with left:
-            st.subheader("Observed spectrum")
-            action = st.selectbox("Acquired observation", list(observations), key="spectrum_action")
-            excluded_indices = {
-                item["peak_index"]
-                for item in evidence["active_peak_exclusions"]
-                if item["action"] == action
-            }
-            st.plotly_chart(
-                spectrum_plot(observations[action], excluded_indices),
-                width="stretch",
-                key="observed_spectrum",
-            )
             st.caption(
-                f"{action} · measured archived spectrum · precursor {case['precursor_mz']:.5f} m/z · [M+H]+"
+                f"{len(observations)} measurement{'s' if len(observations) != 1 else ''} used · "
+                f"{len(observations) - 1} extra · {case['n_candidates']} possible library molecules"
             )
-            if excluded_indices:
+            if not measured_extra:
+                st.write(
+                    "The candidates are possible molecular structures. Their labels stay the same throughout this example."
+                )
+        with next_step:
+            st.subheader("2 · What should we do?")
+            if stopped:
+                st.write("**Investigation finished.**")
+                st.write(
+                    "Report the supported identification."
+                    if enough
+                    else "Report the uncertainty rather than force an answer."
+                )
+            elif recommendation["kind"] == "MEASURE":
+                st.write("**Collect one more spectrum.**")
+                st.write(
+                    "The planner expects a different measurement to help separate the competing candidates."
+                )
+                st.button(
+                    "Collect one more spectrum",
+                    key="measure_recommended",
+                    type="primary",
+                    on_click=measure,
+                    args=(case_id, recommendation["key"]),
+                    width="stretch",
+                )
                 st.caption(
-                    "Gray peaks are excluded from scoring; the archived observation is unchanged."
+                    f"Reveals real archived {recommendation['key']} data · costs one extra measurement"
                 )
-        with right:
-            st.subheader("Competing candidates")
-            baseline = {
-                item["candidate_id"]: item["weight"]
-                for item in st.session_state.baseline["ranking"]["candidates"]
-            }
-            candidates = evidence["ranking"]["candidates"]
-            names = {
-                candidate: f"Candidate {chr(65 + index)}"
-                for index, candidate in enumerate(
-                    sorted(item["candidate_id"] for item in candidates)
+                st.button(
+                    "Stop here instead",
+                    key="stop_case",
+                    on_click=stop,
+                    args=(case_id,),
                 )
-            }
-            rows = [
-                {
-                    "Candidate": names[item["candidate_id"]],
-                    "Formula": item["formula"],
-                    "Support": item["weight"],
-                    "Δ support": item["weight"] - baseline.get(item["candidate_id"], 0),
-                    "Best cosine": max(item["similarity_by_action"].values()),
-                    "Matched peaks": max(item["matched_peaks_by_action"].values()),
-                }
-                for item in candidates
-            ]
-            st.dataframe(
-                pd.DataFrame(rows),
-                hide_index=True,
-                width="stretch",
-                column_config={
-                    "Support": st.column_config.ProgressColumn(
-                        format="%.3f", min_value=0, max_value=1
-                    ),
-                    "Δ support": st.column_config.NumberColumn(format="%+.3f"),
-                    "Best cosine": st.column_config.NumberColumn(format="%.3f"),
-                },
-            )
-            st.caption(
-                "Support is a relative ranking score, not a calibrated probability of identity. Δ is measured from the initial state."
-            )
-            with st.expander("Inspect candidate identities and evidence"):
-                for item in candidates:
-                    st.markdown(f"**{names[item['candidate_id']]}** · {item['name']}")
-                    st.code(item["candidate_id"], language=None)
+            else:
+                st.write("**Stop measuring.**")
+                if not measured_extra and enough:
+                    st.write("The current evidence meets the rule. No extra scan is recommended.")
+                    st.caption("Following this recommendation avoids one optional measurement.")
+                elif evidence["remaining_budget"] == 0:
                     st.write(
-                        {
-                            "cosine_by_observation": item["similarity_by_action"],
-                            "matched_peaks": item["matched_peaks_by_action"],
-                        }
-                    )
-        st.divider()
-        if not stopped:
-            command, explanation = st.columns([1, 1.3], gap="large")
-            with command:
-                st.subheader("Choose the next step")
-                if recommendation["kind"] == "MEASURE":
-                    st.write(f"**Recommendation: measure {recommendation['key']}**")
-                    st.button(
-                        f"Measure {recommendation['key']} · +1 acquisition",
-                        key="measure_recommended",
-                        type="primary",
-                        on_click=measure,
-                        args=(case_id, recommendation["key"]),
-                        width="stretch",
+                        "The one-extra-measurement budget is used. Record what the evidence supports."
                     )
                 else:
-                    st.write("**Recommendation: stop**")
+                    st.write(
+                        "No extra measurement is recommended. Record what the evidence supports."
+                    )
                 st.button(
-                    "Stop & create report",
+                    "Finish & create report",
                     key="stop_case",
-                    type="primary" if recommendation["kind"] == "STOP" else "secondary",
+                    type="primary",
                     on_click=stop,
                     args=(case_id,),
                     width="stretch",
                 )
-                with st.expander("Choose another available measurement"):
-                    available = [
-                        action for action in ("CID40", "EAD16") if action not in observations
-                    ]
-                    manual = st.selectbox("Optional action", available, key="manual_action")
-                    st.button(
-                        "Reveal selected measurement",
-                        key="manual_measure",
-                        disabled=evidence["remaining_budget"] == 0,
-                        on_click=measure,
-                        args=(case_id, manual),
+
+        if measured_extra:
+            st.subheader("3 · What changed?")
+            earlier, now = st.columns(2)
+            with earlier:
+                with st.container(border=True):
+                    st.markdown("**After the first measurement**")
+                    st.write(
+                        "Identification supported"
+                        if initial_decision == "IDENTIFIED"
+                        else "Unresolved"
                     )
-            with explanation:
-                st.subheader("Why this recommendation?")
-                st.write(plan["note"])
-                if plan["options"]:
-                    st.dataframe(
-                        pd.DataFrame(
-                            [
-                                {
-                                    "Action": row["action"]["key"],
-                                    "Separation": row["separation"],
-                                    "Reference reliability": row["reliability"],
-                                    "Heuristic score": row["score"],
-                                }
-                                for row in plan["options"]
-                            ]
-                        ),
-                        hide_index=True,
-                        width="stretch",
-                    )
-                st.caption(
-                    "The planner weighs predicted template separation, reference reliability and acquisition cost. It reads no hidden experimental spectrum."
+                    st.caption(f"Leading match: {initial_lead}")
+            with now:
+                with st.container(border=True):
+                    st.markdown("**After the extra measurement**")
+                    st.write("Identification supported" if enough else "Still unresolved")
+                    st.caption(f"Leading match: {lead}")
+            if enough and initial_decision != "IDENTIFIED":
+                st.write(
+                    "**The extra measurement supplied enough evidence to support an identification.**"
                 )
-        else:
-            if preview == "IDENTIFIED":
-                st.success(
-                    "Investigation closed with an identification supported by the current decision rule."
+            elif not enough:
+                st.write(
+                    "**The evidence is still insufficient. The responsible result is to leave the answer unresolved.**"
                 )
             else:
-                st.warning(
-                    "Investigation closed with abstention. The evidence does not support a specific identification."
+                st.write(
+                    "The evidence was updated; the current identification rule is still satisfied."
                 )
-            st.caption(
-                "An accepted identification can still be wrong; the support score is not a calibrated certainty."
+            if initial_lead != lead:
+                st.caption(f"The leading match changed from {initial_lead} to {lead}.")
+        elif stopped and enough:
+            st.subheader("3 · What was saved?")
+            st.write(
+                "**One optional measurement avoided.** The report uses only the first spectrum."
+            )
+        if st.session_state.get("change"):
+            st.caption(st.session_state.change[2])
+        st.caption(
+            "An accepted identification can still be wrong. This example assumes the true molecule is in the library."
+        )
+
+        if stopped:
+            st.subheader("Save the outcome")
+            st.button(
+                "Check curated source identity",
+                key="reveal_identity",
+                on_click=identity,
+                args=(case_id,),
+            )
+            if st.session_state.get("identity"):
+                check = st.session_state.identity
+                st.info(
+                    f"Curated source: {check['name']} · outcome: {check['outcome']}. This is a selected development illustration."
+                )
+            exported = pilot.report(case_id)
+            json_col, md_col = st.columns(2)
+            json_col.download_button(
+                "Download JSON report",
+                json.dumps(exported, indent=2),
+                file_name=f"spectrapilot-{case_id}.json",
+                mime="application/json",
+                key="download_json",
+                width="stretch",
+            )
+            md_col.download_button(
+                "Download Markdown report",
+                exported["report_markdown"],
+                file_name=f"spectrapilot-{case_id}.md",
+                mime="text/markdown",
+                key="download_md",
+                width="stretch",
             )
 
+        st.divider()
+        with st.expander("Inspect the scientific evidence"):
+            st.caption("Optional detail: spectra, candidate scores and the planner's calculation.")
+            left, right = st.columns(2)
+            with left:
+                st.subheader("Measured fingerprint")
+                action = st.selectbox(
+                    "Acquired observation", list(observations), key="spectrum_action"
+                )
+                excluded_indices = {
+                    item["peak_index"]
+                    for item in evidence["active_peak_exclusions"]
+                    if item["action"] == action
+                }
+                st.plotly_chart(
+                    spectrum_plot(observations[action], excluded_indices),
+                    width="stretch",
+                    key="observed_spectrum",
+                )
+                st.caption(
+                    f"{action} · archived experimental spectrum · {case['precursor_mz']:.5f} m/z"
+                )
+            with right:
+                st.subheader("Candidate evidence")
+                baseline = {item["candidate_id"]: item["weight"] for item in baseline_candidates}
+                st.dataframe(
+                    pd.DataFrame(
+                        [
+                            {
+                                "Candidate": names[item["candidate_id"]],
+                                "Formula": item["formula"],
+                                "Support": item["weight"],
+                                "Change": item["weight"] - baseline.get(item["candidate_id"], 0),
+                                "Best cosine": max(item["similarity_by_action"].values()),
+                            }
+                            for item in candidates
+                        ]
+                    ),
+                    hide_index=True,
+                    width="stretch",
+                )
+                st.caption(
+                    "Support is a relative ranking score, not a calibrated identity probability."
+                )
+            for item in candidates:
+                st.write(f"{names[item['candidate_id']]} · {item['name']} · {item['candidate_id']}")
+            st.write("Planner calculation: " + plan["note"])
+            if plan["options"]:
+                st.dataframe(
+                    pd.DataFrame(
+                        [
+                            {
+                                "Action": row["action"]["key"],
+                                "Separation": row["separation"],
+                                "Reference reliability": row["reliability"],
+                                "Heuristic score": row["score"],
+                            }
+                            for row in plan["options"]
+                        ]
+                    ),
+                    hide_index=True,
+                    width="stretch",
+                )
+            st.caption(
+                "The planner uses predicted references; it cannot read the unrevealed measured spectrum."
+            )
+
+        if not stopped:
+            with st.expander("Choose a different measurement (advanced)"):
+                available = [action for action in ("CID40", "EAD16") if action not in observations]
+                manual = st.selectbox("Optional action", available, key="manual_action")
+                st.button(
+                    "Reveal selected measurement",
+                    key="manual_measure",
+                    disabled=evidence["remaining_budget"] == 0,
+                    on_click=measure,
+                    args=(case_id, manual),
+                )
         with st.expander("Scientist control · test a peak exclusion", expanded=False):
             st.caption(
                 "Sensitivity analysis, not proof of contamination. Original peaks and every edit remain auditable. Indices refer to the original spectrum."
@@ -420,37 +473,6 @@ with investigation_tab:
                     "intervention_history": evidence["intervention_history"],
                     "original_observation_hashes": evidence["observations"],
                 }
-            )
-        if stopped:
-            st.subheader("Export the evidence")
-            st.button(
-                "Check curated source identity",
-                key="reveal_identity",
-                on_click=identity,
-                args=(case_id,),
-            )
-            if st.session_state.get("identity"):
-                check = st.session_state.identity
-                st.info(
-                    f"Curated source: {check['name']} · outcome: {check['outcome']}. This is a selected development illustration."
-                )
-            exported = pilot.report(case_id)
-            json_col, md_col = st.columns(2)
-            json_col.download_button(
-                "Download JSON report",
-                json.dumps(exported, indent=2),
-                file_name=f"spectrapilot-{case_id}.json",
-                mime="application/json",
-                key="download_json",
-                width="stretch",
-            )
-            md_col.download_button(
-                "Download Markdown report",
-                exported["report_markdown"],
-                file_name=f"spectrapilot-{case_id}.md",
-                mime="text/markdown",
-                key="download_md",
-                width="stretch",
             )
 
 with results_tab:

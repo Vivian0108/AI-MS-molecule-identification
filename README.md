@@ -6,7 +6,7 @@
 
 ![SpectraPilot investigation](docs/screenshots/02-observe.png)
 
-**Observe → choose or stop → report.** Inspect the initial CID20 spectrum and competing library candidates; reveal one recommended archived spectrum; export JSON and Markdown. You can exclude an observed peak with a reason and undo the intervention.
+**Observe → choose or stop → report.** Read the current answer and recommended action; collect one more spectrum or stop; see what changed and export the outcome. Spectra, candidate scores and audit details are available in expandable sections. You can exclude an observed peak with a reason and undo the intervention.
 
 **Measured result:** In an exploratory scaffold-grouped training cross-validation study of 277 ambiguous molecules, the library-assisted planner used **243 optional acquisitions versus 277** for always-CID40 (12.3% fewer), with **156 versus 157 accepted-correct identifications and 15 accepted errors for each**. This is a tradeoff, not evidence of equivalent accuracy. [Generated scientific report](reports/spectrapilot/train_stage1_reference.md).
 
