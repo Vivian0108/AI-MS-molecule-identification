@@ -68,6 +68,8 @@ The earlier simplified layout passed 11 demo tests. The subsequent structure/evi
 
 All 15 public candidate structures are rendered from SMILES and committed as SVGs, with source/output hashes and the RDKit build version. No RDKit is required at runtime. Chemical names are shown where provided; unnamed source records remain explicitly unnamed. For the resolve case, OH positions distinguish five structures that share formula C15H12O4. A visible comparison shows measured peaks against two candidate references, per-observation cosine similarity, and matches for the three strongest non-precursor peaks. Exclusions and undo are reflected in the display. Unacquired actions are rejected; the explanation performs no measurement and cannot access truth.
 
+The updated source and all SVG assets were then checked in the temporary clean clone: **14 demo tests passed in 6.30 s** without adding dependencies.
+
 The CID40/CID60 mismatch and the distinction between a fingerprint match and a bond-level fragment assignment are disclosed. New screenshots show [initial evidence](docs/screenshots/08-initial-evidence.png) and [additional evidence](docs/screenshots/09-additional-evidence.png).
 
 ## Supported claims
