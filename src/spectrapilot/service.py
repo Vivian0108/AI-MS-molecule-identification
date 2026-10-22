@@ -9,7 +9,7 @@ from spectrapilot.data.repository import CaseRepository
 from spectrapilot.paths import CURATED, load_config
 from spectrapilot.planning.oracle import OracleStore, VirtualInstrument
 from spectrapilot.planning.separation import SeparationPlanner
-from spectrapilot.planning.session import InvestigationSession
+from spectrapilot.planning.session import ActionLog, InvestigationSession
 from spectrapilot.science.scoring import CandidateScorer
 from spectrapilot.science.templates import ReferenceStore
 
@@ -19,9 +19,18 @@ class ServiceError(RuntimeError):
 
 
 class SpectraPilotService:
-    def __init__(self, *, default_split: str = "dev", oracle_path: Path | None = None) -> None:
+    def __init__(
+        self,
+        *,
+        default_split: str = "dev",
+        oracle_path: Path | None = None,
+        action_log: ActionLog | None = None,
+        provenance_manifest: dict | None = None,
+    ) -> None:
         self.default_split = default_split
         self.oracle_path = oracle_path
+        self.action_log = action_log
+        self.provenance_manifest = provenance_manifest
         self.selection_cfg = load_config("multims2")
         self.policy_cfg = load_config("policies")
         self._sessions: dict[str, InvestigationSession] = {}
@@ -41,6 +50,10 @@ class SpectraPilotService:
             )
         except FileNotFoundError as exc:
             raise ServiceError(str(exc)) from exc
+        self._configure_science()
+
+    def _configure_science(self) -> None:
+        """Shared configuration for research and bundled-demo data sources."""
         self.instrument = VirtualInstrument(self.oracle, default_budget=1)
         self.scorer = CandidateScorer(
             tolerance_da=float(
@@ -101,6 +114,8 @@ class SpectraPilotService:
                 self.instrument,
                 self.scorer,
                 self.planner,
+                action_log=self.action_log,
+                provenance_manifest=self.provenance_manifest,
             )
             self._sessions[case_id] = session
         return self._state(session, include_initial=True)

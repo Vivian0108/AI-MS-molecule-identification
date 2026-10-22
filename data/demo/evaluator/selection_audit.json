@@ -1,0 +1,105 @@
+{
+  "label": "Outcome-conditioned curated DEVELOPMENT examples, not evaluation evidence",
+  "selection_rule": "First stable case ID per role; resolve prefers changed ranking; no test outcomes or parameter tuning",
+  "eligible_dev_ambiguous_cases": 72,
+  "selected": {
+    "resolve": {
+      "case_id": "case-a48fd4752b58",
+      "before": {
+        "top1_id": "NXTSNFDLQUTBRV-FNORWQNLSA-N",
+        "top1_correct": 0,
+        "accepted": 0,
+        "accepted_correct": 0,
+        "accepted_error": 0,
+        "decision": "AMBIGUOUS",
+        "chosen_action": "STOP",
+        "optional_scans": 0,
+        "top1_support": 0.25890425247671506,
+        "true_candidate_cosine": {
+          "CID20": 0.48987015612065665
+        }
+      },
+      "after": {
+        "top1_id": "MSDGTBGJKOTHCN-SOFGYWHQSA-N",
+        "top1_correct": 1,
+        "accepted": 1,
+        "accepted_correct": 1,
+        "accepted_error": 0,
+        "decision": "IDENTIFIED",
+        "chosen_action": "CID40",
+        "optional_scans": 1,
+        "top1_support": 0.7572511137305149,
+        "true_candidate_cosine": {
+          "CID20": 0.48987015612065665,
+          "CID40": 0.565420448285595
+        }
+      },
+      "rank_changed": true
+    },
+    "stop": {
+      "case_id": "case-07a97a0a6a07",
+      "before": {
+        "top1_id": "BFKZQWOYQFSDDO-UHFFFAOYSA-N",
+        "top1_correct": 1,
+        "accepted": 1,
+        "accepted_correct": 1,
+        "accepted_error": 0,
+        "decision": "IDENTIFIED",
+        "chosen_action": "STOP",
+        "optional_scans": 0,
+        "top1_support": 0.9816264880364239,
+        "true_candidate_cosine": {
+          "CID20": 0.37838176087765835
+        }
+      },
+      "after": {
+        "top1_id": "BFKZQWOYQFSDDO-UHFFFAOYSA-N",
+        "top1_correct": 1,
+        "accepted": 1,
+        "accepted_correct": 1,
+        "accepted_error": 0,
+        "decision": "IDENTIFIED",
+        "chosen_action": "STOP",
+        "optional_scans": 0,
+        "top1_support": 0.9816264880364239,
+        "true_candidate_cosine": {
+          "CID20": 0.37838176087765835
+        }
+      },
+      "rank_changed": false
+    },
+    "abstain": {
+      "case_id": "case-130b5e6f2459",
+      "before": {
+        "top1_id": "JYCNLFBNRVJTDK-UHFFFAOYSA-N",
+        "top1_correct": 0,
+        "accepted": 0,
+        "accepted_correct": 0,
+        "accepted_error": 0,
+        "decision": "AMBIGUOUS",
+        "chosen_action": "STOP",
+        "optional_scans": 0,
+        "top1_support": 0.35854864704647316,
+        "true_candidate_cosine": {
+          "CID20": 0.5564578047780179
+        }
+      },
+      "after": {
+        "top1_id": "JYCNLFBNRVJTDK-UHFFFAOYSA-N",
+        "top1_correct": 0,
+        "accepted": 0,
+        "accepted_correct": 0,
+        "accepted_error": 0,
+        "decision": "AMBIGUOUS",
+        "chosen_action": "CID40",
+        "optional_scans": 1,
+        "top1_support": 0.6386084062942683,
+        "true_candidate_cosine": {
+          "CID20": 0.5564578047780179,
+          "CID40": 0.46581022022417323
+        }
+      },
+      "rank_changed": false
+    }
+  }
+}

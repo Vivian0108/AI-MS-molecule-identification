@@ -52,6 +52,7 @@ class InvestigationSession:
         action_log: ActionLog | None = None,
         decision_overrides: dict | None = None,
         budget: int | None = None,
+        provenance_manifest: dict | None = None,
     ) -> None:
         self.case_id = case_id
         self.repository = repository
@@ -61,6 +62,7 @@ class InvestigationSession:
         self.action_log = action_log or ActionLog()
         self.decision_overrides = dict(decision_overrides or {})
         self.budget = budget
+        self._provenance_manifest = deepcopy(provenance_manifest)
         self.case = repository.case(case_id)
         self.candidates = repository.candidates(case_id)
         self.templates = repository.references
@@ -443,9 +445,9 @@ class InvestigationSession:
         return limitations
 
     def _provenance(self) -> dict:
-        manifest = {}
+        manifest = self._provenance_manifest or {}
         manifest_path = CURATED / "manifest.json"
-        if manifest_path.exists():
+        if self._provenance_manifest is None and manifest_path.exists():
             manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         return {
             "case_id": self.case_id,
