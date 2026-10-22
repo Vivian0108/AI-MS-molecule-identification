@@ -4,7 +4,7 @@ PIP ?= .venv/bin/pip
 export PYTHONPATH := src
 export PYTHONHASHSEED := 0
 
-.PHONY: help setup fetch-data prepare audit demo-cases calibrate eval test app api verify interactive-baseline
+.PHONY: help setup fetch-data prepare audit demo-cases calibrate eval test app api verify interactive-baseline peak-exclusion-spike
 
 help:
 	@echo "UnknownID targets"
@@ -61,3 +61,6 @@ verify: test
 # committed MultiMS2 records. Does not require a raw-data download or preparation.
 interactive-baseline:
 	$(PY) scripts/run_interactive_baseline.py
+
+peak-exclusion-spike:
+	$(PY) scripts/run_peak_exclusion_spike.py
