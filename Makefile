@@ -4,7 +4,7 @@ PIP ?= .venv/bin/pip
 export PYTHONPATH := src
 export PYTHONHASHSEED := 0
 
-.PHONY: help setup fetch-data prepare audit demo-cases calibrate eval test app api verify interactive-baseline peak-exclusion-spike
+.PHONY: help setup fetch-data prepare audit demo-cases calibrate eval test app api verify interactive-baseline peak-exclusion-spike modality-headroom
 
 help:
 	@echo "UnknownID targets"
@@ -64,3 +64,6 @@ interactive-baseline:
 
 peak-exclusion-spike:
 	$(PY) scripts/run_peak_exclusion_spike.py
+
+modality-headroom:
+	$(PY) scripts/check_modality_headroom.py
