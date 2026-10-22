@@ -411,7 +411,7 @@ with investigation_tab:
                     disabled=stopped,
                 )
 
-        with st.expander("Audit trail", expanded=stopped):
+        with st.expander("Audit trail"):
             st.write(
                 {
                     "observed_actions": evidence["observed_actions"],
