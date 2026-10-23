@@ -4,9 +4,9 @@
 
 **Solution:** SpectraPilot shows the evidence, recommends another archived measurement or a stop, and exports an auditable identification or abstention.
 
-![Start with the unknown spectrum](docs/screenshots/01-start.png)
+![SpectraPilot workspace: measured spectrum, candidate shortlist and assessment](docs/screenshots/01-workspace.png)
 
-**Observe → choose or stop → report.** See the actual candidate structures and the sample’s mass; compare their measured/reference fingerprints; collect one more spectrum or stop; see what changed and export the outcome. Detailed scores and audit controls remain expandable. You can exclude an observed peak with a reason and undo the intervention.
+**One workspace: spectrum → shortlist → assessment → measurement decision.** The screen pairs the measured spectrum with the mass-compatible structures and the live decision rule. Acquire the one recommended extra scan or stop; inspect measured/reference fingerprints; export an auditable identification or abstention. Detailed scores, peak tools, the reference library, validation and method notes stay behind dialogs rather than in the main flow. You can exclude an observed peak with a reason and undo the intervention.
 
 **Measured result:** In an exploratory scaffold-grouped training cross-validation study of 277 ambiguous molecules, the library-assisted planner used **243 optional acquisitions versus 277** for always-CID40 (12.3% fewer), with **156 versus 157 accepted-correct identifications and 15 accepted errors for each**. This is a tradeoff, not evidence of equivalent accuracy. [Generated scientific report](reports/spectrapilot/train_stage1_reference.md).
 
@@ -24,14 +24,14 @@ make demo
 
 Open **http://127.0.0.1:8502**. No full dataset, private oracle, `make fetch-data`, or `make prepare` is needed. The small licensed bundle is committed under [`data/demo/`](data/demo/README.md). Installation time depends on the network; subsequent startup is one command.
 
-Choose **Sample 1**, **Sample 2**, or **Sample 3**. Each begins without an outcome label:
+Choose **Sample 1**, **Sample 2**, or **Sample 3**. Each workspace opens on the acquired CID20 spectrum, the mass-compatible shortlist, and a live assessment:
 
-1. **Load unknown spectrum:** inspect the precursor m/z and measured peaks.
-2. **Search the reference library:** discover the mass-compatible structures.
-3. **Compare fragment fingerprints:** inspect the evidence and recommendation.
-4. Collect another archived spectrum or stop, then record what the evidence supports.
+1. **Read the assessment:** top match, relative support, margin, best fit and whether the identification rule is met.
+2. **Acquire the recommended scan or stop:** the planner proposes at most one additional archived measurement; stopping records what the current evidence supports.
+3. **Compare fragment evidence:** inspect the measured fingerprint against the selected and comparison references, with matched-peak detail.
+4. **Create the report:** download the auditable Markdown and JSON record.
 
-The **Reference library** tab shows the 15 known structures and whether their fingerprints are predicted or measured library proxies. Identification, stopping and unresolved outcomes appear only as the analysis supports them. These remain curated demonstrations, not blinded evaluation.
+Supporting detail sits behind **Method**, **Validation**, **Reference library** and **Peak tools** rather than in the main flow. The reference dialog shows the 15 bundled structures and whether each fingerprint is predicted or a measured library proxy. Identification, stopping and unresolved outcomes appear only as the analysis supports them. These remain curated demonstrations, not blinded evaluation.
 
 Run `make demo-verify` for the 14 automated demo and evidence-display checks. `make demo-api` starts the optional API on port 8001; `/health` reports demo mode. The UI uses the service directly and does not need that API process.
 
@@ -68,7 +68,7 @@ No benefit from adaptive CID versus EAD selection has been established: the stud
 - [Three-minute script and questions](docs/JUDGE_DEMO.md)
 - [Reproducibility and provenance](docs/DEMO_REPRODUCIBILITY.md)
 - [Readiness checklist](HACKATHON_READINESS.md)
-- Screens: [welcome](docs/screenshots/00-welcome.png), [start](docs/screenshots/01-start.png), [observe](docs/screenshots/02-observe.png), [measure](docs/screenshots/03-measure.png), [export](docs/screenshots/04-report.png), [stop](docs/screenshots/05-stop.png), [abstain](docs/screenshots/06-abstain.png), [results](docs/screenshots/07-results.png), [initial fingerprint evidence](docs/screenshots/08-initial-evidence.png), [additional fingerprint evidence](docs/screenshots/09-additional-evidence.png), [reference library](docs/screenshots/10-library.png)
+- Screens: [workspace](docs/screenshots/01-workspace.png), [CID20 fragment evidence](docs/screenshots/02-evidence-cid20.png), [two-scan measurement](docs/screenshots/03-measured.png), [CID40 fragment evidence](docs/screenshots/04-evidence-cid40.png), [report](docs/screenshots/05-report.png), [validation](docs/screenshots/06-validation.png), [method](docs/screenshots/07-method.png), [reference library](docs/screenshots/08-library.png), [peak tools](docs/screenshots/09-peak-tools.png), [stop without an extra scan](docs/screenshots/10-stop.png), [abstain after the extra scan](docs/screenshots/11-abstain.png)
 
 ## Research workflow
 

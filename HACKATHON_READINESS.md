@@ -36,7 +36,7 @@ Rehearsal date: 2026-10-22. A temporary **local clean Git clone** was created fr
 | Bundle cases vs dev split, exact three-case oracle, nine source accessions | Passed |
 | Tracked text scan for personal home paths and common credential patterns | No matches; best-effort pattern scan plus transcript cleanup |
 
-All pytest runs emitted one upstream Starlette/httpx deprecation warning. Tests pass; runtime requests work. GitHub Actions are configured but have not run on a remote host because this branch has not been pushed. The final UI change collapses the audit expander by default so report downloads remain prominent; the final clean-clone full-suite run at source commit `5157cc6` includes that presentation change. A separate final local demo run passed 11 tests in 1.67 s.
+All pytest runs emitted one upstream Starlette/httpx deprecation warning. Tests pass; runtime requests work. GitHub Actions are configured but have not run on a remote host because this branch has not been pushed. These clean-clone results predate the presentation-only workspace redesign; post-redesign tests and browser checks are reported below.
 
 The existing numerical research reports were deliberately **not regenerated** for this demo task. Full scientific regeneration needs the separately prepared research inputs and oracle. The bundle builder was run successfully from the available training/development inputs; it does not require reading frozen test spectra. The three demo cases were chosen openly using development outcomes, without tuning thresholds.
 
@@ -53,36 +53,36 @@ Local UI: **http://127.0.0.1:8502**. This is not a hosted public demo. Optional 
 - [README and quick start](README.md)
 - [Three-minute presentation script and FAQ](docs/JUDGE_DEMO.md)
 - [Reproducibility](docs/DEMO_REPRODUCIBILITY.md)
-- [Screenshots](docs/screenshots/02-observe.png): [measure](docs/screenshots/03-measure.png), [report](docs/screenshots/04-report.png), [stop](docs/screenshots/05-stop.png), [abstain](docs/screenshots/06-abstain.png), [results](docs/screenshots/07-results.png)
+- [Workspace](docs/screenshots/01-workspace.png), [measurement](docs/screenshots/03-measured.png), [fragment evidence](docs/screenshots/04-evidence-cid40.png), [report](docs/screenshots/05-report.png), [validation](docs/screenshots/06-validation.png), [stop](docs/screenshots/10-stop.png), [abstain](docs/screenshots/11-abstain.png)
 - [Generated scientific report](reports/spectrapilot/train_stage1_reference.md)
 - [Bundle provenance](data/demo/build_manifest.json)
 - [Code license](LICENSE) and [data licenses](DATA_LICENSE.md)
 
-## Presentation simplification
+## Workspace redesign
 
-The default screen now focuses on **What do we know? → What should we do? → What changed?**. The main action is **Collect one more spectrum** or **Finish & create report**. A before/after comparison explains resolution or continued uncertainty; the stop example states the optional measurement avoided. Named structures and an acquired-spectrum fingerprint comparison are now visible; detailed scores, alternative actions, interventions and audit controls remain collapsed. Judge instructions and screenshots were updated.
+The demo is now a single analysis workspace rather than a staged, role-play flow. Each sample opens on the acquired CID20 spectrum, the mass-compatible shortlist and a live assessment. The right rail states the current decision, support, margin, best fit and the recommended next step. The primary actions are **Acquire CID40** or **Create report**; after an extra scan the shortlist updates in place and labels the leader change. Supporting detail sits behind **Method**, **Validation**, **Reference library**, **Peak tools** and **Report preview** dialogs instead of occupying the main flow.
 
-The earlier simplified layout passed 11 demo tests. The subsequent structure/evidence update passed **14 demo tests on Python 3.12 (2.38 s) and Python 3.11 (3.29 s)**, and **103 full-suite tests (10.25 s)** plus import/config checks in the locked research environment. Ruff formatting/lint checks passed. Headless Chrome completed all three outcomes and both report downloads. The scientific model, configurations, data bundle and generated scientific reports were unchanged.
+The screen uses neutral **Sample 1/2/3** labels, thin rules, tabular numbers and a restrained teal/green/amber status system. It does not use narrative steps, progress games or fictional instrument controls. Every score, candidate ordering and measurement comes from the unchanged scientific service.
+
+Verification after the redesign: **14 demo tests passed** in the existing Python 3.12 demo environment; Ruff E4/E7/E9/F and formatting checks passed. Headless Chrome reviewed the initial workspace, post-measurement ranking, CID40 evidence comparison, report export, validation, method, peak tools, reference library, stop and abstain states, plus the settled 900 px narrow layout. The scientific model, configurations, data bundle and generated scientific reports were unchanged.
 
 ### Structure and evidence explanation
 
-All 15 public candidate structures are rendered from SMILES and committed as SVGs, with source/output hashes and the RDKit build version. No RDKit is required at runtime. Chemical names are shown where provided; unnamed source records remain explicitly unnamed. For the resolve case, OH positions distinguish five structures that share formula C15H12O4. A visible comparison shows measured peaks against two candidate references, per-observation cosine similarity, and matches for the three strongest non-precursor peaks. Exclusions and undo are reflected in the display. Unacquired actions are rejected; the explanation performs no measurement and cannot access truth.
+All 15 public candidate structures are rendered from SMILES and committed as SVGs, with source/output hashes and the RDKit build version. No RDKit is required at runtime. Chemical names are shown where provided; entries without a supplied common name are labelled by structure family and ring-OH pattern. For the resolve case, OH positions distinguish five structures that share formula C15H12O4. The evidence dialog compares measured peaks with the selected and comparison references, reports per-observation cosine similarity, and lists matches for the three strongest non-precursor peaks. Exclusions and undo are reflected in the display. Unacquired actions are rejected; the explanation performs no measurement and cannot access truth.
 
-The updated source and all SVG assets were then checked in the temporary clean clone: **14 demo tests passed in 6.30 s** without adding dependencies.
-
-The CID40/CID60 mismatch and the distinction between a fingerprint match and a bond-level fragment assignment are disclosed. New screenshots show [initial evidence](docs/screenshots/08-initial-evidence.png) and [additional evidence](docs/screenshots/09-additional-evidence.png).
+The CID40/CID60 mismatch and the distinction between a fingerprint match and a bond-level fragment assignment are disclosed in the dialog and method notes.
 
 ### Guided investigation story
 
-The current interaction is **unknown spectrum → mass matches → fragment comparison → next measurement → conclusion**. Sample 1/2/3 labels replace outcome spoilers in the UI and API catalog. Rankings and recommendations appear only after fragment comparison, and optional experimental spectra only after measurement. The Reference library tab exposes the 15 bundled structures and distinguishes predicted fingerprints from CID60 library proxies. The curation audit remains intact for reproducibility.
+The interaction is now **workspace → assessment → recommended acquisition or stop → report**. Sample 1/2/3 labels replace outcome spoilers in the UI and API catalog. The optional experimental spectrum is revealed only after the measurement action. The Reference library dialog exposes the 15 bundled structures and distinguishes predicted fingerprints from CID60 library proxies. The curation audit remains intact for reproducibility.
 
-Verification: **14 demo tests passed in 2.58 s** and **103 full-suite tests passed in 11.53 s**, with imports/config checks passing. The tests cover neutral API labels and the spectrum/search/comparison sequence. Python 3.11 also passed all 14 demo tests in 3.79 s. Headless Chrome completed the staged investigation for all three samples, browsed the reference library and downloaded both report formats. Ten screenshots and the three-minute judge script were refreshed. The existing upstream deprecation warning remains. Numerical science, frozen configurations and reports were not changed.
+Verification: **14 demo tests** cover neutral API labels, automatic workspace startup, ranking changes after measurement, report downloads, identity reveal, reset, stop and abstention. The research suite targets the unchanged scientific code and was not rerun for this presentation-only redesign. Numerical science, frozen configurations and reports were not changed.
 
 ### Visual presentation
 
-The demonstration uses a dark teal introduction and sidebar, an evidence-driven progress strip, a prominent measured-precursor panel, molecular candidate cards, and before/after structure cards. The header becomes compact after loading so the scientific content remains prominent. Leading-match highlights appear only after comparison. Green/amber outcome styling reflects the current decision rule; it does not assert source-identity correctness. The scan-saving card is shown only after stopping with no optional measurement. Layouts adapt to narrower screens and respect reduced-motion preferences.
+The workspace is a light, instrument-like console: a narrow sample rail, a measured-spectrum panel, an inline candidate table with structure drawings and support bars, and a right-hand assessment rail. There are no hero panels, numbered journey strips, candidate cards or before/after game cards. Green/amber status styling reflects the current decision rule; it does not assert source-identity correctness. Layouts adapt to narrower screens and keep the Method/Validation controls available.
 
-All spectra and structure drawings remain based on the existing data; no decorative spectrum or fabricated result was introduced. The visual update passed 14 demo tests and Ruff checks; the full locked research environment passed 103 tests in 11.56 s plus imports/config checks. Chrome verified all three outcomes, the five candidate images and two result images, progress states, report downloads and the narrow-screen layout. The original scientific configuration and reports were unchanged.
+All spectra and structure drawings remain based on the existing data; no decorative spectrum or fabricated result was introduced. Chrome verified all three outcomes, evidence dialogs, report downloads and the narrow-screen layout. The original scientific configuration and reports were unchanged.
 
 ## Supported claims
 

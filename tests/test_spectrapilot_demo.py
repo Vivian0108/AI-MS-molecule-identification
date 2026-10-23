@@ -227,28 +227,38 @@ def test_streamlit_resolution_intervention_and_exports():
         "Sample 2",
         "Sample 3",
     ]
-    at.button(key="start_case").click().run()
-    assert not any(button.key == "measure_recommended" for button in at.button)
-    assert any(heading.value == "1 · Start with the unknown spectrum" for heading in at.subheader)
-    at.button(key="analyze_case").click().run()
-    assert not any(button.key == "measure_recommended" for button in at.button)
-    at.button(key="compare_case").click().run()
-    assert not at.exception
-    baseline = at.session_state["pilot"].get_evidence(at.session_state["active_case"])["ranking"]
-    at.button(key="exclude_peak").click().run()
-    assert not at.exception
-    at.button(key="undo_exclusion-0001").click().run()
-    assert (
-        at.session_state["pilot"].get_evidence(at.session_state["active_case"])["ranking"]
-        == baseline
+    case_id = at.session_state["active_case"]
+    assert case_id == next(
+        row["case_id"]
+        for row in at.session_state["pilot"].manifest["cases"]
+        if row["role"] == "resolve"
     )
+    assert any(button.key == "measure_recommended" for button in at.button)
+    baseline = at.session_state["pilot"].get_evidence(case_id)["ranking"]
     at.button(key="measure_recommended").click().run()
     assert not at.exception
+    assert any(button.key == "stop_case" for button in at.button)
+    current = at.session_state["pilot"].get_evidence(case_id)
+    assert current["decision_if_stopped"] == "IDENTIFIED"
+    assert (
+        current["ranking"]["candidates"][0]["candidate_id"]
+        != baseline["candidates"][0]["candidate_id"]
+    )
     at.button(key="stop_case").click().run()
     assert not at.exception
-    assert len(at.get("download_button")) >= 3
+    downloads = {button.key for button in at.get("download_button")}
+    assert {"download_md", "download_json"} <= downloads
+    report = at.session_state["pilot"].report(case_id)
+    assert report["investigation"]["decision"] == "IDENTIFIED"
     at.button(key="reveal_identity").click().run()
-    assert at.session_state["identity"]["outcome"] == "accepted-correct"
+    assert at.session_state[f"identity_{case_id}"]["outcome"] == "accepted-correct"
+    assert "curated_identity_check" in at.session_state["pilot"].report(case_id)
+    at.button(key="reset_case").click().run()
+    assert not at.exception
+    reset = at.session_state["pilot"].get_evidence(case_id)
+    assert reset["observed_actions"] == ["CID20"]
+    assert reset["stopped"] is False
+    assert f"identity_{case_id}" not in at.session_state
     at.session_state["pilot"].close()
 
 
@@ -256,11 +266,10 @@ def test_streamlit_resolution_intervention_and_exports():
 def test_streamlit_stop_and_abstain(index, expected):
     at = AppTest.from_file(str(ROOT / "app/spectrapilot_demo.py"), default_timeout=20).run()
     at.radio(key="case_selector").set_value(index).run()
-    at.button(key="start_case").click().run()
-    at.button(key="analyze_case").click().run()
-    at.button(key="compare_case").click().run()
+    assert not at.exception
     if index == 2:
         at.button(key="measure_recommended").click().run()
+        assert not at.exception
     at.button(key="stop_case").click().run()
     assert not at.exception
     assert (

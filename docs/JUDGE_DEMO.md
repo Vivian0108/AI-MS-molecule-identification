@@ -1,19 +1,18 @@
 # SpectraPilot: three-minute judge demonstration
 
-Preparation: `make demo`, open http://127.0.0.1:8502. Select **Sample 1** and restart. Keep the generated scientific report available. The samples are curated development examples, not test evidence. Do not announce the expected outcome before the analysis.
+Preparation: `make demo`, open http://127.0.0.1:8502. **Sample 1** opens automatically. Keep the generated scientific report available. The samples are curated development examples, not test evidence. Do not announce the expected outcome before the analysis.
 
 | Time | Action and narration |
 |---|---|
-| 0:00–0:20 | “We have an unknown sample. More spectra cost instrument time; a leading database hit is not automatically an identification. Can we decide what evidence to collect next?” |
-| 0:20–0:40 | Click **Load unknown spectrum**. Point to the initial spectrum and precursor m/z 257.08083. “This is the measurement we have. We have not revealed another experimental spectrum.” |
-| 0:40–1:00 | Click **Search the reference library**. Show the five structures and shared formula C15H12O4. “They fit the same mass, but their OH positions differ. Mass alone has not identified the sample.” The **Reference library** tab is available if a judge asks what was searched. |
-| 1:00–1:25 | Click **Compare fragment fingerprints**. Point to the unresolved decision and the recommendation. “The current evidence does not separate these candidates sufficiently; the planner proposes another measurement from the allowed actions.” |
-| 1:25–1:55 | Click **Collect one more spectrum**. Show the before/after conclusion and changed leading structure. In **Why does a structure have evidence?**, compare the acquired CID40 fingerprint with the current and former leader’s references: cosine 0.57 vs 0.04. Disclose that these are CID60 reference proxies; matched peaks are not proven bond assignments. |
-| 1:55–2:20 | Click **Finish & create report**. Download Markdown or JSON under **Record the conclusion**. Only after stopping, optionally check the curated source identity. “This records the evidence and limitations behind our conclusion.” |
-| 2:20–2:40 | If time permits, investigate another neutrally labelled sample with the same steps. Let its recommendation and result emerge; do not introduce it as the scan-saving or abstention example. |
-| 2:40–3:00 | Open **Evidence & results**. “In exploratory training CV, 243 versus 277 optional scans gave 156 versus 157 accepted-correct identifications, with 15 errors each. The contribution is an inspectable measurement-decision workflow; we have not established a general accuracy advantage or live-instrument performance.” |
+| 0:00–0:20 | `make demo`, open http://127.0.0.1:8502. **Sample 1** is already open. “One measured spectrum, five mass-compatible structures, and a decision to make. More spectra cost instrument time; a leading database hit is not automatically an identification.” |
+| 0:20–0:50 | Point to the spectrum (precursor m/z **257.08083**) and the shortlist (shared formula **C15H12O4**). “All five fit the mass; their OH positions differ. Mass alone has not identified the sample.” Point to **Assessment**: *Unresolved*, support 0.26, margin 0.03, rule not met. |
+| 0:50–1:20 | Point to **Next step: Acquire CID40**. “The planner proposes a scan expected to separate these candidates. It sees only the acquired spectrum and public references, not the hidden measurement.” Click **Acquire CID40**. Show the two-scan view: the leader changes, support rises to 0.76 and margin to 0.58. |
+| 1:20–1:50 | Click **Compare fragment evidence**. The default comparison is the new leader versus the former leader at CID40: cosine **0.57 vs 0.04**. “The acquired fingerprint supports the new leader; the former leader does not explain it.” Open **Reference library** if asked; disclose that CID40 uses permitted CID60 proxies and that matched peaks are not proven bond assignments. |
+| 1:50–2:15 | Click **Create report**. Download Markdown or JSON. “The report records the spectra, ranking, peak-level evidence, interventions and limitations.” Only after stopping, optionally click **Check curated source identity**. |
+| 2:15–2:40 | Open **Validation**. “In exploratory training cross-validation, one planned extra scan raises accepted-correct identifications from 21 to 156 of 277. The planner uses 243 versus 277 optional scans and records 156 versus 157 accepted-correct, with 15 errors in each arm. This is a measured tradeoff, not proven equivalence.” |
+| 2:40–3:00 | If time, select **Sample 2**: the current evidence already supports identification and the recommendation is to stop, avoiding the optional scan. Or open **Peak tools** to show a reversible sensitivity check. “The contribution is an inspectable measurement-decision workflow with abstention; we have not established a general accuracy advantage or live-instrument performance.” |
 
-Leave detailed scores, interventions and audit controls collapsed unless asked. Never substitute the curated sample outcomes for aggregate evaluation. The current prototype does not accept arbitrary uploads, operate an instrument, or use an LLM to calculate scientific scores.
+Leave detailed scores, interventions and audit controls in their dialogs unless asked. Never substitute the curated sample outcomes for aggregate evaluation. The current prototype does not accept arbitrary uploads, operate an instrument, or use an LLM to calculate scientific scores.
 
 ## Concise answers
 
