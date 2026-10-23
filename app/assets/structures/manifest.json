@@ -1,0 +1,113 @@
+{
+  "source": "data/demo/public/candidates.json",
+  "source_sha256": "2ab2883debb577725cf8b0fce73c039e73467976b65ca4e90c4cd5c3fcd07c8b",
+  "generator": "scripts/render_demo_structures.py",
+  "rdkit_version": "2026.09.1",
+  "candidates": {
+    "BFKZQWOYQFSDDO-UHFFFAOYSA-N": {
+      "smiles": "COc1ccc2oc(=O)cc(CN3CCN(Cc4ccc(F)cc4)CC3)c2c1",
+      "file": "BFKZQWOYQFSDDO-UHFFFAOYSA-N.svg",
+      "sha256": "55707e1fe918a355f31f32d3050e29127a39305a5fc5e84a125cf8c58c502e7d"
+    },
+    "DXDRHHKMWQZJHT-FPYGCLRLSA-N": {
+      "smiles": "O=C(/C=C/c1ccc(O)cc1)c1ccc(O)cc1O",
+      "file": "DXDRHHKMWQZJHT-FPYGCLRLSA-N.svg",
+      "sha256": "d610baaafb9dd7f777ee3b0fa9b17c35c65a2cedbc83c53a089bbfa1677f7c84",
+      "ring_oh_counts": [
+        2,
+        1
+      ],
+      "description": "OH groups across the two rings: 2 + 1.",
+      "family": "Trihydroxychalcone"
+    },
+    "JYCNLFBNRVJTDK-UHFFFAOYSA-N": {
+      "smiles": "CCc1ccc(NC(=O)CSc2nc3c(=O)[nH]cnc3n2CC)cc1",
+      "file": "JYCNLFBNRVJTDK-UHFFFAOYSA-N.svg",
+      "sha256": "becba8acce98161734e6037ee74dbd8fc11d0d849b688aa49a866399e815f755"
+    },
+    "KLFHAKGAIOXEQF-UHFFFAOYSA-N": {
+      "smiles": "CCn1c(SCC(=O)Nc2ccc(C)c(C)c2)nc2c(=O)[nH]cnc21",
+      "file": "KLFHAKGAIOXEQF-UHFFFAOYSA-N.svg",
+      "sha256": "1a2733185d260fb37257ae7392898382c3aca8b3066cd692bfe35544213d1117"
+    },
+    "LQADXQYMUZVVPF-UHFFFAOYSA-N": {
+      "smiles": "CCn1c(SCC(=O)Nc2ccc(C)cc2C)nc2c(=O)[nH]cnc21",
+      "file": "LQADXQYMUZVVPF-UHFFFAOYSA-N.svg",
+      "sha256": "c2e65dc64fce57c0ceda6690998f81a3878fed8cd68ca1e8a35a37c1ad994a3a"
+    },
+    "MACMAADVRVVHBD-VMPITWQZSA-N": {
+      "smiles": "O=C(/C=C/c1ccccc1O)c1ccc(O)cc1O",
+      "file": "MACMAADVRVVHBD-VMPITWQZSA-N.svg",
+      "sha256": "a30db4b7449ffff10a96005c1f70d8cf6ca331215c1f1739287b5e662d399aa9",
+      "ring_oh_counts": [
+        2,
+        1
+      ],
+      "description": "OH groups across the two rings: 2 + 1.",
+      "family": "Trihydroxychalcone"
+    },
+    "MSDGTBGJKOTHCN-SOFGYWHQSA-N": {
+      "smiles": "O=C(/C=C/c1ccccc1)c1ccc(O)c(O)c1O",
+      "file": "MSDGTBGJKOTHCN-SOFGYWHQSA-N.svg",
+      "sha256": "0e9f09f8bb3e003a7ef741e336dcf19da13aed4b59fb1b76c4ef7f0174c6996b",
+      "ring_oh_counts": [
+        3,
+        0
+      ],
+      "description": "OH groups across the two rings: 3 + 0.",
+      "family": "Trihydroxychalcone"
+    },
+    "NMANELLSWUVZNL-XVNBXDOJSA-N": {
+      "smiles": "O=C(/C=C/c1ccc(O)cc1)c1cc(O)ccc1O",
+      "file": "NMANELLSWUVZNL-XVNBXDOJSA-N.svg",
+      "sha256": "f49ce81b12ce9441df16039f1897b1a33bf16991e9091f7831f2185c8fe5fb8a",
+      "ring_oh_counts": [
+        2,
+        1
+      ],
+      "description": "OH groups across the two rings: 2 + 1.",
+      "family": "Trihydroxychalcone"
+    },
+    "NPPPAQHDLFSFKZ-UHFFFAOYSA-N": {
+      "smiles": "CC(C)c1ccc(NC(=O)CSc2nc3c(=O)[nH]cnc3n2C)cc1",
+      "file": "NPPPAQHDLFSFKZ-UHFFFAOYSA-N.svg",
+      "sha256": "cf1773910056f8192f1556d22090505292ffe76254b82a4c7e4d05a4a61fe8bb"
+    },
+    "NXTSNFDLQUTBRV-FNORWQNLSA-N": {
+      "smiles": "O=C(/C=C/c1ccccc1O)c1cc(O)ccc1O",
+      "file": "NXTSNFDLQUTBRV-FNORWQNLSA-N.svg",
+      "sha256": "584ed08418050a415e461232e444b018a809a9cf96b1a7bc657a6ef4fa62853b",
+      "ring_oh_counts": [
+        2,
+        1
+      ],
+      "description": "OH groups across the two rings: 2 + 1.",
+      "family": "Trihydroxychalcone"
+    },
+    "ULGSYLSRXGDBDV-UHFFFAOYSA-N": {
+      "smiles": "CCc1cccc(C)c1NC(=O)CSc1nc2c(=O)[nH]cnc2n1C",
+      "file": "ULGSYLSRXGDBDV-UHFFFAOYSA-N.svg",
+      "sha256": "d62efbb94b023b99fd95b3e8d0e426fcefe209863108aeacdf193af5714b0375"
+    },
+    "URUVXKGMWRRULO-UHFFFAOYSA-N": {
+      "smiles": "CCc1cccc(NC(=O)CSc2nc3c(=O)[nH]cnc3n2CC)c1",
+      "file": "URUVXKGMWRRULO-UHFFFAOYSA-N.svg",
+      "sha256": "7dc22a2f28e603d78a5918417f6b0ff3a5379348d34df7cd72ba35a8fae18bc0"
+    },
+    "USRZGIQSGSHFNC-UHFFFAOYSA-N": {
+      "smiles": "CCc1ccccc1NC(=O)CSc1nc2c(=O)[nH]cnc2n1CC",
+      "file": "USRZGIQSGSHFNC-UHFFFAOYSA-N.svg",
+      "sha256": "c9fbb3824e9859f3982669d4fbc11c8b00db1a7048246466bcdf9d864579e300"
+    },
+    "WEVHUPUBLDYPTK-UHFFFAOYSA-N": {
+      "smiles": "CCn1c(SCC(=O)Nc2cccc(C)c2C)nc2c(=O)[nH]cnc21",
+      "file": "WEVHUPUBLDYPTK-UHFFFAOYSA-N.svg",
+      "sha256": "48355142d618d1140a62dafe78bb554d747c70ae3996139c7d395a31d195e181"
+    },
+    "YKPVRQNBNZTCMD-UHFFFAOYSA-N": {
+      "smiles": "COc1ccc2oc(=O)cc(CN3CCN(Cc4ccccc4F)CC3)c2c1",
+      "file": "YKPVRQNBNZTCMD-UHFFFAOYSA-N.svg",
+      "sha256": "6c40e766dc66270c4ccbb4ea2c1de9e23aa54d7c91c6eb7504357196cc2d0ddd"
+    }
+  }
+}

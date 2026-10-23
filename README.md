@@ -1,285 +1,86 @@
-# UnknownID
+# SpectraPilot
 
-Closed-world LC-ESI-MS/MS identification with **budgeted collision-energy
-selection**, an explicit abstention rule, and an honest evaluation.
+**Problem:** Unnecessary MS acquisitions consume instrument time, while unresolved candidate matches can be overclaimed.
 
-The system asks a single practical question: after a 20 eV query has been
-measured, is it worth spending one more acquisition at **30 or 40 eV**, or
-should the investigation stop? The reference library is deliberately poor —
-it contains only archived **10 and 50 eV** spectra — so every mid-energy
-reference is an interpolation and every mid-energy query is a real archived
-measurement revealed only on request.
+**Solution:** SpectraPilot shows the evidence, recommends another archived measurement or a stop, and exports an auditable identification or abstention.
 
-> **Virtual instrument uses archived experimental measurements.** No spectra
-> are generated for identification. The 30/40 eV peaks do not exist in any
-> agent-facing payload until `measure` is called.
+![Start with the unknown spectrum](docs/screenshots/01-start.png)
 
-**Build transcript:** the full OpenCode session that produced this repository is
-in [`chat_history/`](chat_history/). See the readable
-[`transcript.md`](chat_history/transcript.md), or import the raw
-[`session.json`](chat_history/session.json) into OpenCode.
+**Observe → choose or stop → report.** See the actual candidate structures and the sample’s mass; compare their measured/reference fingerprints; collect one more spectrum or stop; see what changed and export the outcome. Detailed scores and audit controls remain expandable. You can exclude an observed peak with a reason and undo the intervention.
 
----
+**Measured result:** In an exploratory scaffold-grouped training cross-validation study of 277 ambiguous molecules, the library-assisted planner used **243 optional acquisitions versus 277** for always-CID40 (12.3% fewer), with **156 versus 157 accepted-correct identifications and 15 accepted errors for each**. This is a tradeoff, not evidence of equivalent accuracy. [Generated scientific report](reports/spectrapilot/train_stage1_reference.md).
 
-## Headline result (read this before the tables)
+> **Scope: closed-world library identification, not de novo structure elucidation.** Demo mode uses three outcome-selected development examples and archived MultiMS2 spectra. They are illustrations, not independent evaluation evidence. There is no hosted deployment at present.
 
-On the frozen test split, the adaptive policy matched the best fixed-energy
-baseline on the ambiguous cohort and used fewer acquisitions:
+## Run the demo
 
-| Ambiguous test cohort (n = 11) | Top-1 @1 | Mean scans by first decision |
-|---|---:|---:|
-| Always 30 eV | 0.818 | 1.00 |
-| Always 40 eV | 0.818 | 1.00 |
-| Random 30/40 | 0.818 | 1.00 |
-| **UnknownID adaptive** | **0.818** | **0.64** |
-| Single 20 eV scan only | 0.818 | 0.00 |
-
-No paired, molecule-level 95% bootstrap interval excludes zero for top-1
-accuracy against fixed or random energy choice. **The defensible claim is
-therefore cost/efficiency, not an accuracy improvement.** With only 11
-ambiguous test molecules this is a proof-of-concept; the intervals are wide and
-the result must not be generalized to other instruments or libraries.
-
-The full, automatically generated report is [`reports/evaluation.md`](reports/evaluation.md).
-The data audit and go/no-go gate is [`reports/data_audit.md`](reports/data_audit.md).
-
----
-
-## Data
-
-| Item | Value |
-|---|---:|
-| Source | [`MassBank/MassBank-data`](https://github.com/MassBank/MassBank-data), contributor `Athens_Univ` |
-| Pinned commit | `befc8a1e2f2aef899747797c081a5d80fab12fe7` |
-| Raw records parsed | 5,633 |
-| Records passing every metadata rule | 3,707 |
-| Selected molecule/energy spectra | 3,245 (724 molecules) |
-| Molecules with both 10 and 50 eV references (library) | 561 |
-| Complete five-energy cases | 503 |
-| Cases with ≥2 precursor-consistent candidates at 10 ppm | 71 |
-| Cases where 30 vs 40 eV template separation differs materially | 35 |
-| Splits (scaffold-disjoint) | 302 train / 101 dev / 100 test |
-
-Fixed stratum: Bruker maXis Impact, LC-ESI-QTOF, positive ESI, CID, `[M+H]+`,
-fixed collision energy in {10, 20, 30, 40, 50} eV, reference-standard compounds
-only, 10 ppm precursor consistency, redistributable licence, RDKit identity and
-formula checks.
-
-The parser never infers metadata from file names. Collision-energy ramps, NCE
-percentages and ambiguous units are excluded rather than silently mapped onto
-the fixed eV grid.
-
----
-
-## Design
-
-```
-20 eV measured query
-        │
-        ▼
-candidate retrieval (same [M+H]+, 10 ppm)
-        │
-        ▼
-evidence: greedy cosine + matched fragments + neutral-loss agreement
-        │
-        ▼
-relative support (NOT a calibrated probability)
-        │
-        ├── planner: expected information gain (Monte Carlo) or a labelled
-        │            disagreement heuristic; chooses 30, 40, or stop
-        │
-        ▼
-explicit measure ──► one real archived 30/40 eV spectrum
-        │
-        ▼
-precommitted decision rule ──► identified | ambiguous | out_of_library
-```
-
-### Leakage boundary
-
-- `ReferenceStore` accepts **only** 10 and 50 eV rows and raises on 20/30/40.
-- 20/30/40 eV query records live in `data/oracle/private_oracle_cases.parquet`.
-- Only `VirtualInstrument.measure` can reveal a hidden 30/40 eV spectrum. It
-  enforces the budget and records every reveal in `data/oracle/access_log.jsonl`.
-- The planner receives interpolated templates and relative weights. It has no
-  oracle handle, no accession and no truth argument.
-- The API strips the accession from the initial and measured observation until
-  the investigation is stopped.
-- `data/oracle/` and `data/raw/` are gitignored.
-- Evaluation artefacts (`data/curated/audit_cases.parquet`,
-  `reports/evaluation.*`) contain truth for scoring only. They are never loaded
-  by the API or the UI; neither process reads the private oracle for ranking.
-
-The interpolation is a transparent first-order model of both m/z and intensity
-across the 10→50 eV endpoints. It is a baseline, not a replacement for the
-published interpolation methods.
-
----
-
-## Quick start
-
-Requires Python 3.11 or 3.12 and `git`.
+Python **3.12**, Git and Make are required. From the repository root:
 
 ```bash
-make setup          # create .venv and install the package + dev tools
-make fetch-data     # sparse, pinned MassBank checkout (~5,633 records)
-make prepare        # curate, audit, split, build cases and fit the error model
-make demo-cases     # optional: anonymised demo case IDs
-make calibrate      # choose the acquisition method on dev ONLY
-make eval           # frozen test evaluation with bootstrap intervals
-make test           # synthetic tests, including anti-leakage checks
+python3.12 -m venv .venv
+.venv/bin/python -m pip install --require-hashes -r requirements-demo.lock
+make demo
 ```
 
-Launch the app and API in separate terminals:
+Open **http://127.0.0.1:8502**. No full dataset, private oracle, `make fetch-data`, or `make prepare` is needed. The small licensed bundle is committed under [`data/demo/`](data/demo/README.md). Installation time depends on the network; subsequent startup is one command.
 
-```bash
-make app            # Streamlit on http://localhost:8501
-make api            # FastAPI on http://127.0.0.1:8000/docs
+Choose **Sample 1**, **Sample 2**, or **Sample 3**. Each begins without an outcome label:
+
+1. **Load unknown spectrum:** inspect the precursor m/z and measured peaks.
+2. **Search the reference library:** discover the mass-compatible structures.
+3. **Compare fragment fingerprints:** inspect the evidence and recommendation.
+4. Collect another archived spectrum or stop, then record what the evidence supports.
+
+The **Reference library** tab shows the 15 known structures and whether their fingerprints are predicted or measured library proxies. Identification, stopping and unresolved outcomes appear only as the analysis supports them. These remain curated demonstrations, not blinded evaluation.
+
+Run `make demo-verify` for the 14 automated demo and evidence-display checks. `make demo-api` starts the optional API on port 8001; `/health` reports demo mode. The UI uses the service directly and does not need that API process.
+
+## Why it matters
+
+Every optional acquisition uses instrument time. A useful assistant must expose the evidence behind its recommendation and say when the available evidence does not resolve the candidates. SpectraPilot makes the choice and its consequences visible, including a scientist's reversible peak exclusions.
+
+## What is new in this prototype
+
+The contribution is the combination of budget-aware experiment selection, uncertainty-aware stopping, archived measurements revealed on request, reversible scientist interventions, and an auditable evidence report with explicit abstention. Spectral-library matching, cosine evidence, spectral interpolation and the source MassBank/MultiMS2 data are prior work. The demo is not a validated new fragmentation predictor or an autonomous laboratory agent.
+
+```mermaid
+flowchart LR
+  P[Public case and candidate references] --> S[Evidence scorer]
+  I[Archived development spectra] -->|CID20 initially; optional action on request| S
+  S --> R[Candidate ranking and abstention rule]
+  R --> A[Budget-aware measure or stop]
+  A -->|one optional acquisition| I
+  H[Scientist excludes or restores observed peak] --> S
+  R --> E[Audit trail and JSON / Markdown report]
+  T[Separate curated source identity] -->|explicit check after stopping only| E
 ```
 
-`make prepare` can take a few minutes because it parses every record with RDKit.
-It writes all artefacts under `data/curated/`, the sealed oracle under
-`data/oracle/`, and reports under `reports/`.
+The oracle boundary is enforced by application interfaces, not encryption: anyone with filesystem access can inspect the redistributable development files. Neither hidden measured spectra nor evaluator truth are returned in initial evidence or planning payloads. Sample titles are neutral; curation-role labels are not exposed by the screen or the demo API catalog.
 
----
+## Evidence and limitations
 
-## The five screens
+The [training reference study](reports/spectrapilot/train_reference_quality.md) and [stage-one study](reports/spectrapilot/train_stage1_reference.md) motivated this demonstration. In the separate predicted-reference track, donor agreement increased accepted-correct identifications from 20 to 49 of 277, with three accepted errors in each; this is an exploratory training comparison, not independent validation. The demo additionally permits development CID60 library anchors. CID60 is an imperfect reference for CID40 and the mismatch is disclosed.
 
-1. **Provenance** — pinned commit, filter cascade, split sizes, licences,
-   example records, and the explicit “archived measurements” banner.
-2. **Investigation** — anonymised case browser, measured 20 eV stick spectrum,
-   ranked candidates with RDKit structures, exact mass, relative support,
-   per-energy cosine, matched fragments, and links to the **reference**
-   accessions (10/50 eV only). Includes measured-vs-interpolated mirror plots.
-3. **Next experiment** — predicted IG or labelled separation heuristic for 30
-   and 40 eV, interpolation reliability, cost, budget, and explicit Measure
-   buttons. Prediction is visually separated from measurement.
-4. **Final report** — before/after ranking, spectral evidence, QC checks,
-   released measurement accessions, honest verdict, limitations, and Markdown /
-   JSON export.
-5. **Evaluation** — test-split policy tables, accuracy@0/1/2, scans, paired
-   bootstrap intervals, planner validation, failure breakdown, and the
-   open-world stress test.
+No benefit from adaptive CID versus EAD selection has been established: the studied planner chose CID40 or stop. Relative support is not a calibrated identity probability. Performance is not established for unknown structures, other instruments, or live acquisition. Thresholds, splits, seeds and existing scientific reports are unchanged by the demo work. The older frozen MassBank result remains a separate benchmark; it must not be pooled with MultiMS2 or the curated examples.
 
-Candidate support is always labelled **relative support, not a calibrated
-identity probability**. No ECE, Brier score or reliability diagram is claimed
-because no probability calibration was validated.
+## Judge materials and screenshots
 
----
+- [Three-minute script and questions](docs/JUDGE_DEMO.md)
+- [Reproducibility and provenance](docs/DEMO_REPRODUCIBILITY.md)
+- [Readiness checklist](HACKATHON_READINESS.md)
+- Screens: [welcome](docs/screenshots/00-welcome.png), [start](docs/screenshots/01-start.png), [observe](docs/screenshots/02-observe.png), [measure](docs/screenshots/03-measure.png), [export](docs/screenshots/04-report.png), [stop](docs/screenshots/05-stop.png), [abstain](docs/screenshots/06-abstain.png), [results](docs/screenshots/07-results.png), [initial fingerprint evidence](docs/screenshots/08-initial-evidence.png), [additional fingerprint evidence](docs/screenshots/09-additional-evidence.png), [reference library](docs/screenshots/10-library.png)
 
-## API
+## Research workflow
 
-Start the server with `make api`. Interactive docs: `/docs`.
+Research scripts remain in `scripts/`, scientific code in `src/spectrapilot/`, the demo screen in `app/spectrapilot_demo.py`, and committed demo data in `data/demo/`. The older UnknownID implementation is in `src/unknownid/`. [Historical UnknownID instructions](docs/UNKNOWNID_RESEARCH.md) describe its separate MassBank workflow; [the implementation specification](UnknownID_Hackathon_Implementation_Spec.md) records that original design.
 
-| Method | Path | Purpose |
-|---|---|---|
-| `GET` | `/health` | library size, sealed cases, planner method |
-| `GET` | `/provenance` | source commit, filters, split sizes, audit values |
-| `GET` | `/cases?split=test` | anonymised case summaries |
-| `POST` | `/cases/start` | start a case (`case_id` optional, `split` optional) |
-| `GET` | `/cases/{id}/ranking` | current candidate evidence |
-| `POST` | `/cases/{id}/plan` | recommended 30/40 eV action, or stop |
-| `POST` | `/cases/{id}/measure` | reveal **one** hidden measurement |
-| `POST` | `/cases/{id}/stop` | freeze the verdict and release accessions |
-| `GET` | `/cases/{id}/report` | final JSON, only after stop |
-| `GET` | `/cases/{id}/report.md` | final Markdown, only after stop |
+For the full scientific dependency environment, use `requirements-research.lock`, then `make verify`. Research report regeneration requires the separately prepared source dataset and private oracle. See the exact commands and limits in [reproducibility](docs/DEMO_REPRODUCIBILITY.md). Do not regenerate datasets or tune parameters simply to launch the demo.
 
-`measure` returns `409` for a second reveal of the same energy, an exhausted
-budget, a disallowed energy, or a stopped investigation.
+## Troubleshooting
 
----
+- Port busy: `make demo DEMO_PORT=8503`, or `make demo-api DEMO_API_PORT=8002`.
+- Missing module: use the Python 3.12 environment above and run commands at the repository root. Make exports `PYTHONPATH=src`.
+- Bundle checksum error: restore committed `data/demo/` and the frozen configs. Do not manually patch numerical results.
+- An investigation uses one optional acquisition. Reset the example to start again. Stop before exporting a report or requesting its curated identity check.
 
-## Evaluation
-
-Policies: precursor-only, single 20 eV scan, always-30, always-40, random,
-cheap disagreement, UnknownID adaptive, and a truth-aware diagnostic ceiling.
-Random averages 20 seeded trials per molecule. CIs resample **molecules**, not
-spectra or energies.
-
-Selected on dev: `monte_carlo_ig`. Error-model reliability is highest at 40 eV
-(mean cosine 0.828), lower at 20 eV (0.694) and 30 eV (0.597). The planner's
-predicted acquisition value has a dev Spearman correlation of ≈0.83 with the
-actual entropy reduction. Test thresholds were frozen before evaluation.
-
-Known failure modes, reported rather than hidden:
-
-- Two ambiguous test cases are same-connectivity / stereoisomer pairs that
-  MS/MS cannot separate; the system abstains instead of guessing.
-- In the open-world stress test (true molecule removed), 6 of 11 cases with an
-  alternative candidate were confidently matched to a wrong library compound.
-  This is the most important negative result in the project: open-world
-  rejection is **not** solved.
-- Accuracy is saturated on precursor-unique cases (89% of test), so the
-  ambiguous subset is the only scientifically informative one.
-
-### What may not be claimed
-
-De novo structure elucidation, open-world identification, cross-instrument
-generalization, enantiomer discrimination, clinical/regulatory validity, or
-control of a real mass spectrometer. The true compound is in the library by
-construction.
-
----
-
-## Tests
-
-```bash
-make test
-# 44 passed
-```
-
-Six synthetic suites cover the parser, RDKit/chemical QC, energy and split
-boundaries, oracle isolation, planner behaviour, and metrics/baselines. The
-tests use artificial spectra only; they are never mixed with the MassBank
-evaluation. Anti-leakage tests assert that a fresh instrument exposes only the
-20 eV observation, that budget and allowed energies are enforced, that the
-oracle property raises, and that the public-case contract has no truth fields.
-
----
-
-## Repository layout
-
-```
-app/streamlit_app.py              five-screen UI
-chat_history/                     readable transcript + full OpenCode session export
-config/selection.yaml             fixed data stratum
-config/acquisition.yaml           planner, likelihood, confidence rule
-data/curated/                     manifests, library, cases, splits, audit
-data/oracle/                      private hidden spectra + access log (gitignored)
-reports/data_audit.md             real filter counts and go/no-go gate
-reports/calibration.md            dev-only method selection
-reports/evaluation.md             frozen test results
-src/unknownid/
-  io/massbank_parser.py           conservative tag parser
-  data/curate.py                  RDKit QC and curation
-  data/splits.py                  scaffold-disjoint splits
-  core/                           spectra, templates, retrieval, evidence, posterior
-  planner/                        Monte-Carlo IG + heuristic + error model
-  simulator/oracle.py             sealed oracle and budgeted instrument
-  simulator/episodes.py           investigation session and report export
-  eval/                           baselines, metrics, bootstrap, open-world test
-  api/app.py                      FastAPI backend
-  service.py                      shared service for API and UI
-scripts/                          fetch, prepare, calibrate, evaluate, demo cases
-tests/                            synthetic tests (44)
-```
-
----
-
-## Reproducibility
-
-- Snapshot commit and record hashes are stored in `data/manifest.json`.
-- Split seed `20261020`; planner Monte-Carlo seed `20261020`; 20 random-policy
-  trials per molecule.
-- Every curated artefact and report is regenerated by the commands above.
-- `reports/evaluation.json` contains per-case metrics, paired comparisons,
-  planner validation, failures and open-world rows.
-- Environment: Python 3.12, RDKit 2026.09.1, matchms 0.33.1, pandas 3.0.6,
-  numpy 2.5.4, Streamlit 1.66.0, FastAPI 0.156.4 (see `pyproject.toml`).
-
-## Licence and attribution
-
-Code: MIT. MassBank records retain their original CC BY / CC BY-SA licences;
-see each record and the upstream repository. If you use the data, cite
-MassBank and the spectral-interpolation paper referenced in
-`config/selection.yaml`.
+Code is [MIT](LICENSE). The bundled MultiMS2 data is CC0-1.0 with accession-level attribution; historical MassBank licensing is separate. See [DATA_LICENSE.md](DATA_LICENSE.md). A [sanitized historical build transcript](chat_history/transcript.md) is retained for provenance.

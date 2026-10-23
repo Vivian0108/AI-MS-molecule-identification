@@ -1,0 +1,71 @@
+[
+  {
+    "case_id": "case-07a97a0a6a07",
+    "precursor_mz": 383.17655,
+    "adduct": "[M+H]+",
+    "ion_mode": "POSITIVE",
+    "instrument_model": "ZENOTOF7600",
+    "candidate_ids": [
+      "BFKZQWOYQFSDDO-UHFFFAOYSA-N",
+      "YKPVRQNBNZTCMD-UHFFFAOYSA-N"
+    ],
+    "n_candidates": 2,
+    "available_actions": [
+      "CID40",
+      "EAD16"
+    ],
+    "measurement_budget": 1,
+    "split": "dev",
+    "source_collection": "NEXUS",
+    "precursor_ambiguous": true
+  },
+  {
+    "case_id": "case-130b5e6f2459",
+    "precursor_mz": 358.13322,
+    "adduct": "[M+H]+",
+    "ion_mode": "POSITIVE",
+    "instrument_model": "ZENOTOF7600",
+    "candidate_ids": [
+      "KLFHAKGAIOXEQF-UHFFFAOYSA-N",
+      "LQADXQYMUZVVPF-UHFFFAOYSA-N",
+      "WEVHUPUBLDYPTK-UHFFFAOYSA-N",
+      "JYCNLFBNRVJTDK-UHFFFAOYSA-N",
+      "NPPPAQHDLFSFKZ-UHFFFAOYSA-N",
+      "ULGSYLSRXGDBDV-UHFFFAOYSA-N",
+      "URUVXKGMWRRULO-UHFFFAOYSA-N",
+      "USRZGIQSGSHFNC-UHFFFAOYSA-N"
+    ],
+    "n_candidates": 8,
+    "available_actions": [
+      "CID40",
+      "EAD16"
+    ],
+    "measurement_budget": 1,
+    "split": "dev",
+    "source_collection": "NEXUS",
+    "precursor_ambiguous": true
+  },
+  {
+    "case_id": "case-a48fd4752b58",
+    "precursor_mz": 257.08083,
+    "adduct": "[M+H]+",
+    "ion_mode": "POSITIVE",
+    "instrument_model": "ZENOTOF7600",
+    "candidate_ids": [
+      "DXDRHHKMWQZJHT-FPYGCLRLSA-N",
+      "MACMAADVRVVHBD-VMPITWQZSA-N",
+      "MSDGTBGJKOTHCN-SOFGYWHQSA-N",
+      "NMANELLSWUVZNL-XVNBXDOJSA-N",
+      "NXTSNFDLQUTBRV-FNORWQNLSA-N"
+    ],
+    "n_candidates": 5,
+    "available_actions": [
+      "CID40",
+      "EAD16"
+    ],
+    "measurement_budget": 1,
+    "split": "dev",
+    "source_collection": "NEXUS",
+    "precursor_ambiguous": true
+  }
+]

@@ -157,3 +157,5 @@ class Investigation(BaseModel):
     limitations: list[str] = Field(default_factory=list)
     qc: dict = Field(default_factory=dict)
     provenance: dict = Field(default_factory=dict)
+    active_peak_exclusions: list[dict] = Field(default_factory=list)
+    intervention_history: list[dict] = Field(default_factory=list)

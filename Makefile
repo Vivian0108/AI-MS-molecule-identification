@@ -3,11 +3,17 @@ PY ?= .venv/bin/python
 PIP ?= .venv/bin/pip
 export PYTHONPATH := src
 export PYTHONHASHSEED := 0
+DEMO_PORT ?= 8502
+DEMO_API_PORT ?= 8001
 
-.PHONY: help setup fetch-data prepare audit demo-cases calibrate eval test app api verify
+.PHONY: help setup fetch-data prepare audit demo-cases calibrate eval test app api verify interactive-baseline peak-exclusion-spike modality-headroom reference-quality stage1-reference
+.PHONY: demo demo-api demo-verify
 
 help:
-	@echo "UnknownID targets"
+	@echo "SpectraPilot demo and UnknownID research targets"
+	@echo "  make demo        launch the bundled development demo on :8502"
+	@echo "  make demo-api    launch the optional demo API on :8001"
+	@echo "  make demo-verify check the bundle, API, UI and report exports"
 	@echo "  make setup       create .venv and install the package + dev tools"
 	@echo "  make fetch-data  sparse-clone the pinned MassBank Athens_Univ snapshot"
 	@echo "  make prepare     curate, audit, split and fit the error model"
@@ -56,3 +62,29 @@ api:
 verify: test
 	$(PY) -c "import unknownid, unknownid.api.app, unknownid.service; print('imports ok')"
 	$(PY) -c "from unknownid.config import load_config; load_config('selection'); load_config('acquisition'); print('configs ok')"
+
+# Uses only the first three precursor-ambiguous development cases from the
+# committed MultiMS2 records. Does not require a raw-data download or preparation.
+interactive-baseline:
+	$(PY) scripts/run_interactive_baseline.py
+
+peak-exclusion-spike:
+	$(PY) scripts/run_peak_exclusion_spike.py
+
+modality-headroom:
+	$(PY) scripts/check_modality_headroom.py
+
+reference-quality:
+	$(PY) scripts/check_train_reference_quality.py
+
+stage1-reference:
+	$(PY) scripts/check_train_stage1_reference.py
+
+demo:
+	$(PY) -m streamlit run app/spectrapilot_demo.py --server.address 127.0.0.1 --server.port $(DEMO_PORT) --server.headless true --browser.gatherUsageStats false
+
+demo-api:
+	$(PY) -m uvicorn spectrapilot.demo_api:app --host 127.0.0.1 --port $(DEMO_API_PORT)
+
+demo-verify:
+	$(PY) -m pytest -q tests/test_spectrapilot_demo.py tests/test_spectrapilot_presentation.py

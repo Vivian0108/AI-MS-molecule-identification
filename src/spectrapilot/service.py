@@ -9,7 +9,7 @@ from spectrapilot.data.repository import CaseRepository
 from spectrapilot.paths import CURATED, load_config
 from spectrapilot.planning.oracle import OracleStore, VirtualInstrument
 from spectrapilot.planning.separation import SeparationPlanner
-from spectrapilot.planning.session import InvestigationSession
+from spectrapilot.planning.session import ActionLog, InvestigationSession
 from spectrapilot.science.scoring import CandidateScorer
 from spectrapilot.science.templates import ReferenceStore
 
@@ -19,8 +19,18 @@ class ServiceError(RuntimeError):
 
 
 class SpectraPilotService:
-    def __init__(self, *, default_split: str = "dev") -> None:
+    def __init__(
+        self,
+        *,
+        default_split: str = "dev",
+        oracle_path: Path | None = None,
+        action_log: ActionLog | None = None,
+        provenance_manifest: dict | None = None,
+    ) -> None:
         self.default_split = default_split
+        self.oracle_path = oracle_path
+        self.action_log = action_log
+        self.provenance_manifest = provenance_manifest
         self.selection_cfg = load_config("multims2")
         self.policy_cfg = load_config("policies")
         self._sessions: dict[str, InvestigationSession] = {}
@@ -33,24 +43,44 @@ class SpectraPilotService:
                 ppm_tolerance=float(self.selection_cfg.get_path("candidate_pool.ppm", 10.0))
             )
             self.repository = CaseRepository.load(self.references)
-            self.oracle = OracleStore.load()
+            self.oracle = (
+                OracleStore.load(self.oracle_path)
+                if self.oracle_path is not None
+                else OracleStore.load()
+            )
         except FileNotFoundError as exc:
             raise ServiceError(str(exc)) from exc
+        self._configure_science()
+
+    def _configure_science(self) -> None:
+        """Shared configuration for research and bundled-demo data sources."""
         self.instrument = VirtualInstrument(self.oracle, default_budget=1)
         self.scorer = CandidateScorer(
-            tolerance_da=float(self.selection_cfg.get_path("preprocessing.match_tolerance_da", 0.02)),
+            tolerance_da=float(
+                self.selection_cfg.get_path("preprocessing.match_tolerance_da", 0.02)
+            ),
             tempering=0.85,
         )
         self.planner = SeparationPlanner(
             stop_support=float(self.policy_cfg.get_path("planner.stop_support", 0.90)),
             stop_margin=float(self.policy_cfg.get_path("planner.stop_margin", 0.65)),
             stop_score=float(self.policy_cfg.get_path("planner.stop_score", 0.01)),
-            identified_min_support=float(self.policy_cfg.get_path("confidence.identified_min_support", 0.72)),
-            identified_min_margin=float(self.policy_cfg.get_path("confidence.identified_min_margin", 0.22)),
-            identified_min_fit=float(self.policy_cfg.get_path("confidence.identified_min_fit", 0.30)),
-            identified_min_matched_peaks=int(self.policy_cfg.get_path("confidence.identified_min_matched_peaks", 2)),
+            identified_min_support=float(
+                self.policy_cfg.get_path("confidence.identified_min_support", 0.72)
+            ),
+            identified_min_margin=float(
+                self.policy_cfg.get_path("confidence.identified_min_margin", 0.22)
+            ),
+            identified_min_fit=float(
+                self.policy_cfg.get_path("confidence.identified_min_fit", 0.30)
+            ),
+            identified_min_matched_peaks=int(
+                self.policy_cfg.get_path("confidence.identified_min_matched_peaks", 2)
+            ),
             ead_cost_ratio=float(self.policy_cfg.get_path("planner.ead_cost_ratio", 1.0)),
-            tolerance_da=float(self.selection_cfg.get_path("preprocessing.match_tolerance_da", 0.02)),
+            tolerance_da=float(
+                self.selection_cfg.get_path("preprocessing.match_tolerance_da", 0.02)
+            ),
         )
 
     # -- discovery ---------------------------------------------------------
@@ -84,6 +114,8 @@ class SpectraPilotService:
                 self.instrument,
                 self.scorer,
                 self.planner,
+                action_log=self.action_log,
+                provenance_manifest=self.provenance_manifest,
             )
             self._sessions[case_id] = session
         return self._state(session, include_initial=True)
@@ -97,7 +129,7 @@ class SpectraPilotService:
         case = self.case_summary(session.case_id)
         payload = {
             "case": case,
-            "candidates": [self.references.metadata(cid) for cid in case["candidate_ids"]],
+            "candidates": [self.references.metadata(cid) for cid in session.case.candidate_ids],
             "observed_actions": session.observed_actions,
             "remaining_budget": session.remaining_budget,
             "ranking": session.ranking().model_dump(),
@@ -122,11 +154,28 @@ class SpectraPilotService:
     def plan(self, case_id: str) -> dict:
         return self.session(case_id).plan().model_dump()
 
+    def get_evidence(self, case_id: str) -> dict:
+        return self.session(case_id).evidence_state()
+
+    def exclude_observed_peak(
+        self, case_id: str, action: str, peak_index: int, reason: str
+    ) -> dict:
+        session = self.session(case_id)
+        event = session.exclude_observed_peak(action, peak_index, reason)
+        return {"intervention": event, "evidence": session.evidence_state()}
+
+    def undo_intervention(self, case_id: str, intervention_id: str, reason: str) -> dict:
+        session = self.session(case_id)
+        event = session.undo_intervention(intervention_id, reason)
+        return {"intervention": event, "evidence": session.evidence_state()}
+
     def measure(self, case_id: str, action_key: str) -> dict:
         session = self.session(case_id)
         measurement = session.measure(action_key)
         payload = measurement.public_dict(include_accession=False)
-        payload["note"] = "Measured spectrum; accession embargoed until the investigation is stopped."
+        payload["note"] = (
+            "Measured spectrum; accession embargoed until the investigation is stopped."
+        )
         return {
             "measurement": payload,
             "ranking": session.ranking().model_dump(),
@@ -178,8 +227,7 @@ class SpectraPilotService:
             "library_molecules": len(self.references),
             "sealed_cases": len(self.oracle),
             "cases": {
-                split: len(self.repository.case_ids(split))
-                for split in ("train", "dev", "test")
+                split: len(self.repository.case_ids(split)) for split in ("train", "dev", "test")
             },
             "actions": ["CID40", "EAD16", "STOP"],
             "banner": (

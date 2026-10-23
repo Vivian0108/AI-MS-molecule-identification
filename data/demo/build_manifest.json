@@ -1,0 +1,29 @@
+{
+  "generated_utc": "2026-10-22T21:26:47.202832+00:00",
+  "git_commit": "5fb4d990089858f4f0ad5653d3be1de285117e43",
+  "inputs": {
+    "configs/multims2.yaml": "9696674e9541d18ce52344afa7d5a6cb3c593c2bfacce3dd41365bce92f539c9",
+    "configs/policies.yaml": "4516c93ed7ea2cd0257310acf99d0a94ec677685dd3271f33fea241cee235010",
+    "data/multims2/curated/records.parquet": "b331116edc591e098d39c9c49ac6e3f35e64a919cd8aea80e8044dce825c5a37",
+    "data/multims2/curated/cases.parquet": "ca5eb993948b20482514f334be0117504202abd7fee5281a1c5cc6d3e4a349b7",
+    "data/multims2/curated/candidate_universe.parquet": "f71f8bdc26bc82c1edf9aea0ae4b526c0f45c46ab75d65903dc6038fb751a334",
+    "data/multims2/curated/split_manifest.json": "407df65b2ca39963fae50be6cbf886d09404b4ce251228376d06bbf37048ef94",
+    "data/multims2/reference/templates.parquet": "8620a57f7a1bce7a5e15cb27a37ea85f183f183190ef6ed4234b98ddbcbf8ca1"
+  },
+  "builder_sha256": "f9557644ea1fafc3e57c7e1420eeb8560a42d1ef7906e5efcac5966b5b1b72c5",
+  "files": {
+    "DATA_LICENSE.txt": "6b1365bc6585d296e037edcc72d5395a338c6c1166d675493e57faf5477cd2f2",
+    "README.md": "2d38af1a21593416b5969784eb0b2bc9a318324c6d13fc2e863570265993d8e9",
+    "evaluator/selection_audit.json": "910ab4dcbcf43007886afff4ac790d637c59958b6786b437a78358bfb21aa1c3",
+    "evaluator/truth.json": "afdbbb1587aec10f652871d2f6e7ab4cb7507606af84af21550bf5b21b3a2a6a",
+    "instrument/attribution.json": "ba72c87b7dbd187b093a231671bcac30792e5ae9f75f56366fa94d2d469d204e",
+    "instrument/cases.json": "9574c2e176a7826a29ce09d0108fe96184f8dff95eede497c7ba17df50beae5f",
+    "public/candidates.json": "2ab2883debb577725cf8b0fce73c039e73467976b65ca4e90c4cd5c3fcd07c8b",
+    "public/cases.json": "59a29830abbc5022380507580d8c56096e1fb5ff95d9b6b61b545f0b25522e61",
+    "public/manifest.json": "9299df46944ce5651ac75891a86f62da75efbbc56cac265eb174b7879a28de01",
+    "public/reference_provenance.json": "3dce79d9943e1f2478a4fbed0c5e7b4d55cba60dc9c54c034d1d0434bed4e7dd",
+    "public/results.json": "c1de0e89953ef93ffc11c22464e34d57b79c7bd82fed854d1b51b4581124e531",
+    "public/scientific_report.md": "b7c09de38082828bf5c4e85c74529dbd5aae73f1550a25da0b7aaf564b3519d7",
+    "public/templates.json": "0b239422a01d9298ebd92295416375937fd29264b975aba158aca899870a38e3"
+  }
+}

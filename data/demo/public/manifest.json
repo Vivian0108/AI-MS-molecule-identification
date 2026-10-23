@@ -1,0 +1,32 @@
+{
+  "product": "SpectraPilot",
+  "mode": "demo",
+  "banner": "Demo mode \u2014 curated development examples",
+  "scope": "Closed-world library identification; archived measurements; not de novo elucidation",
+  "reference_method": "Experimental donor-agreement consensus; train-only donors, allowed train/dev CID60 library anchors",
+  "dataset": "MultiMS2",
+  "source_repository": "https://github.com/zamboni-lab/MultiMS2",
+  "source_commit": "9219d19d8ef370a1ef0eadf0594b7dfe5e2bf83a",
+  "doi": "10.1093/gigascience/giag069",
+  "data_license": "CC0-1.0",
+  "cases": [
+    {
+      "case_id": "case-a48fd4752b58",
+      "role": "resolve",
+      "title": "Resolve uncertainty",
+      "description": "Competing candidates, then one archived measurement."
+    },
+    {
+      "case_id": "case-07a97a0a6a07",
+      "role": "stop",
+      "title": "Save a measurement",
+      "description": "Sufficient current evidence: stop and report."
+    },
+    {
+      "case_id": "case-130b5e6f2459",
+      "role": "abstain",
+      "title": "Abstain responsibly",
+      "description": "Inspect more evidence and acknowledge remaining ambiguity."
+    }
+  ]
+}
