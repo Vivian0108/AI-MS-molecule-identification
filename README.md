@@ -1,6 +1,6 @@
 # SpectraPilot
 
-**Problem:** Unnecessary MS/MS acquisitions consume instrument time, while unresolved candidate matches can be overclaimed.
+**Problem:** Unnecessary MS acquisitions consume instrument time, while unresolved candidate matches can be overclaimed.
 
 **Solution:** SpectraPilot shows the evidence, recommends another archived measurement or a stop, and exports an auditable identification or abstention.
 
