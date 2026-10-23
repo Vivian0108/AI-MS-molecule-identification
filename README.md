@@ -1,20 +1,28 @@
 # SpectraPilot
 
-**Problem:** Unnecessary MS acquisitions consume instrument time, while unresolved candidate matches can be overclaimed.
+**Molecule identification from mass spectra, with a stop-or-measure decision.**
 
-**Solution:** SpectraPilot shows the evidence, recommends another archived measurement or a stop, and exports an auditable identification or abstention.
+Mass spectrometry often produces several candidate structures that all fit the same precursor mass. SpectraPilot combines fragment evidence with a measurement planner. It shows which candidates the data support, recommends one additional archived scan when that scan is likely to separate them, and stops when more data is not worth the instrument time.
 
-![Start with the unknown spectrum](docs/screenshots/01-start.png)
+`measured spectrum → mass-compatible candidates → fragment evidence → measure again or stop → auditable report`
 
-**Observe → choose or stop → report.** See the actual candidate structures and the sample’s mass; compare their measured/reference fingerprints; collect one more spectrum or stop; see what changed and export the outcome. Detailed scores and audit controls remain expandable. You can exclude an observed peak with a reason and undo the intervention.
+## Why it matters
 
-**Measured result:** In an exploratory scaffold-grouped training cross-validation study of 277 ambiguous molecules, the library-assisted planner used **243 optional acquisitions versus 277** for always-CID40 (12.3% fewer), with **156 versus 157 accepted-correct identifications and 15 accepted errors for each**. This is a tradeoff, not evidence of equivalent accuracy. [Generated scientific report](reports/spectrapilot/train_stage1_reference.md).
+Every optional MS/MS acquisition costs instrument time. A useful identification assistant should do more than return a ranked database hit: it should show the evidence, say when the candidates remain unresolved, and record why it continued or stopped.
 
-> **Scope: closed-world library identification, not de novo structure elucidation.** Demo mode uses three outcome-selected development examples and archived MultiMS2 spectra. They are illustrations, not independent evaluation evidence. There is no hosted deployment at present.
+## What the demo shows
 
-## Run the demo
+The local Streamlit demo contains three curated development samples. Together they illustrate the three possible outcomes:
 
-Python **3.12**, Git and Make are required. From the repository root:
+- one extra scan resolves the leading candidates;
+- the current evidence is already sufficient, so the system stops;
+- the candidates remain ambiguous even after the optional scan, and the report says so.
+
+The app shows the measured spectrum, candidate structures, fragment-level evidence, a live assessment and the recommended next step. Final reports are available as Markdown and JSON. The samples are labelled neutrally, so the outcome is not revealed before the analysis.
+
+## Run it
+
+Requirements: Python 3.12, Git and Make.
 
 ```bash
 python3.12 -m venv .venv
@@ -22,65 +30,65 @@ python3.12 -m venv .venv
 make demo
 ```
 
-Open **http://127.0.0.1:8502**. No full dataset, private oracle, `make fetch-data`, or `make prepare` is needed. The small licensed bundle is committed under [`data/demo/`](data/demo/README.md). Installation time depends on the network; subsequent startup is one command.
+Open **http://127.0.0.1:8502** and choose a sample. The demo bundle is committed under [`data/demo/`](data/demo/README.md); no full dataset, private oracle or research download is needed.
 
-Choose **Sample 1**, **Sample 2**, or **Sample 3**. Each begins without an outcome label:
+Useful commands:
 
-1. **Load unknown spectrum:** inspect the precursor m/z and measured peaks.
-2. **Search the reference library:** discover the mass-compatible structures.
-3. **Compare fragment fingerprints:** inspect the evidence and recommendation.
-4. Collect another archived spectrum or stop, then record what the evidence supports.
-
-The **Reference library** tab shows the 15 known structures and whether their fingerprints are predicted or measured library proxies. Identification, stopping and unresolved outcomes appear only as the analysis supports them. These remain curated demonstrations, not blinded evaluation.
-
-Run `make demo-verify` for the 14 automated demo and evidence-display checks. `make demo-api` starts the optional API on port 8001; `/health` reports demo mode. The UI uses the service directly and does not need that API process.
-
-## Why it matters
-
-Every optional acquisition uses instrument time. A useful assistant must expose the evidence behind its recommendation and say when the available evidence does not resolve the candidates. SpectraPilot makes the choice and its consequences visible, including a scientist's reversible peak exclusions.
-
-## What is new in this prototype
-
-The contribution is the combination of budget-aware experiment selection, uncertainty-aware stopping, archived measurements revealed on request, reversible scientist interventions, and an auditable evidence report with explicit abstention. Spectral-library matching, cosine evidence, spectral interpolation and the source MassBank/MultiMS2 data are prior work. The demo is not a validated new fragmentation predictor or an autonomous laboratory agent.
-
-```mermaid
-flowchart LR
-  P[Public case and candidate references] --> S[Evidence scorer]
-  I[Archived development spectra] -->|CID20 initially; optional action on request| S
-  S --> R[Candidate ranking and abstention rule]
-  R --> A[Budget-aware measure or stop]
-  A -->|one optional acquisition| I
-  H[Scientist excludes or restores observed peak] --> S
-  R --> E[Audit trail and JSON / Markdown report]
-  T[Separate curated source identity] -->|explicit check after stopping only| E
+```bash
+make demo-verify          # 14 demo and evidence checks
+make demo-api             # optional API on :8001
+make demo DEMO_PORT=8503  # if :8502 is already in use
 ```
 
-The oracle boundary is enforced by application interfaces, not encryption: anyone with filesystem access can inspect the redistributable development files. Neither hidden measured spectra nor evaluator truth are returned in initial evidence or planning payloads. Sample titles are neutral; curation-role labels are not exposed by the screen or the demo API catalog.
+## What we measured
 
-## Evidence and limitations
+In an exploratory scaffold-grouped training cross-validation study of **277 ambiguous molecules**, the library-assisted planner used:
 
-The [training reference study](reports/spectrapilot/train_reference_quality.md) and [stage-one study](reports/spectrapilot/train_stage1_reference.md) motivated this demonstration. In the separate predicted-reference track, donor agreement increased accepted-correct identifications from 20 to 49 of 277, with three accepted errors in each; this is an exploratory training comparison, not independent validation. The demo additionally permits development CID60 library anchors. CID60 is an imperfect reference for CID40 and the mismatch is disclosed.
+- **243 optional acquisitions vs 277** when always collecting CID40 (**12.3% fewer**)
+- **156 vs 157 accepted-correct identifications** (correct results among the cases it chose to identify)
+- **15 accepted errors in each arm**
 
-No benefit from adaptive CID versus EAD selection has been established: the studied planner chose CID40 or stop. Relative support is not a calibrated identity probability. Performance is not established for unknown structures, other instruments, or live acquisition. Thresholds, splits, seeds and existing scientific reports are unchanged by the demo work. The older frozen MassBank result remains a separate benchmark; it must not be pooled with MultiMS2 or the curated examples.
+This is a measured tradeoff, not evidence of equivalent accuracy. See the [generated scientific report](reports/spectrapilot/train_stage1_reference.md).
 
-## Judge materials and screenshots
+## How it works
 
-- [Three-minute script and questions](docs/JUDGE_DEMO.md)
+1. **Shortlist** candidates whose precursor mass matches within 10 ppm.
+2. **Score** each candidate against the measured fragment peaks and reference fingerprints.
+3. **Decide** whether support, margin, fit and matched peaks meet the identification rule.
+4. **Plan** one additional archived measurement when it is expected to separate the top candidates; otherwise stop.
+5. **Record** the spectra, ranking, evidence, interventions and limitations in a report.
+
+The contribution is the measurement-triage and audit layer. Spectral-library matching, cosine scoring, spectral interpolation and the source MassBank/MultiMS2 data are prior work. This prototype is not a validated new fragmentation predictor or an autonomous laboratory agent.
+
+## Scope and limitations
+
+- **Closed-world library identification**, not de novo structure elucidation.
+- The three demo samples are **curated development illustrations**, not independent validation.
+- **No live instrument** and no hosted deployment; the demo runs locally on archived spectra.
+- CID60 library spectra are used as **CID40 proxies**, and the energy mismatch is disclosed in the app.
+- Relative support is a ranking score, **not a calibrated identity probability**.
+- No general accuracy advantage is claimed. The planner chose CID40 or stop; an adaptive CID-versus-EAD advantage was not established.
+- The older frozen MassBank benchmark is separate and must not be pooled with these results.
+
+## Repository map
+
+- `app/spectrapilot_demo.py` — demo UI
+- `src/spectrapilot/` — scientific code and planner
+- `src/unknownid/` — earlier UnknownID implementation
+- `data/demo/` — committed demo bundle and licenses
+- `reports/spectrapilot/` — generated scientific reports
+- `scripts/` — research and data-preparation scripts
+
+More detail:
+
+- [Screenshots](docs/screenshots/)
+- [Three-minute judge script and FAQ](docs/JUDGE_DEMO.md)
 - [Reproducibility and provenance](docs/DEMO_REPRODUCIBILITY.md)
 - [Readiness checklist](HACKATHON_READINESS.md)
-- Screens: [welcome](docs/screenshots/00-welcome.png), [start](docs/screenshots/01-start.png), [observe](docs/screenshots/02-observe.png), [measure](docs/screenshots/03-measure.png), [export](docs/screenshots/04-report.png), [stop](docs/screenshots/05-stop.png), [abstain](docs/screenshots/06-abstain.png), [results](docs/screenshots/07-results.png), [initial fingerprint evidence](docs/screenshots/08-initial-evidence.png), [additional fingerprint evidence](docs/screenshots/09-additional-evidence.png), [reference library](docs/screenshots/10-library.png)
+- [Historical UnknownID research workflow](docs/UNKNOWNID_RESEARCH.md)
 
-## Research workflow
+For the research environment, use `requirements-research.lock` and run `make verify`. Regenerating the scientific reports requires the separately prepared source dataset and private oracle.
 
-Research scripts remain in `scripts/`, scientific code in `src/spectrapilot/`, the demo screen in `app/spectrapilot_demo.py`, and committed demo data in `data/demo/`. The older UnknownID implementation is in `src/unknownid/`. [Historical UnknownID instructions](docs/UNKNOWNID_RESEARCH.md) describe its separate MassBank workflow; [the implementation specification](UnknownID_Hackathon_Implementation_Spec.md) records that original design.
+## License
 
-For the full scientific dependency environment, use `requirements-research.lock`, then `make verify`. Research report regeneration requires the separately prepared source dataset and private oracle. See the exact commands and limits in [reproducibility](docs/DEMO_REPRODUCIBILITY.md). Do not regenerate datasets or tune parameters simply to launch the demo.
-
-## Troubleshooting
-
-- Port busy: `make demo DEMO_PORT=8503`, or `make demo-api DEMO_API_PORT=8002`.
-- Missing module: use the Python 3.12 environment above and run commands at the repository root. Make exports `PYTHONPATH=src`.
-- Bundle checksum error: restore committed `data/demo/` and the frozen configs. Do not manually patch numerical results.
-- An investigation uses one optional acquisition. Reset the example to start again. Stop before exporting a report or requesting its curated identity check.
-
-Code is [MIT](LICENSE). The bundled MultiMS2 data is CC0-1.0 with accession-level attribution; historical MassBank licensing is separate. See [DATA_LICENSE.md](DATA_LICENSE.md). A [sanitized historical build transcript](chat_history/transcript.md) is retained for provenance.
+Code is [MIT](LICENSE). The bundled MultiMS2 data is CC0-1.0 with accession-level attribution; historical MassBank licensing is separate. See [DATA_LICENSE.md](DATA_LICENSE.md).
