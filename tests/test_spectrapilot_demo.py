@@ -86,8 +86,8 @@ def test_runtime_needs_no_research_parquet_or_oracle(monkeypatch):
 @pytest.mark.parametrize(
     "role,decision,action",
     [
-        ("resolve", "IDENTIFIED", "CID40"),
-        ("stop", "IDENTIFIED", "STOP"),
+        ("resolve", "REFERENCE_SUPPORTED", "CID40"),
+        ("stop", "RANKED_ONLY_MATCH", "STOP"),
         ("abstain", "AMBIGUOUS", "CID40"),
     ],
 )
@@ -191,7 +191,7 @@ def test_api_health_boundaries_and_both_exports():
         assert client.post(f"/investigations/{cid}/stop").status_code == 200
         assert (
             client.get(f"/investigations/{cid}/report").json()["investigation"]["decision"]
-            == "IDENTIFIED"
+            == "REFERENCE_SUPPORTED"
         )
         assert (
             "SpectraPilot investigation report"
@@ -252,7 +252,7 @@ def test_streamlit_resolution_intervention_and_exports():
     at.session_state["pilot"].close()
 
 
-@pytest.mark.parametrize("index,expected", [(1, "IDENTIFIED"), (2, "AMBIGUOUS")])
+@pytest.mark.parametrize("index,expected", [(1, "RANKED_ONLY_MATCH"), (2, "AMBIGUOUS")])
 def test_streamlit_stop_and_abstain(index, expected):
     at = AppTest.from_file(str(ROOT / "app/spectrapilot_demo.py"), default_timeout=20).run()
     at.radio(key="case_selector").set_value(index).run()
