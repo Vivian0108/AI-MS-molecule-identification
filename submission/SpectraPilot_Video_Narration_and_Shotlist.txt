@@ -1,0 +1,44 @@
+SpectraPilot — 3:30 narrated film
+Deck hyperlink: https://github.com/Vivian0108/AI_MS_molecule_identification_draft#run-the-demo
+Local app: http://127.0.0.1:8502
+
+Walkthrough images are reconstructed from documented UI stages and authentic demo-bundle spectra, not captured from a live browser.
+
+[00:00–00:12] SpectraPilot
+Meet SpectraPilot. Instead of treating mass spectrometry as a one-shot search, we ask a different question: which measurement should a chemist collect next?
+
+[00:12–00:28] The problem
+Imagine an unknown compound in a chemistry lab. Different molecular structures can have the same mass. A database returns several plausible answers, but collecting every possible follow-up spectrum wastes valuable instrument time.
+
+[00:28–00:44] The science in 15 seconds
+In tandem mass spectrometry, a molecule breaks into smaller fragments. Their masses form a fingerprint. Change the collision energy and you obtain a different fingerprint, but each new measurement uses instrument time.
+
+[00:44–01:00] Our approach
+SpectraPilot starts with one measured spectrum. It compares plausible structures, calculates how well their reference fingerprints explain the data, then recommends either a follow-up measurement or stopping. An auditable virtual instrument reveals real archived data only after the choice.
+
+[01:00–01:18] Why it is different
+The contribution is the end-to-end scientific decision workflow. Chemists can inspect competing hypotheses, see why an extra scan was proposed, exclude a questionable observed peak and undo that edit, and export a transparent record. The system can also remain unresolved rather than invent confidence.
+
+[01:18–01:38] What we actually measured
+In exploratory training cross-validation on two hundred seventy-seven ambiguous cases, SpectraPilot used two hundred forty-three optional scans versus two hundred seventy-seven for always-scan: twelve point three percent fewer. Including the initial scans, total acquisitions were five hundred twenty versus five hundred fifty-four. Correct accepted results were one hundred fifty-six versus one hundred fifty-seven, with fifteen errors each. This is an efficiency trade-off, not an accuracy win.
+
+[01:38–01:48] Let’s open the demo
+Now for the application. The slide deck links to the repository launch instructions, and to the locally running Streamlit app. The following walkthrough uses its documented Sample One case.
+
+[01:48–02:04] Demo · Sample 1
+We begin with a genuine archived Multi M S two spectrum at twenty electron volts. The unknown sample has precursor mass-to-charge of two hundred fifty-seven point zero eight. The molecular identity is not revealed to the investigator.
+
+[02:04–02:21] Demo · Library search
+Searching the candidate library returns five structures. They all have the same molecular formula, C fifteen H twelve O four. Notice their hydroxyl groups occur in different positions. The precursor mass alone cannot tell which is correct.
+
+[02:21–02:40] Demo · Evidence
+Next we compare the fragment fingerprints. The app ranks the candidates, shows matching and unexplained peaks, and highlights remaining ambiguity. Its planner recommends one additional forty electron volt collision spectrum rather than quietly collecting every measurement.
+
+[02:40–03:01] Demo · Measurement
+We authorize that scan. The virtual instrument now reveals a real, previously held-back forty electron volt measurement. New diagnostic peaks become visible and the candidate ranking updates. The reference comparison uses sixty electron volt library proxies, which are imperfect and explicitly disclosed. These peak matches are not proven bond assignments.
+
+[03:01–03:19] Demo · Conclusion
+Finally, the app records the result with the candidate evidence, acquired scans, audit trail, and limitations. It can also stop without another scan, or abstain when the evidence is insufficient. The scientist can download both Markdown and JSON reports.
+
+[03:19–03:30] The opportunity
+SpectraPilot is a prototype, not a live autonomous instrument or a new structure-discovery model. Its opportunity is clear: help researchers spend fewer measurements on routine uncertainty while keeping scientific decisions transparent, testable, and human-reviewable.
