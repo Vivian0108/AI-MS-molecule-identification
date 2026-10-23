@@ -22,7 +22,7 @@ from spectrapilot.planning.interventions import (
 from spectrapilot.planning.oracle import OracleAccessError, VirtualInstrument
 from spectrapilot.planning.separation import SeparationPlanner
 from spectrapilot.science.scoring import CandidateScorer, merge_evidence
-from spectrapilot.science.evidence_challenge import sensitivity_audit, make_precommit, verify_precommit
+
 from unknownid.core.posterior import rank_candidates, top2_margin
 from unknownid.core.spectra import preprocess_peaks
 
@@ -127,27 +127,33 @@ class InvestigationSession:
             excluded = set()
             if mask_edits:
                 excluded = {
-                    item.peak_index for item in self._active_exclusions.values()
+                    item.peak_index
+                    for item in self._active_exclusions.values()
                     if item.action == action
                 }
             if extra_exclusion is not None and extra_exclusion[0] == action:
                 excluded.add(extra_exclusion[1])
             if excluded:
-                keep = np.array(
-                    [i not in excluded for i in range(original.mz.size)], dtype=bool
-                )
+                keep = np.array([i not in excluded for i in range(original.mz.size)], dtype=bool)
                 mz, intensity = original.mz[keep], original.intensity[keep]
             else:
                 mz, intensity = original.mz, original.intensity
             spectrum = preprocess_peaks(mz, intensity, rel_floor=0.0)
             if index == 0:
                 evidence, weights = self.scorer.initial_rank(
-                    spectrum, self.candidates, self.templates, "CID20",
+                    spectrum,
+                    self.candidates,
+                    self.templates,
+                    "CID20",
                     precursor_mz=self.case.precursor_mz,
                 )
             else:
                 fresh, weights = self.scorer.update(
-                    weights, spectrum, self.candidates, self.templates, action,
+                    weights,
+                    spectrum,
+                    self.candidates,
+                    self.templates,
+                    action,
                     precursor_mz=self.case.precursor_mz,
                 )
                 evidence = merge_evidence(evidence, fresh)
@@ -303,7 +309,13 @@ class InvestigationSession:
         action = MeasurementAction.for_key(action_key)
         # Construct and log the premeasurement prediction BEFORE the hidden read.
         self._premeasurement_commit = make_precommit(self, action.key)
-        self.action_log.write({"case_id": self.case_id, "kind": "sealed_experiment_prediction", **self._premeasurement_commit})
+                "kind": "sealed_experiment_prediction",
+                **self._premeasurement_commit,
+            }
+        )
+        self.action_log.write(
+            {
+                "case_id": self.case_id,
         self.action_log.write(
             {
                 "case_id": self.case_id,
@@ -328,8 +340,16 @@ class InvestigationSession:
             raise
         self._actions.append(action)
         self._observe(measurement)
-        self._challenge_result = verify_precommit(self._premeasurement_commit, measurement, self.scorer.tolerance_da)
-        self.action_log.write({"case_id": self.case_id, "kind": "experiment_prediction_checked", **self._challenge_result})
+        self._challenge_result = verify_precommit(
+            self._premeasurement_commit, measurement, self.scorer.tolerance_da
+        )
+        self.action_log.write(
+            {
+                "case_id": self.case_id,
+                "kind": "experiment_prediction_checked",
+                **self._challenge_result,
+            }
+        )
         return measurement
 
     def stop(self) -> Investigation:
@@ -350,7 +370,12 @@ class InvestigationSession:
 
     def investigation(self) -> Investigation:
         top = rank_candidates(self._weights)[0] if self._weights else None
-        identified = self._decision in {"IDENTIFIED", "REFERENCE_SUPPORTED", "RANKED_ONLY_MATCH", "MASS_ONLY_MATCH"}
+        identified = self._decision in {
+            "IDENTIFIED",
+            "REFERENCE_SUPPORTED",
+            "RANKED_ONLY_MATCH",
+            "MASS_ONLY_MATCH",
+        }
         return Investigation(
             case_id=self.case_id,
             observed_actions=self.observed_actions,
@@ -394,11 +419,17 @@ class InvestigationSession:
         def n_peaks(action):
             if action not in self._observations:
                 return 0
-            return int((self._observations[action] if original else self._effective_observation(action)).mz.size)
+            return int(
+                (
+                    self._observations[action] if original else self._effective_observation(action)
+                ).mz.size
+            )
         checks = {
             "n_candidates": len(self.candidates),
             "initial_peaks": n_peaks("CID20"),
-            "best_observation_peaks": max((n_peaks(action) for action in self.observed_actions), default=0),
+            "best_observation_peaks": max(
+                (n_peaks(action) for action in self.observed_actions), default=0
+            ),
             "all_candidates_within_ppm": all(
                 abs(c.precursor_mz - self.case.precursor_mz) / self.case.precursor_mz * 1e6
                 <= self.templates.ppm_tolerance
@@ -444,8 +475,8 @@ class InvestigationSession:
             return "MASS_ONLY_MATCH", qc
 
         same_connectivity = any(
-            cid != top and cid.split("-")[0] == top.split("-")[0]
-            and weights.get(cid, 0.0) >= 0.10 for cid in weights
+            cid != top and cid.split("-")[0] == top.split("-")[0] and weights.get(cid, 0.0) >= 0.10
+            for cid in weights
         )
         if same_connectivity:
             return "AMBIGUOUS", qc
@@ -455,9 +486,9 @@ class InvestigationSession:
             return "AMBIGUOUS", qc
 
         matched_action = [
-            action for action, fit in evidence.similarity_by_action.items()
-            if fit >= min_fit
-            and evidence.matched_peaks_by_action.get(action, 0) >= min_matched
+            action
+            for action, fit in evidence.similarity_by_action.items()
+            if fit >= min_fit and evidence.matched_peaks_by_action.get(action, 0) >= min_matched
         ]
         if not matched_action:
             return "AMBIGUOUS", qc
@@ -493,7 +524,9 @@ class InvestigationSession:
         if self._stopped and self._decision == "RANKED_ONLY_MATCH":
             limitations.append("Predicted-reference match only; not independently MS/MS confirmed.")
         if self._stopped and self._decision == "MASS_ONLY_MATCH":
-            limitations.append("Unique precursor-consistent entry in the scoped library; not a structure confirmation.")
+            limitations.append(
+                "Unique precursor-consistent entry in the scoped library; not a structure confirmation."
+            )
         if self._stopped and self._decision == "OUT_OF_LIBRARY":
             limitations.append(
                 "No candidate produced sufficient matched evidence at the chosen evidence standard."
@@ -551,10 +584,16 @@ class InvestigationSession:
             "|---:|---|---|---:|---|---|",
         ]
         if investigation.premeasurement_commit:
-            lines.append(f"**Sealed experiment prediction SHA256:** {investigation.premeasurement_commit['sha256']}")
-            lines.append("Predicted diagnostic peaks are reference-fingerprint hypotheses, not fragment assignments.")
+            lines.append(
+                f"**Sealed experiment prediction SHA256:** {investigation.premeasurement_commit['sha256']}"
+            )
+            lines.append(
+                "Predicted diagnostic peaks are reference-fingerprint hypotheses, not fragment assignments."
+            )
         if investigation.experimental_challenge_result:
-            lines.append(f"**Challenge check:** {json.dumps(investigation.experimental_challenge_result['candidate_outcomes'])}")
+            lines.append(
+                f"**Challenge check:** {json.dumps(investigation.experimental_challenge_result['candidate_outcomes'])}"
+            )
         for index, item in enumerate(investigation.candidate_evidence[:10], start=1):
             cosine = ", ".join(
                 f"{action}: {value:.3f}"

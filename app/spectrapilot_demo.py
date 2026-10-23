@@ -239,7 +239,9 @@ def result_comparison(initial, current, names, initial_decision, enough, action)
     before = card(
         initial,
         "Initial 20 eV measurement",
-        "Library match supported" if initial_decision in {"REFERENCE_SUPPORTED", "RANKED_ONLY_MATCH", "MASS_ONLY_MATCH"} else "Unresolved",
+        "Library match supported"
+        if initial_decision in {"REFERENCE_SUPPORTED", "RANKED_ONLY_MATCH", "MASS_ONLY_MATCH"}
+        else "Unresolved",
         "",
     )
     after = card(
@@ -455,7 +457,15 @@ with investigation_tab:
                 initial_decision = st.session_state.baseline["decision_if_stopped"]
                 enough = preview in {"REFERENCE_SUPPORTED", "RANKED_ONLY_MATCH", "MASS_ONLY_MATCH"}
                 measured_extra = len(observations) > 1
-                answer = ("Reference-supported library match" if preview == "REFERENCE_SUPPORTED" else "Provisional library match") if enough else "Not enough evidence to identify"
+                answer = (
+                    (
+                        "Reference-supported library match"
+                        if preview == "REFERENCE_SUPPORTED"
+                        else "Provisional library match"
+                    )
+                    if enough
+                    else "Not enough evidence to identify"
+                )
                 if measured_extra and not enough:
                     answer = "Still unresolved — no identification"
 
@@ -464,8 +474,14 @@ with investigation_tab:
                     st.subheader("3 · What does the evidence support?")
                     if enough:
                         verdict_card(answer, True)
-                        st.write(f"**{lead}** meets the current library-ranking rule, not necessarily MS/MS confirmation.")
-                        st.caption("Evidence tier: " + preview + ". Relative support is not an identity probability.")
+                        st.write(
+                            f"**{lead}** meets the current library-ranking rule, not necessarily MS/MS confirmation."
+                        )
+                        st.caption(
+                            "Evidence tier: "
+                            + preview
+                            + ". Relative support is not an identity probability."
+                        )
                     else:
                         verdict_card(answer, False)
                         st.write(
@@ -537,7 +553,13 @@ with investigation_tab:
                         )
 
                 if evidence["user_modified_evidence"]:
-                    st.warning("Scientist-edited sensitivity analysis. Original unedited verdict: " + evidence["original_decision_if_stopped"] + ". Current edited verdict: " + preview + ".")
+                    st.warning(
+                        "Scientist-edited sensitivity analysis. Original unedited verdict: "
+                        + evidence["original_decision_if_stopped"]
+                        + ". Current edited verdict: "
+                        + preview
+                        + "."
+                    )
                 if measured_extra:
                     st.subheader("What changed after the extra measurement?")
                     result_comparison(
@@ -548,7 +570,11 @@ with investigation_tab:
                         enough,
                         list(observations)[-1],
                     )
-                    if enough and initial_decision not in {"REFERENCE_SUPPORTED", "RANKED_ONLY_MATCH", "MASS_ONLY_MATCH"}:
+                    if enough and initial_decision not in {
+                        "REFERENCE_SUPPORTED",
+                        "RANKED_ONLY_MATCH",
+                        "MASS_ONLY_MATCH",
+                    }:
                         st.write(
                             "**The extra measurement supplied enough evidence to support an identification.**"
                         )
@@ -608,20 +634,32 @@ with investigation_tab:
 
                 with st.expander("Counterfactual evidence challenge", expanded=False):
                     audit = pilot.session(case_id).counterfactual_audit("CID20")
-                    st.write(f"Removing one acquired peak at a time changes the leading candidate in {audit['leader_flip_count']} of {audit['peaks_tested']} tested cases.")
+                    st.write(
+                        f"Removing one acquired peak at a time changes the leading candidate in {audit['leader_flip_count']} of {audit['peaks_tested']} tested cases."
+                    )
                     st.caption(audit["scientific_limit"])
                     if audit["peak_challenges"]:
-                        st.dataframe(pd.DataFrame(audit["peak_challenges"][:8]), hide_index=True, width="stretch")
+                        st.dataframe(
+                            pd.DataFrame(audit["peak_challenges"][:8]),
+                            hide_index=True,
+                            width="stretch",
+                        )
                     commit = evidence.get("premeasurement_commit")
                     if commit:
                         st.write("**Premeasurement SHA256 commitment:** `" + commit["sha256"] + "`")
-                        st.caption("Diagnostic m/z values were predicted from reference fingerprints before the archived measurement was accessed.")
+                        st.caption(
+                            "Diagnostic m/z values were predicted from reference fingerprints before the archived measurement was accessed."
+                        )
                         for prediction in commit["predictions"]:
-                            st.write(f"Candidate {names.get(prediction['candidate_id'], prediction['candidate_id'])}: diagnostic m/z {prediction['diagnostic_mz']}")
+                            st.write(
+                                f"Candidate {names.get(prediction['candidate_id'], prediction['candidate_id'])}: diagnostic m/z {prediction['diagnostic_mz']}"
+                            )
                     verification = evidence.get("experimental_challenge_result")
                     if verification:
                         st.write("**Measured challenge results**")
-                        st.dataframe(pd.DataFrame(verification["candidate_outcomes"]), hide_index=True)
+                        st.dataframe(
+                            pd.DataFrame(verification["candidate_outcomes"]), hide_index=True
+                        )
                         st.caption(verification["scientific_limit"])
                 st.subheader("Why does a structure have evidence?")
                 st.write(
