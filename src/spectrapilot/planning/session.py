@@ -307,15 +307,15 @@ class InvestigationSession:
         if action_key == "STOP":
             raise OracleAccessError("STOP is not a measurement; call stop()")
         action = MeasurementAction.for_key(action_key)
-        # Construct and log the premeasurement prediction BEFORE the hidden read.
+        # Seal the diagnostic prediction BEFORE the hidden measurement is read.
         self._premeasurement_commit = make_precommit(self, action.key)
+        self.action_log.write(
+            {
+                "case_id": self.case_id,
                 "kind": "sealed_experiment_prediction",
                 **self._premeasurement_commit,
             }
         )
-        self.action_log.write(
-            {
-                "case_id": self.case_id,
         self.action_log.write(
             {
                 "case_id": self.case_id,
