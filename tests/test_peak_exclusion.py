@@ -109,7 +109,7 @@ def scientific_state(session):
     return {
         key: value
         for key, value in state.items()
-        if key not in {"active_peak_exclusions", "intervention_history"}
+        if key not in {"active_peak_exclusions", "intervention_history", "premeasurement_commit", "experimental_challenge_result"}
     }
 
 
