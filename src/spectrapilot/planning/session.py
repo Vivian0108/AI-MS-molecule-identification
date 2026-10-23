@@ -22,7 +22,11 @@ from spectrapilot.planning.interventions import (
 from spectrapilot.planning.oracle import OracleAccessError, VirtualInstrument
 from spectrapilot.planning.separation import SeparationPlanner
 from spectrapilot.science.scoring import CandidateScorer, merge_evidence
-from spectrapilot.science.evidence_challenge import make_precommit, sensitivity_audit, verify_precommit
+from spectrapilot.science.evidence_challenge import (
+    make_precommit,
+    sensitivity_audit,
+    verify_precommit,
+)
 
 from unknownid.core.posterior import rank_candidates, top2_margin
 from unknownid.core.spectra import preprocess_peaks
@@ -425,6 +429,7 @@ class InvestigationSession:
                     self._observations[action] if original else self._effective_observation(action)
                 ).mz.size
             )
+
         checks = {
             "n_candidates": len(self.candidates),
             "initial_peaks": n_peaks("CID20"),
