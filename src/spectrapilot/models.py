@@ -8,7 +8,7 @@ from typing import Literal, Optional
 import numpy as np
 from pydantic import BaseModel, Field, field_validator
 
-Status = Literal["IDENTIFIED", "AMBIGUOUS", "OUT_OF_LIBRARY", "INSUFFICIENT_DATA"]
+Status = Literal["IDENTIFIED", "REFERENCE_SUPPORTED", "RANKED_ONLY_MATCH", "MASS_ONLY_MATCH", "AMBIGUOUS", "OUT_OF_LIBRARY", "INSUFFICIENT_DATA"]
 ActionKey = Literal["CID40", "EAD16"]
 
 
@@ -159,3 +159,8 @@ class Investigation(BaseModel):
     provenance: dict = Field(default_factory=dict)
     active_peak_exclusions: list[dict] = Field(default_factory=list)
     intervention_history: list[dict] = Field(default_factory=list)
+    original_automated_decision: Optional[str] = None
+    user_modified_evidence: bool = False
+    premeasurement_commit: Optional[dict] = None
+    experimental_challenge_result: Optional[dict] = None
+    evidence_tier_note: str = ''

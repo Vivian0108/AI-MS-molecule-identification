@@ -22,6 +22,7 @@ from spectrapilot.planning.interventions import (
 from spectrapilot.planning.oracle import OracleAccessError, VirtualInstrument
 from spectrapilot.planning.separation import SeparationPlanner
 from spectrapilot.science.scoring import CandidateScorer, merge_evidence
+from spectrapilot.science.evidence_challenge import sensitivity_audit, make_precommit, verify_precommit
 from unknownid.core.posterior import rank_candidates, top2_margin
 from unknownid.core.spectra import preprocess_peaks
 
@@ -68,6 +69,10 @@ class InvestigationSession:
         self.templates = repository.references
         self._evidence: dict[str, Evidence] = {}
         self._weights: dict[str, float] = {}
+        self._original_evidence: dict[str, Evidence] = {}
+        self._original_weights: dict[str, float] = {}
+        self._premeasurement_commit: dict | None = None
+        self._challenge_result: dict | None = None
         self._actions: list[MeasurementAction] = []
         self._observations: dict[str, Measurement] = {}
         self._active_exclusions: dict[str, PeakExclusion] = {}
@@ -112,37 +117,58 @@ class InvestigationSession:
         effective.intensity = original.intensity[keep].copy()
         return effective
 
-    def _replay_evidence(self) -> None:
-        """Recompute locally, in acquisition order, without any oracle calls.
-
-        Build a fresh state before assigning it, so a failed edit can roll back
-        its mask without partially mutating the current evidence.
-        """
+    def _score_evidence(
+        self, *, mask_edits: bool, extra_exclusion: tuple[str, int] | None = None
+    ) -> tuple[dict[str, Evidence], dict[str, float]]:
+        """Pure replay: no instrument reads, and no session state mutation."""
         evidence, weights = {}, {}
         for index, action in enumerate(self._observations):
-            measurement = self._effective_observation(action)
-            spectrum = preprocess_peaks(measurement.mz, measurement.intensity, rel_floor=0.0)
+            original = self._observations[action]
+            excluded = set()
+            if mask_edits:
+                excluded = {
+                    item.peak_index for item in self._active_exclusions.values()
+                    if item.action == action
+                }
+            if extra_exclusion is not None and extra_exclusion[0] == action:
+                excluded.add(extra_exclusion[1])
+            if excluded:
+                keep = np.array(
+                    [i not in excluded for i in range(original.mz.size)], dtype=bool
+                )
+                mz, intensity = original.mz[keep], original.intensity[keep]
+            else:
+                mz, intensity = original.mz, original.intensity
+            spectrum = preprocess_peaks(mz, intensity, rel_floor=0.0)
             if index == 0:
                 evidence, weights = self.scorer.initial_rank(
-                    spectrum,
-                    self.candidates,
-                    self.templates,
-                    "CID20",
+                    spectrum, self.candidates, self.templates, "CID20",
                     precursor_mz=self.case.precursor_mz,
                 )
             else:
                 fresh, weights = self.scorer.update(
-                    weights,
-                    spectrum,
-                    self.candidates,
-                    self.templates,
-                    action,
+                    weights, spectrum, self.candidates, self.templates, action,
                     precursor_mz=self.case.precursor_mz,
                 )
                 evidence = merge_evidence(evidence, fresh)
                 for cid, item in evidence.items():
                     item.weight = float(weights.get(cid, 0.0))
-        self._evidence, self._weights = evidence, weights
+        return evidence, weights
+
+    def _replay_evidence(self) -> None:
+        """Refresh both immutable-original and edited analyses atomically."""
+        edited = self._score_evidence(mask_edits=True)
+        original = self._score_evidence(mask_edits=False)
+        self._evidence, self._weights = edited
+        self._original_evidence, self._original_weights = original
+
+    def counterfactual_audit(self, action: str = "CID20") -> dict:
+        return sensitivity_audit(self, action=action)
+
+    def premeasurement_challenge(self, action: str) -> dict:
+        if action not in [item.key for item in self.instrument.available_actions(self.case_id)]:
+            raise OracleAccessError("Only an available unacquired action can be challenged")
+        return make_precommit(self, action)
 
     def exclude_observed_peak(self, action: str, peak_index: int, reason: str) -> dict:
         if self._stopped:
@@ -209,6 +235,7 @@ class InvestigationSession:
     def evidence_state(self) -> dict:
         """Public observed-evidence snapshot; the decision is a preview until stop."""
         decision, qc = self._final_decision()
+        original, _ = self._final_decision(original=True)
         return {
             "case_id": self.case_id,
             "observed_actions": self.observed_actions,
@@ -217,6 +244,10 @@ class InvestigationSession:
             "ranking": self.ranking().model_dump(),
             "plan": self.plan().model_dump(),
             "decision_if_stopped": decision,
+            "original_decision_if_stopped": original,
+            "user_modified_evidence": bool(self._active_exclusions),
+            "premeasurement_commit": self._premeasurement_commit,
+            "experimental_challenge_result": self._challenge_result,
             "qc": qc,
             "active_peak_exclusions": [e.public_dict() for e in self._active_exclusions.values()],
             "intervention_history": deepcopy(self._intervention_history),
@@ -270,7 +301,9 @@ class InvestigationSession:
         if action_key == "STOP":
             raise OracleAccessError("STOP is not a measurement; call stop()")
         action = MeasurementAction.for_key(action_key)
-        # Log the premeasurement plan and evidence hash before revealing peaks.
+        # Construct and log the premeasurement prediction BEFORE the hidden read.
+        self._premeasurement_commit = make_precommit(self, action.key)
+        self.action_log.write({"case_id": self.case_id, "kind": "sealed_experiment_prediction", **self._premeasurement_commit})
         self.action_log.write(
             {
                 "case_id": self.case_id,
@@ -295,6 +328,8 @@ class InvestigationSession:
             raise
         self._actions.append(action)
         self._observe(measurement)
+        self._challenge_result = verify_precommit(self._premeasurement_commit, measurement, self.scorer.tolerance_da)
+        self.action_log.write({"case_id": self.case_id, "kind": "experiment_prediction_checked", **self._challenge_result})
         return measurement
 
     def stop(self) -> Investigation:
@@ -315,7 +350,7 @@ class InvestigationSession:
 
     def investigation(self) -> Investigation:
         top = rank_candidates(self._weights)[0] if self._weights else None
-        identified = self._decision == "IDENTIFIED"
+        identified = self._decision in {"IDENTIFIED", "REFERENCE_SUPPORTED", "RANKED_ONLY_MATCH", "MASS_ONLY_MATCH"}
         return Investigation(
             case_id=self.case_id,
             observed_actions=self.observed_actions,
@@ -323,12 +358,17 @@ class InvestigationSession:
             selected_actions=[action.public_dict() for action in self._actions],
             decision=self._decision if self._stopped else "AMBIGUOUS",
             predicted_identity=top if identified else None,
-            confidence=float(self._weights.get(top, 0.0)) if identified and top else None,
+            confidence=None,  # Relative support is not calibrated identity probability.
             limitations=self._limitations(),
             qc=self._qc or self.qc(),
             provenance=self._provenance(),
             active_peak_exclusions=[e.public_dict() for e in self._active_exclusions.values()],
             intervention_history=deepcopy(self._intervention_history),
+            original_automated_decision=self._final_decision(original=True)[0],
+            user_modified_evidence=bool(self._active_exclusions),
+            premeasurement_commit=self._premeasurement_commit,
+            experimental_challenge_result=self._challenge_result,
+            evidence_tier_note="REFERENCE_SUPPORTED uses a CID60 proxy for CID40; RANKED_ONLY_MATCH and MASS_ONLY_MATCH are not confirmations.",
         )
 
     def observation(self, action: str) -> Measurement:
@@ -350,12 +390,15 @@ class InvestigationSession:
         }
 
     # -- decision ----------------------------------------------------------
-    def qc(self) -> dict:
+    def qc(self, *, original: bool = False) -> dict:
+        def n_peaks(action):
+            if action not in self._observations:
+                return 0
+            return int((self._observations[action] if original else self._effective_observation(action)).mz.size)
         checks = {
             "n_candidates": len(self.candidates),
-            "initial_peaks": int(self._effective_observation("CID20").mz.size)
-            if "CID20" in self._observations
-            else 0,
+            "initial_peaks": n_peaks("CID20"),
+            "best_observation_peaks": max((n_peaks(action) for action in self.observed_actions), default=0),
             "all_candidates_within_ppm": all(
                 abs(c.precursor_mz - self.case.precursor_mz) / self.case.precursor_mz * 1e6
                 <= self.templates.ppm_tolerance
@@ -370,50 +413,63 @@ class InvestigationSession:
             reasons.append("candidate_precursor_outside_tolerance")
         if not checks["adduct_consistent"]:
             reasons.append("adduct_mismatch")
-        if checks["initial_peaks"] < 3:
-            reasons.append("initial_spectrum_too_sparse")
+        if checks["best_observation_peaks"] < 3:
+            reasons.append("observation_too_sparse")
         checks["passed"] = not reasons
         checks["rejection_reasons"] = reasons
         return checks
 
-    def _final_decision(self) -> tuple[str, dict]:
-        qc = self.qc()
-        if not self._weights:
-            return "OUT_OF_LIBRARY", qc
+    def _final_decision(self, *, original: bool = False) -> tuple[str, dict]:
+        """Evidence-tiered library verdict. No weak template can prove absence."""
+        qc = self.qc(original=original)
+        weights = self._original_weights if original else self._weights
+        evidence_map = self._original_evidence if original else self._evidence
         if not qc["passed"]:
             return "INSUFFICIENT_DATA", qc
-        top = rank_candidates(self._weights)[0]
-        evidence = self._evidence.get(top)
-        if evidence is None:
+        if not self.candidates:
             return "OUT_OF_LIBRARY", qc
-        best_fit = max(evidence.similarity_by_action.values(), default=0.0)
-        best_matched = max(evidence.matched_peaks_by_action.values(), default=0)
-        support = float(self._weights.get(top, 0.0))
-        margin = top2_margin(self._weights)
+        if not weights:
+            return "INSUFFICIENT_DATA", qc
+        top = rank_candidates(weights)[0]
+        evidence = evidence_map.get(top)
+        if evidence is None:
+            return "INSUFFICIENT_DATA", qc
+        support = float(weights.get(top, 0.0))
+        margin = top2_margin(weights)
         min_fit = float(self._policy("confidence.identified_min_fit", 0.30))
         min_support = float(self._policy("confidence.identified_min_support", 0.72))
         min_margin = float(self._policy("confidence.identified_min_margin", 0.22))
         min_matched = int(self._policy("confidence.identified_min_matched_peaks", 2))
-        ool_fit = float(self._policy("confidence.out_of_library_max_fit", 0.20))
-        ool_matched = int(self._policy("confidence.out_of_library_max_matched_peaks", 1))
-        if best_fit < ool_fit and best_matched <= ool_matched:
-            return "OUT_OF_LIBRARY", qc
-        if best_fit < min_fit or best_matched < min_matched:
-            return "OUT_OF_LIBRARY", qc
-        # A single precursor-consistent library entry is a legitimate
-        # accurate-mass identification, but it is reported as a separate
-        # "precursor-unique" stratum and never as MS/MS confirmation.
-        if len(self.candidates) == 1 and support >= min_support:
-            return "IDENTIFIED", qc
-        # Same-connectivity competitors are not separable by achiral MS/MS.
-        connectivity = top.split("-")[0]
-        stereo_competitor = any(
-            cid != top and cid.split("-")[0] == connectivity and self._weights.get(cid, 0.0) >= 0.10
-            for cid in self._weights
+        if len(self.candidates) == 1:
+            return "MASS_ONLY_MATCH", qc
+
+        same_connectivity = any(
+            cid != top and cid.split("-")[0] == top.split("-")[0]
+            and weights.get(cid, 0.0) >= 0.10 for cid in weights
         )
-        if support >= min_support and margin >= min_margin and not stereo_competitor:
-            return "IDENTIFIED", qc
-        return "AMBIGUOUS", qc
+        if same_connectivity:
+            return "AMBIGUOUS", qc
+
+        supported = support >= min_support and margin >= min_margin
+        if not supported:
+            return "AMBIGUOUS", qc
+
+        matched_action = [
+            action for action, fit in evidence.similarity_by_action.items()
+            if fit >= min_fit
+            and evidence.matched_peaks_by_action.get(action, 0) >= min_matched
+        ]
+        if not matched_action:
+            return "AMBIGUOUS", qc
+        has_reference_proxy = any(
+            self.templates.template(top, action).source == "reference_cid60"
+            for action in matched_action
+        )
+        if has_reference_proxy:
+            return "REFERENCE_SUPPORTED", qc
+        # A well-ranked candidate from predicted-only fingerprints is provisional.
+        # The donor-based reliability is not an independently validated MS/MS proof.
+        return "RANKED_ONLY_MATCH", qc
 
     def _policy(self, dotted: str, default):
         if dotted in self.decision_overrides:
@@ -434,6 +490,10 @@ class InvestigationSession:
             limitations.append(
                 "The evidence did not satisfy the precommitted identification rule; the result is abstained."
             )
+        if self._stopped and self._decision == "RANKED_ONLY_MATCH":
+            limitations.append("Predicted-reference match only; not independently MS/MS confirmed.")
+        if self._stopped and self._decision == "MASS_ONLY_MATCH":
+            limitations.append("Unique precursor-consistent entry in the scoped library; not a structure confirmation.")
         if self._stopped and self._decision == "OUT_OF_LIBRARY":
             limitations.append(
                 "No candidate produced sufficient matched evidence at the chosen evidence standard."
@@ -482,11 +542,19 @@ class InvestigationSession:
             "",
             f"**Decision:** `{investigation.decision}`",
             f"**Observed actions:** {', '.join(investigation.observed_actions)}",
-            f"**Predicted identity:** {investigation.predicted_identity or '—'}",
+            f"**Proposed library identity:** {investigation.predicted_identity or '—'}",
+            f"**Unedited automated verdict:** {investigation.original_automated_decision}",
+            f"**User modified evidence:** {investigation.user_modified_evidence}",
+            f"**Evidence-tier note:** {investigation.evidence_tier_note}",
             "",
             "| Rank | Candidate | Formula | Relative support | Cosine by action | Matched peaks |",
             "|---:|---|---|---:|---|---|",
         ]
+        if investigation.premeasurement_commit:
+            lines.append(f"**Sealed experiment prediction SHA256:** {investigation.premeasurement_commit['sha256']}")
+            lines.append("Predicted diagnostic peaks are reference-fingerprint hypotheses, not fragment assignments.")
+        if investigation.experimental_challenge_result:
+            lines.append(f"**Challenge check:** {json.dumps(investigation.experimental_challenge_result['candidate_outcomes'])}")
         for index, item in enumerate(investigation.candidate_evidence[:10], start=1):
             cosine = ", ".join(
                 f"{action}: {value:.3f}"
